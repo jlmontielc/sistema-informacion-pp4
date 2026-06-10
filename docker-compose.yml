@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: sistema_entrenador
+      MYSQL_USER: entrenador_user
+      MYSQL_PASSWORD: entrenador_pass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+  backend-node:
+    build: ./backend-node
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: sistema_entrenador
+      DB_USER: entrenador_user
+      DB_PASSWORD: entrenador_pass
+      FLASK_IA_URL: http://backend-flask:5000
+
+  backend-flask:
+    build: ./backend-flask
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: sistema_entrenador
+      DB_USER: entrenador_user
+      DB_PASSWORD: entrenador_pass
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-node
+
+volumes:
+  mysqldata:
