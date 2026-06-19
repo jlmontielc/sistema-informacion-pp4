@@ -3,6 +3,9 @@ const cors = require('cors');
 const morgan = require('morgan');
 const { errorHandler } = require('./shared/middleware/errorHandler');
 
+require('./shared/database/associations');
+
+const authRoutes = require('./modules/auth/auth.routes');
 const clientesRoutes = require('./modules/clientes/clientes.routes');
 const metabolismoRoutes = require('./modules/metabolismo/metabolismo.routes');
 const entrenamientoRoutes = require('./modules/entrenamiento/entrenamiento.routes');
@@ -19,6 +22,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'backend-node' });
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/metabolismo', metabolismoRoutes);
 app.use('/api/entrenamiento', entrenamientoRoutes);
