@@ -1,17 +1,22 @@
 const registroEntrenamientoService = require('./registro-entrenamiento.service');
 
-const getAll = async (req, res, next) => {
+const obtenerTodos = async (req, res, next) => {
   try {
-    const registros = await registroEntrenamientoService.findAll(req.user.id, req.query);
+    const filtros = { ...req.query };
+    if (req.usuario.rol === 'instruido') {
+      filtros.instruidoIdActual = req.usuario.id;
+      filtros.propias = 'true';
+    }
+    const registros = await registroEntrenamientoService.obtenerTodos(req.usuario.id, filtros);
     res.json(registros);
   } catch (err) {
     next(err);
   }
 };
 
-const getById = async (req, res, next) => {
+const obtenerPorId = async (req, res, next) => {
   try {
-    const registro = await registroEntrenamientoService.findById(req.params.id, req.user.id);
+    const registro = await registroEntrenamientoService.obtenerPorId(req.params.id, req.usuario.id);
     if (!registro) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json(registro);
   } catch (err) {
@@ -19,22 +24,26 @@ const getById = async (req, res, next) => {
   }
 };
 
-const create = async (req, res, next) => {
+const crear = async (req, res, next) => {
   try {
-    const registro = await registroEntrenamientoService.create(req.body);
+    const datos = { ...req.body };
+    if (req.usuario.rol === 'instruido') {
+      datos.instruidoId = req.usuario.id;
+    }
+    const registro = await registroEntrenamientoService.crear(datos);
     res.status(201).json(registro);
   } catch (err) {
     next(err);
   }
 };
 
-const remove = async (req, res, next) => {
+const eliminar = async (req, res, next) => {
   try {
-    await registroEntrenamientoService.remove(req.params.id, req.user.id);
+    await registroEntrenamientoService.eliminar(req.params.id, req.usuario.id);
     res.status(204).end();
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { getAll, getById, create, remove };
+module.exports = { obtenerTodos, obtenerPorId, crear, eliminar };

@@ -1,52 +1,60 @@
 const { RutinaAsignada } = require('./entrenamiento.model');
-const { Cliente } = require('../clientes/clientes.model');
+const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
 
-const findAll = async (entrenadorId, filters = {}) => {
+const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = { entrenadorId };
-  if (filters.clienteId) where.clienteId = filters.clienteId;
-  if (filters.activa !== undefined) where.activa = filters.activa === 'true';
+  if (filtros.instruidoId) where.instruidoId = filtros.instruidoId;
+  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
+  if (filtros.propias === 'true' && filtros.instruidoIdActual) {
+    where.instruidoId = filtros.instruidoIdActual;
+  }
   return RutinaAsignada.findAll({
     where,
-    include: [{ model: Cliente, attributes: ['id', 'nombre'] }],
+    include: [{ model: Instruido, attributes: ['id', 'nombre'] }],
     order: [['createdAt', 'DESC']],
   });
 };
 
-const findById = async (id, entrenadorId) =>
+const obtenerPorId = async (id, entrenadorId) =>
   RutinaAsignada.findOne({
     where: { id, entrenadorId },
-    include: [{ model: Cliente, attributes: ['id', 'nombre'] }],
+    include: [{ model: Instruido, attributes: ['id', 'nombre'] }],
   });
 
-const create = async (data, entrenadorId) => {
-  const cliente = await Cliente.findOne({ where: { id: data.clienteId, entrenadorId } });
-  if (!cliente) {
-    const err = new Error('Cliente no encontrado o no pertenece al entrenador');
+const obtenerPorIdPropio = async (id, instruidoId) =>
+  RutinaAsignada.findOne({
+    where: { id, instruidoId },
+  });
+
+const crear = async (datos, entrenadorId) => {
+  const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
+  if (!instruido) {
+    const err = new Error('Instruido no encontrado o no pertenece al entrenador');
     err.status = 404;
     throw err;
   }
-  return RutinaAsignada.create({ ...data, entrenadorId });
+  return RutinaAsignada.create({ ...datos, entrenadorId });
 };
 
-const update = async (id, data, entrenadorId) => {
+const actualizar = async (id, datos, entrenadorId) => {
   const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
   if (!rutina) return null;
-  if (data.clienteId) {
-    const cliente = await Cliente.findOne({ where: { id: data.clienteId, entrenadorId } });
-    if (!cliente) {
-      const err = new Error('Cliente no encontrado');
+  if (datos.instruidoId) {
+    const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
+    if (!instruido) {
+      const err = new Error('Instruido no encontrado');
       err.status = 404;
       throw err;
     }
   }
-  return rutina.update(data);
+  return rutina.update(datos);
 };
 
-const remove = async (id, entrenadorId) => {
+const eliminar = async (id, entrenadorId) => {
   const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
   if (!rutina) return null;
   return rutina.update({ activa: false });
 };
 
-module.exports = { findAll, findById, create, update, remove };
+module.exports = { obtenerTodos, obtenerPorId, obtenerPorIdPropio, crear, actualizar, eliminar };

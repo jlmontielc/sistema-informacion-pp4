@@ -3,9 +3,9 @@ const ctrl = require('./registro-entrenamiento.controller');
 
 const router = Router();
 
-router.get('/', ctrl.getAll);
-router.get('/:id', ctrl.getById);
-router.post('/', ctrl.create);
-router.delete('/:id', ctrl.remove);
+router.get('/', ctrl.obtenerTodos);
+router.get('/:id', ctrl.obtenerPorId);
+router.post('/', ctrl.crear);
+router.delete('/:id', ctrl.eliminar);
 
 module.exports = router;

@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../shared/database/connection');
 
 const PerfilMedico = sequelize.define('PerfilMedico', {
-  clienteId: { type: DataTypes.INTEGER, allowNull: false, unique: true, field: 'cliente_id' },
+  instruidoId: { type: DataTypes.INTEGER, allowNull: false, unique: true, field: 'cliente_id' },
   alergias: { type: DataTypes.TEXT },
   intolerancias: { type: DataTypes.TEXT },
   lesiones: { type: DataTypes.TEXT },

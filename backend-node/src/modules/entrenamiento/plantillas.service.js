@@ -1,33 +1,33 @@
 const { PlantillaEntrenamiento } = require('./entrenamiento.model');
 const { Op } = require('sequelize');
 
-const findAll = async (entrenadorId, filters = {}) => {
+const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = { entrenadorId };
-  if (filters.tipo) where.tipo = filters.tipo;
-  if (filters.objetivo) where.objetivo = filters.objetivo;
-  if (filters.activa !== undefined) where.activa = filters.activa === 'true';
-  if (filters.search) {
-    where.nombre = { [Op.like]: `%${filters.search}%` };
+  if (filtros.tipo) where.tipo = filtros.tipo;
+  if (filtros.objetivo) where.objetivo = filtros.objetivo;
+  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
+  if (filtros.busqueda) {
+    where.nombre = { [Op.like]: `%${filtros.busqueda}%` };
   }
   return PlantillaEntrenamiento.findAll({ where, order: [['createdAt', 'DESC']] });
 };
 
-const findById = async (id, entrenadorId) =>
+const obtenerPorId = async (id, entrenadorId) =>
   PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
 
-const create = async (data, entrenadorId) =>
-  PlantillaEntrenamiento.create({ ...data, entrenadorId });
+const crear = async (datos, entrenadorId) =>
+  PlantillaEntrenamiento.create({ ...datos, entrenadorId });
 
-const update = async (id, data, entrenadorId) => {
+const actualizar = async (id, datos, entrenadorId) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
   if (!plantilla) return null;
-  return plantilla.update(data);
+  return plantilla.update(datos);
 };
 
-const remove = async (id, entrenadorId) => {
+const eliminar = async (id, entrenadorId) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
   if (!plantilla) return null;
   return plantilla.destroy();
 };
 
-module.exports = { findAll, findById, create, update, remove };
+module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar };

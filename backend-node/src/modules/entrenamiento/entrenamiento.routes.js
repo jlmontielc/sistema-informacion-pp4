@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const { authenticate } = require('../../shared/middleware/authenticate');
+const { autenticar } = require('../../shared/middleware/authenticate');
 
 const router = Router();
 
-router.use(authenticate);
+router.use(autenticar);
 
 router.use('/ejercicios', require('./ejercicios.routes'));
 router.use('/plantillas', require('./plantillas.routes'));

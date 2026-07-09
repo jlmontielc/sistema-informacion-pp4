@@ -1,22 +1,22 @@
 const crypto = require('crypto');
 const config = require('../constants');
 
-const ALGORITHM = 'aes-256-cbc';
+const ALGORITMO = 'aes-256-cbc';
 
-const encrypt = (text) => {
-  if (!text) return null;
-  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(config.ENC_KEY, 'hex'), Buffer.from(config.ENC_IV, 'hex'));
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return encrypted;
+const cifrar = (texto) => {
+  if (!texto) return null;
+  const cifrador = crypto.createCipheriv(ALGORITMO, Buffer.from(config.ENC_KEY, 'hex'), Buffer.from(config.ENC_IV, 'hex'));
+  let cifrado = cifrador.update(texto, 'utf8', 'hex');
+  cifrado += cifrador.final('hex');
+  return cifrado;
 };
 
-const decrypt = (encryptedText) => {
-  if (!encryptedText) return null;
-  const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(config.ENC_KEY, 'hex'), Buffer.from(config.ENC_IV, 'hex'));
-  let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+const descifrar = (textoCifrado) => {
+  if (!textoCifrado) return null;
+  const descifrador = crypto.createDecipheriv(ALGORITMO, Buffer.from(config.ENC_KEY, 'hex'), Buffer.from(config.ENC_IV, 'hex'));
+  let descifrado = descifrador.update(textoCifrado, 'hex', 'utf8');
+  descifrado += descifrador.final('utf8');
+  return descifrado;
 };
 
-module.exports = { encrypt, decrypt };
+module.exports = { cifrar, descifrar };

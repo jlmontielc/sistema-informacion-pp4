@@ -1,17 +1,27 @@
 const rutinasAsignadasService = require('./rutinas-asignadas.service');
 
-const getAll = async (req, res, next) => {
+const obtenerTodos = async (req, res, next) => {
   try {
-    const rutinas = await rutinasAsignadasService.findAll(req.user.id, req.query);
+    const filtros = { ...req.query };
+    if (req.usuario.rol === 'instruido') {
+      filtros.instruidoIdActual = req.usuario.id;
+      filtros.propias = 'true';
+    }
+    const rutinas = await rutinasAsignadasService.obtenerTodos(req.usuario.id, filtros);
     res.json(rutinas);
   } catch (err) {
     next(err);
   }
 };
 
-const getById = async (req, res, next) => {
+const obtenerPorId = async (req, res, next) => {
   try {
-    const rutina = await rutinasAsignadasService.findById(req.params.id, req.user.id);
+    let rutina;
+    if (req.usuario.rol === 'instruido') {
+      rutina = await rutinasAsignadasService.obtenerPorIdPropio(req.params.id, req.usuario.id);
+    } else {
+      rutina = await rutinasAsignadasService.obtenerPorId(req.params.id, req.usuario.id);
+    }
     if (!rutina) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(rutina);
   } catch (err) {
@@ -19,18 +29,18 @@ const getById = async (req, res, next) => {
   }
 };
 
-const create = async (req, res, next) => {
+const crear = async (req, res, next) => {
   try {
-    const rutina = await rutinasAsignadasService.create(req.body, req.user.id);
+    const rutina = await rutinasAsignadasService.crear(req.body, req.usuario.id);
     res.status(201).json(rutina);
   } catch (err) {
     next(err);
   }
 };
 
-const update = async (req, res, next) => {
+const actualizar = async (req, res, next) => {
   try {
-    const rutina = await rutinasAsignadasService.update(req.params.id, req.body, req.user.id);
+    const rutina = await rutinasAsignadasService.actualizar(req.params.id, req.body, req.usuario.id);
     if (!rutina) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(rutina);
   } catch (err) {
@@ -38,13 +48,13 @@ const update = async (req, res, next) => {
   }
 };
 
-const remove = async (req, res, next) => {
+const eliminar = async (req, res, next) => {
   try {
-    await rutinasAsignadasService.remove(req.params.id, req.user.id);
+    await rutinasAsignadasService.eliminar(req.params.id, req.usuario.id);
     res.status(204).end();
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar };

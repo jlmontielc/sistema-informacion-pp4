@@ -1,12 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { errorHandler } = require('./shared/middleware/errorHandler');
+const { manejadorErrores } = require('./shared/middleware/errorHandler');
 
 require('./shared/database/associations');
 
 const authRoutes = require('./modules/auth/auth.routes');
-const clientesRoutes = require('./modules/clientes/clientes.routes');
+const instruidosRoutes = require('./modules/instruidos/instruido.routes');
 const metabolismoRoutes = require('./modules/metabolismo/metabolismo.routes');
 const entrenamientoRoutes = require('./modules/entrenamiento/entrenamiento.routes');
 const dietasRoutes = require('./modules/dietas/dietas.routes');
@@ -23,12 +23,12 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/clientes', clientesRoutes);
+app.use('/api/instruidos', instruidosRoutes);
 app.use('/api/metabolismo', metabolismoRoutes);
 app.use('/api/entrenamiento', entrenamientoRoutes);
 app.use('/api/dietas', dietasRoutes);
 app.use('/api/reportes', reportesRoutes);
 
-app.use(errorHandler);
+app.use(manejadorErrores);
 
 module.exports = app;

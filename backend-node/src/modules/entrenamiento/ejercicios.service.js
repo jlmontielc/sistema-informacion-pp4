@@ -1,31 +1,30 @@
 const { Ejercicio } = require('./entrenamiento.model');
-
 const { Op } = require('sequelize');
 
-const findAll = async (filters = {}) => {
+const obtenerTodos = async (filtros = {}) => {
   const where = {};
-  if (filters.grupoMuscular) where.grupoMuscular = filters.grupoMuscular;
-  if (filters.dificultad) where.dificultad = filters.dificultad;
-  if (filters.search) {
-    where.nombre = { [Op.like]: `%${filters.search}%` };
+  if (filtros.grupoMuscular) where.grupoMuscular = filtros.grupoMuscular;
+  if (filtros.dificultad) where.dificultad = filtros.dificultad;
+  if (filtros.busqueda) {
+    where.nombre = { [Op.like]: `%${filtros.busqueda}%` };
   }
   return Ejercicio.findAll({ where, order: [['nombre', 'ASC']] });
 };
 
-const findById = async (id) => Ejercicio.findByPk(id);
+const obtenerPorId = async (id) => Ejercicio.findByPk(id);
 
-const create = async (data) => Ejercicio.create(data);
+const crear = async (datos) => Ejercicio.create(datos);
 
-const update = async (id, data) => {
+const actualizar = async (id, datos) => {
   const ejercicio = await Ejercicio.findByPk(id);
   if (!ejercicio) return null;
-  return ejercicio.update(data);
+  return ejercicio.update(datos);
 };
 
-const remove = async (id) => {
+const eliminar = async (id) => {
   const ejercicio = await Ejercicio.findByPk(id);
   if (!ejercicio) return null;
   return ejercicio.destroy();
 };
 
-module.exports = { findAll, findById, create, update, remove };
+module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar };

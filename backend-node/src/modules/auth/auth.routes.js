@@ -1,14 +1,15 @@
 const { Router } = require('express');
 const ctrl = require('./auth.controller');
-const { validate } = require('../../shared/middleware/validate');
-const { authenticate } = require('../../shared/middleware/authenticate');
-const { registerSchema, loginSchema, updateProfileSchema } = require('./auth.validation');
+const { validar } = require('../../shared/middleware/validate');
+const { autenticar } = require('../../shared/middleware/authenticate');
+const { autorizar } = require('../../shared/middleware/autorizar');
+const { esquemaRegistro, esquemaInicioSesion } = require('./auth.validation');
 
 const router = Router();
 
-router.post('/register', validate(registerSchema), ctrl.register);
-router.post('/login', validate(loginSchema), ctrl.login);
-router.get('/me', authenticate, ctrl.getProfile);
-router.put('/profile', authenticate, validate(updateProfileSchema), ctrl.updateProfile);
+router.post('/register', validar(esquemaRegistro), ctrl.registrar);
+router.post('/login', validar(esquemaInicioSesion), ctrl.iniciarSesion);
+router.get('/me', autenticar, ctrl.obtenerPerfil);
+router.put('/profile', autenticar, ctrl.actualizarPerfil);
 
 module.exports = router;

@@ -1,39 +1,39 @@
 const authService = require('./auth.service');
 
-const register = async (req, res, next) => {
+const registrar = async (req, res, next) => {
   try {
-    const result = await authService.register(req.body);
-    res.status(201).json(result);
+    const resultado = await authService.registrar(req.body, req.usuario);
+    res.status(201).json(resultado);
   } catch (err) {
     next(err);
   }
 };
 
-const login = async (req, res, next) => {
+const iniciarSesion = async (req, res, next) => {
   try {
-    const result = await authService.login(req.body);
-    res.json(result);
+    const resultado = await authService.iniciarSesion(req.body);
+    res.json(resultado);
   } catch (err) {
     next(err);
   }
 };
 
-const getProfile = async (req, res, next) => {
+const obtenerPerfil = async (req, res, next) => {
   try {
-    const profile = await authService.getProfile(req.user.id);
-    res.json(profile);
+    const perfil = await authService.obtenerPerfil(req.usuario.id, req.usuario.tipo);
+    res.json(perfil);
   } catch (err) {
     next(err);
   }
 };
 
-const updateProfile = async (req, res, next) => {
+const actualizarPerfil = async (req, res, next) => {
   try {
-    const profile = await authService.updateProfile(req.user.id, req.body);
-    res.json(profile);
+    const perfil = await authService.actualizarPerfil(req.usuario.id, req.usuario.tipo, req.body);
+    res.json(perfil);
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { register, login, getProfile, updateProfile };
+module.exports = { registrar, iniciarSesion, obtenerPerfil, actualizarPerfil };

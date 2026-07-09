@@ -1,8 +1,9 @@
 const Joi = require('joi');
 
-const createSchema = Joi.object({
+const esquemaCrear = Joi.object({
   nombre: Joi.string().max(100).required(),
   email: Joi.string().email().max(100).optional(),
+  contrasena: Joi.string().min(6).max(100).optional(),
   edad: Joi.number().integer().min(1).max(120).required(),
   peso: Joi.number().positive().required(),
   altura: Joi.number().positive().required(),
@@ -12,9 +13,10 @@ const createSchema = Joi.object({
   diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
 });
 
-const updateSchema = Joi.object({
+const esquemaActualizar = Joi.object({
   nombre: Joi.string().max(100).optional(),
   email: Joi.string().email().max(100).optional(),
+  contrasena: Joi.string().min(6).max(100).optional(),
   edad: Joi.number().integer().min(1).max(120).optional(),
   peso: Joi.number().positive().optional(),
   altura: Joi.number().positive().optional(),
@@ -25,4 +27,4 @@ const updateSchema = Joi.object({
   activo: Joi.boolean().optional(),
 });
 
-module.exports = { createSchema, updateSchema };
+module.exports = { esquemaCrear, esquemaActualizar };

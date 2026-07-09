@@ -33,7 +33,7 @@ const PlantillaEntrenamiento = sequelize.define('PlantillaEntrenamiento', {
 });
 
 const RutinaAsignada = sequelize.define('RutinaAsignada', {
-  clienteId: { type: DataTypes.INTEGER, allowNull: false, field: 'cliente_id' },
+  instruidoId: { type: DataTypes.INTEGER, allowNull: false, field: 'cliente_id' },
   plantillaOrigenId: { type: DataTypes.INTEGER, field: 'plantilla_origen_id' },
   entrenadorId: { type: DataTypes.INTEGER, allowNull: false, field: 'entrenador_id' },
   nombre: { type: DataTypes.STRING(150), allowNull: false },
@@ -56,7 +56,7 @@ const RutinaAsignada = sequelize.define('RutinaAsignada', {
 
 const RegistroEntrenamiento = sequelize.define('RegistroEntrenamiento', {
   rutinaAsignadaId: { type: DataTypes.INTEGER, allowNull: false, field: 'rutina_asignada_id' },
-  clienteId: { type: DataTypes.INTEGER, allowNull: false, field: 'cliente_id' },
+  instruidoId: { type: DataTypes.INTEGER, allowNull: false, field: 'cliente_id' },
   fecha: { type: DataTypes.DATEONLY, allowNull: false },
   ejerciciosRealizados: { type: DataTypes.JSON, allowNull: false, field: 'ejercicios_realizados' },
   duracionMinutos: { type: DataTypes.INTEGER, field: 'duracion_minutos' },
