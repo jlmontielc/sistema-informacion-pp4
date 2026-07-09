@@ -1,14 +1,30 @@
 const { Router } = require('express');
+const rateLimit = require('express-rate-limit');
 const ctrl = require('./auth.controller');
 const { validar } = require('../../shared/middleware/validate');
 const { autenticar } = require('../../shared/middleware/authenticate');
-const { autorizar } = require('../../shared/middleware/autorizar');
 const { esquemaRegistro, esquemaInicioSesion } = require('./auth.validation');
+
+const limiteInicioSesion = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Demasiados intentos. Intenta de nuevo en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const limiteRegistro = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Demasiados registros desde esta IP. Intenta de nuevo en 1 hora.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = Router();
 
-router.post('/register', validar(esquemaRegistro), ctrl.registrar);
-router.post('/login', validar(esquemaInicioSesion), ctrl.iniciarSesion);
+router.post('/register', limiteRegistro, validar(esquemaRegistro), ctrl.registrar);
+router.post('/login', limiteInicioSesion, validar(esquemaInicioSesion), ctrl.iniciarSesion);
 router.get('/me', autenticar, ctrl.obtenerPerfil);
 router.put('/profile', autenticar, ctrl.actualizarPerfil);
 

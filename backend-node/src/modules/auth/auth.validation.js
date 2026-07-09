@@ -3,7 +3,7 @@ const Joi = require('joi');
 const esquemaRegistro = Joi.object({
   nombre: Joi.string().max(100).required(),
   email: Joi.string().email().max(100).required(),
-  contrasena: Joi.string().min(6).max(100).required(),
+  contrasena: Joi.string().min(8).max(100).required(),
   especialidad: Joi.string().max(100).optional(),
   rol: Joi.string().valid('administrador', 'entrenador', 'instruido').default('instruido'),
   edad: Joi.when('rol', { is: 'instruido', then: Joi.number().integer().min(1).max(120).required(), otherwise: Joi.optional() }),
