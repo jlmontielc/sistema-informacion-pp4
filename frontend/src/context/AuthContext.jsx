@@ -1,18 +1,40 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const login = useCallback(async (email, password) => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    api.get('/auth/me')
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const login = useCallback(async (email, contrasena) => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
+      const response = await api.post('/auth/login', { email, contrasena });
+      const { token, refreshToken, user: userData } = response.data;
       localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
       setUser(userData);
       return userData;
     } finally {
@@ -20,12 +42,38 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    setUser(null);
+  const register = useCallback(async (datos) => {
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/register', datos);
+      const { token, refreshToken, user: userData } = response.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('refreshToken', refreshToken);
+      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      setUser(userData);
+      return userData;
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const value = useMemo(() => ({ user, loading, login, logout, isAuthenticated: !!user }), [user, loading, login, logout]);
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Silenciar errores - el logout funciona aunque el backend falle
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      delete api.defaults.headers.common.Authorization;
+      setUser(null);
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, isAuthenticated: !!user }),
+    [user, loading, login, register, logout],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

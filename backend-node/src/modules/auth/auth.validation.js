@@ -22,4 +22,16 @@ const esquemaRefrescar = Joi.object({
   refreshToken: Joi.string().required(),
 });
 
-module.exports = { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar };
+const esquemaActualizarPerfil = Joi.object({
+  nombre: Joi.string().max(100).optional(),
+  email: Joi.string().email().max(100).optional(),
+  especialidad: Joi.string().max(100).optional(),
+  contrasena: Joi.string().min(8).max(100).optional(),
+  contrasenaActual: Joi.string().when('contrasena', {
+    is: Joi.exist(),
+    then: Joi.required().messages({ 'any.required': 'Se requiere la contraseña actual para cambiar la contraseña' }),
+    otherwise: Joi.optional(),
+  }),
+}).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
+
+module.exports = { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil };

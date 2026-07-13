@@ -19,7 +19,7 @@ const generarPayload = (usuario, tipo) => ({
 const generarAccessToken = (usuario, tipo) => jwt.sign(
   generarPayload(usuario, tipo),
   config.JWT_SECRET,
-  { expiresIn: '15m' },
+  { expiresIn: config.JWT_EXPIRES_IN },
 );
 
 const generarRefreshToken = (usuario, tipo) => jwt.sign(
@@ -55,23 +55,19 @@ const iniciarSesion = async (datos) => {
     throw err;
   }
 
-  const accessToken = generarAccessToken(usuario, tipo);
+  const token = generarAccessToken(usuario, tipo);
   const refreshToken = generarRefreshToken(usuario, tipo);
-  const respuesta = {
-    accessToken,
-    refreshToken,
-    usuario: {
-      id: usuario.id,
-      nombre: usuario.nombre,
-      email: usuario.email,
-      rol: usuario.rol,
-      tipo,
-    },
+  const user = {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.email,
+    rol: usuario.rol,
+    tipo,
   };
   if (tipo === 'entrenador') {
-    respuesta.usuario.especialidad = usuario.especialidad;
+    user.especialidad = usuario.especialidad;
   }
-  return respuesta;
+  return { token, refreshToken, user };
 };
 
 const registrar = async (datos, usuarioSolicitante) => {
@@ -95,12 +91,12 @@ const registrar = async (datos, usuarioSolicitante) => {
       especialidad: datos.especialidad || null,
       rol: datos.rol,
     });
-    const accessToken = generarAccessToken(entrenador, 'entrenador');
+    const token = generarAccessToken(entrenador, 'entrenador');
     const refreshToken = generarRefreshToken(entrenador, 'entrenador');
     return {
-      accessToken,
+      token,
       refreshToken,
-      usuario: {
+      user: {
         id: entrenador.id, nombre: entrenador.nombre, email: entrenador.email,
         rol: entrenador.rol, tipo: 'entrenador', especialidad: entrenador.especialidad,
       },
@@ -114,7 +110,12 @@ const registrar = async (datos, usuarioSolicitante) => {
     throw err;
   }
 
-  const entrenadorId = usuarioSolicitante ? usuarioSolicitante.id : null;
+  if (!usuarioSolicitante) {
+    const err = new Error('Se requiere un entrenador autenticado para registrar instruidos');
+    err.status = 401;
+    throw err;
+  }
+
   const contrasenaHash = await encriptarContrasena(datos.contrasena);
   const instruido = await Instruido.create({
     nombre: datos.nombre,
@@ -127,15 +128,15 @@ const registrar = async (datos, usuarioSolicitante) => {
     nivelActividad: datos.nivelActividad,
     propositoEntrenamiento: datos.propositoEntrenamiento || null,
     diasDisponibles: datos.diasDisponibles || null,
-    entrenadorId,
+    entrenadorId: usuarioSolicitante.id,
     rol: 'instruido',
   });
-  const accessToken = generarAccessToken(instruido, 'instruido');
+  const token = generarAccessToken(instruido, 'instruido');
   const refreshToken = generarRefreshToken(instruido, 'instruido');
   return {
-    accessToken,
+    token,
     refreshToken,
-    usuario: {
+    user: {
       id: instruido.id, nombre: instruido.nombre, email: instruido.email,
       rol: instruido.rol, tipo: 'instruido',
     },
@@ -159,7 +160,7 @@ const refrescarToken = async (token) => {
   }
   const accessToken = generarAccessToken(usuario, decodificado.tipo);
   const refreshToken = generarRefreshToken(usuario, decodificado.tipo);
-  return { accessToken, refreshToken };
+  return { token: accessToken, refreshToken };
 };
 
 const obtenerPerfil = async (usuarioId, tipo) => {
@@ -193,6 +194,19 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
       err.status = 404;
       throw err;
     }
+    if (datos.contrasena) {
+      if (!datos.contrasenaActual) {
+        const err = new Error('Se requiere la contraseña actual para cambiar la contraseña');
+        err.status = 400;
+        throw err;
+      }
+      const valido = await verificarContrasena(datos.contrasenaActual, entrenador.contrasenaHash);
+      if (!valido) {
+        const err = new Error('La contraseña actual es incorrecta');
+        err.status = 401;
+        throw err;
+      }
+    }
     const datosActualizar = {};
     if (datos.nombre) datosActualizar.nombre = datos.nombre;
     if (datos.especialidad) datosActualizar.especialidad = datos.especialidad;
@@ -207,6 +221,27 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
     err.status = 404;
     throw err;
   }
+  if (datos.email && datos.email !== instruido.email) {
+    const existeEmail = await Instruido.findOne({ where: { email: datos.email } });
+    if (existeEmail) {
+      const err = new Error('El email ya está registrado');
+      err.status = 409;
+      throw err;
+    }
+  }
+  if (datos.contrasena) {
+    if (!datos.contrasenaActual) {
+      const err = new Error('Se requiere la contraseña actual para cambiar la contraseña');
+      err.status = 400;
+      throw err;
+    }
+    const valido = await verificarContrasena(datos.contrasenaActual, instruido.contrasenaHash);
+    if (!valido) {
+      const err = new Error('La contraseña actual es incorrecta');
+      err.status = 401;
+      throw err;
+    }
+  }
   const datosActualizar = {};
   if (datos.nombre) datosActualizar.nombre = datos.nombre;
   if (datos.email) datosActualizar.email = datos.email;
@@ -215,4 +250,8 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
   return Instruido.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
 };
 
-module.exports = { iniciarSesion, registrar, refrescarToken, obtenerPerfil, actualizarPerfil };
+const cerrarSesion = async () => {
+  return { message: 'Sesión cerrada correctamente' };
+};
+
+module.exports = { iniciarSesion, registrar, refrescarToken, cerrarSesion, obtenerPerfil, actualizarPerfil };

@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const ctrl = require('./auth.controller');
 const { validar } = require('../../shared/middleware/validate');
 const { autenticar } = require('../../shared/middleware/authenticate');
-const { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar } = require('./auth.validation');
+const { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil } = require('./auth.validation');
 
 const limiteInicioSesion = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -34,7 +34,8 @@ const router = Router();
 router.post('/register', limiteRegistro, validar(esquemaRegistro), ctrl.registrar);
 router.post('/login', limiteInicioSesion, validar(esquemaInicioSesion), ctrl.iniciarSesion);
 router.post('/refresh', limiteRefresh, validar(esquemaRefrescar), ctrl.refrescarToken);
+router.post('/logout', autenticar, ctrl.cerrarSesion);
 router.get('/me', autenticar, ctrl.obtenerPerfil);
-router.put('/profile', autenticar, ctrl.actualizarPerfil);
+router.put('/profile', autenticar, validar(esquemaActualizarPerfil), ctrl.actualizarPerfil);
 
 module.exports = router;

@@ -1,5 +1,7 @@
 export const ROUTES = {
   DASHBOARD: '/',
+  LOGIN: '/login',
+  REGISTER: '/register',
   CLIENTES: '/clientes',
   METABOLISMO: '/metabolismo',
   ENTRENAMIENTO: '/entrenamiento',

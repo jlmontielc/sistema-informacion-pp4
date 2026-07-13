@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const config = require('../constants');
 
+const TIPOS_VALIDOS = ['entrenador', 'instruido'];
+
 const autenticar = (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
@@ -10,10 +12,24 @@ const autenticar = (req, res, next) => {
   const token = header.split(' ')[1];
   try {
     const decodificado = jwt.verify(token, config.JWT_SECRET);
-    req.usuario = { id: decodificado.id, email: decodificado.email, nombre: decodificado.nombre, rol: decodificado.rol, tipo: decodificado.tipo };
+
+    if (!TIPOS_VALIDOS.includes(decodificado.tipo)) {
+      return res.status(401).json({ error: 'Token con tipo inválido' });
+    }
+
+    req.usuario = {
+      id: decodificado.id,
+      email: decodificado.email,
+      nombre: decodificado.nombre,
+      rol: decodificado.rol,
+      tipo: decodificado.tipo,
+    };
     next();
   } catch (err) {
-    return res.status(401).json({ error: 'Token inválido o expirado' });
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expirado' });
+    }
+    return res.status(401).json({ error: 'Token inválido' });
   }
 };
 
