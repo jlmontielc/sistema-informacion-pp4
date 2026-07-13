@@ -18,4 +18,8 @@ const esquemaInicioSesion = Joi.object({
   contrasena: Joi.string().required(),
 });
 
-module.exports = { esquemaRegistro, esquemaInicioSesion };
+const esquemaRefrescar = Joi.object({
+  refreshToken: Joi.string().required(),
+});
+
+module.exports = { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar };

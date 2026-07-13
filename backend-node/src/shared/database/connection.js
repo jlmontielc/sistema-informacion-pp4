@@ -6,6 +6,12 @@ const sequelize = new Sequelize(config.DB.NAME, config.DB.USER, config.DB.PASSWO
   port: config.DB.PORT,
   dialect: 'mysql',
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  }
 });
 
 const connectDB = async () => {

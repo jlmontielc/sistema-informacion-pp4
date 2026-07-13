@@ -18,6 +18,15 @@ const iniciarSesion = async (req, res, next) => {
   }
 };
 
+const refrescarToken = async (req, res, next) => {
+  try {
+    const resultado = await authService.refrescarToken(req.body.refreshToken);
+    res.json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const obtenerPerfil = async (req, res, next) => {
   try {
     const perfil = await authService.obtenerPerfil(req.usuario.id, req.usuario.tipo);
@@ -36,4 +45,4 @@ const actualizarPerfil = async (req, res, next) => {
   }
 };
 
-module.exports = { registrar, iniciarSesion, obtenerPerfil, actualizarPerfil };
+module.exports = { registrar, iniciarSesion, refrescarToken, obtenerPerfil, actualizarPerfil };

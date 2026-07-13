@@ -8,11 +8,30 @@ const encriptarContrasena = async (contrasena) => bcrypt.hash(contrasena, 10);
 
 const verificarContrasena = async (contrasena, hash) => bcrypt.compare(contrasena, hash);
 
-const generarToken = (usuario, tipo) => jwt.sign(
-  { id: usuario.id, email: usuario.email, nombre: usuario.nombre, rol: usuario.rol, tipo },
+const generarPayload = (usuario, tipo) => ({
+  id: usuario.id,
+  email: usuario.email,
+  nombre: usuario.nombre,
+  rol: usuario.rol,
+  tipo,
+});
+
+const generarAccessToken = (usuario, tipo) => jwt.sign(
+  generarPayload(usuario, tipo),
   config.JWT_SECRET,
-  { expiresIn: config.JWT_EXPIRES_IN },
+  { expiresIn: '15m' },
 );
+
+const generarRefreshToken = (usuario, tipo) => jwt.sign(
+  generarPayload(usuario, tipo),
+  config.JWT_SECRET,
+  { expiresIn: config.JWT_REFRESH_EXPIRES_IN },
+);
+
+const buscarUsuario = async (id, tipo) => {
+  if (tipo === 'entrenador') return Entrenador.findByPk(id);
+  return Instruido.findByPk(id);
+};
 
 const iniciarSesion = async (datos) => {
   let usuario = await Entrenador.findOne({ where: { email: datos.email } });
@@ -36,9 +55,11 @@ const iniciarSesion = async (datos) => {
     throw err;
   }
 
-  const token = generarToken(usuario, tipo);
+  const accessToken = generarAccessToken(usuario, tipo);
+  const refreshToken = generarRefreshToken(usuario, tipo);
   const respuesta = {
-    token,
+    accessToken,
+    refreshToken,
     usuario: {
       id: usuario.id,
       nombre: usuario.nombre,
@@ -74,8 +95,16 @@ const registrar = async (datos, usuarioSolicitante) => {
       especialidad: datos.especialidad || null,
       rol: datos.rol,
     });
-    const token = generarToken(entrenador, 'entrenador');
-    return { token, usuario: { id: entrenador.id, nombre: entrenador.nombre, email: entrenador.email, rol: entrenador.rol, tipo: 'entrenador', especialidad: entrenador.especialidad } };
+    const accessToken = generarAccessToken(entrenador, 'entrenador');
+    const refreshToken = generarRefreshToken(entrenador, 'entrenador');
+    return {
+      accessToken,
+      refreshToken,
+      usuario: {
+        id: entrenador.id, nombre: entrenador.nombre, email: entrenador.email,
+        rol: entrenador.rol, tipo: 'entrenador', especialidad: entrenador.especialidad,
+      },
+    };
   }
 
   const existe = await Instruido.findOne({ where: { email: datos.email } });
@@ -101,8 +130,36 @@ const registrar = async (datos, usuarioSolicitante) => {
     entrenadorId,
     rol: 'instruido',
   });
-  const token = generarToken(instruido, 'instruido');
-  return { token, usuario: { id: instruido.id, nombre: instruido.nombre, email: instruido.email, rol: instruido.rol, tipo: 'instruido' } };
+  const accessToken = generarAccessToken(instruido, 'instruido');
+  const refreshToken = generarRefreshToken(instruido, 'instruido');
+  return {
+    accessToken,
+    refreshToken,
+    usuario: {
+      id: instruido.id, nombre: instruido.nombre, email: instruido.email,
+      rol: instruido.rol, tipo: 'instruido',
+    },
+  };
+};
+
+const refrescarToken = async (token) => {
+  let decodificado;
+  try {
+    decodificado = jwt.verify(token, config.JWT_SECRET);
+  } catch (err) {
+    const error = new Error('Refresh token inválido o expirado');
+    error.status = 401;
+    throw error;
+  }
+  const usuario = await buscarUsuario(decodificado.id, decodificado.tipo);
+  if (!usuario || usuario.rol !== decodificado.rol) {
+    const err = new Error('Refresh token inválido');
+    err.status = 401;
+    throw err;
+  }
+  const accessToken = generarAccessToken(usuario, decodificado.tipo);
+  const refreshToken = generarRefreshToken(usuario, decodificado.tipo);
+  return { accessToken, refreshToken };
 };
 
 const obtenerPerfil = async (usuarioId, tipo) => {
@@ -158,4 +215,4 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
   return Instruido.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
 };
 
-module.exports = { iniciarSesion, registrar, obtenerPerfil, actualizarPerfil };
+module.exports = { iniciarSesion, registrar, refrescarToken, obtenerPerfil, actualizarPerfil };

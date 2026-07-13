@@ -1,0 +1,39 @@
+@import './styles/variables.css';
+@import './styles/reset.css';
+@import './styles/layout.css';
+@import './styles/components.css';
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: var(--line-height-normal);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
