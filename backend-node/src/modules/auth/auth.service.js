@@ -110,12 +110,6 @@ const registrar = async (datos, usuarioSolicitante) => {
     throw err;
   }
 
-  if (!usuarioSolicitante) {
-    const err = new Error('Se requiere un entrenador autenticado para registrar instruidos');
-    err.status = 401;
-    throw err;
-  }
-
   const contrasenaHash = await encriptarContrasena(datos.contrasena);
   const instruido = await Instruido.create({
     nombre: datos.nombre,
@@ -128,7 +122,7 @@ const registrar = async (datos, usuarioSolicitante) => {
     nivelActividad: datos.nivelActividad,
     propositoEntrenamiento: datos.propositoEntrenamiento || null,
     diasDisponibles: datos.diasDisponibles || null,
-    entrenadorId: usuarioSolicitante.id,
+    entrenadorId: usuarioSolicitante ? usuarioSolicitante.id : null,
     rol: 'instruido',
   });
   const token = generarAccessToken(instruido, 'instruido');

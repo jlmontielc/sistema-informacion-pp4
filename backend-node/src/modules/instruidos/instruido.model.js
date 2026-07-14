@@ -18,7 +18,7 @@ const Instruido = sequelize.define('Instruido', {
   diasDisponibles: { type: DataTypes.INTEGER, field: 'dias_disponibles' },
   fechaRegistro: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW, field: 'fecha_registro' },
   activo: { type: DataTypes.BOOLEAN, defaultValue: true },
-  entrenadorId: { type: DataTypes.INTEGER, allowNull: false, field: 'entrenador_id' },
+  entrenadorId: { type: DataTypes.INTEGER, allowNull: true, field: 'entrenador_id' },
   rol: { type: DataTypes.STRING(20), defaultValue: 'instruido' },
 }, {
   underscored: true,
