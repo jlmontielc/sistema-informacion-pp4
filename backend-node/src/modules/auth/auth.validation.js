@@ -11,6 +11,7 @@ const esquemaRegistro = Joi.object({
   altura: Joi.when('rol', { is: 'instruido', then: Joi.number().positive().required(), otherwise: Joi.optional() }),
   sexo: Joi.when('rol', { is: 'instruido', then: Joi.string().valid('masculino', 'femenino').required(), otherwise: Joi.optional() }),
   nivelActividad: Joi.when('rol', { is: 'instruido', then: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').required(), otherwise: Joi.optional() }),
+  entrenadorId: Joi.number().integer().positive().optional(),
 });
 
 const esquemaInicioSesion = Joi.object({
@@ -34,4 +35,17 @@ const esquemaActualizarPerfil = Joi.object({
   }),
 }).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
 
-module.exports = { esquemaRegistro, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil };
+const esquemaRegistroInstruido = Joi.object({
+  nombre: Joi.string().max(100).required(),
+  email: Joi.string().email().max(100).required(),
+  contrasena: Joi.string().min(8).max(100).required(),
+  edad: Joi.number().integer().min(1).max(120).required(),
+  peso: Joi.number().positive().required(),
+  altura: Joi.number().positive().required(),
+  sexo: Joi.string().valid('masculino', 'femenino').required(),
+  nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').required(),
+  propositoEntrenamiento: Joi.string().optional(),
+  diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
+});
+
+module.exports = { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil };

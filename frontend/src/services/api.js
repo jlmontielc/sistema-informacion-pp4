@@ -61,13 +61,13 @@ api.interceptors.response.use(
           { refreshToken }
         );
 
-        localStorage.setItem('token', data.token);
+        localStorage.setItem('token', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
 
-        api.defaults.headers.common.Authorization = `Bearer ${data.token}`;
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
 
-        processQueue(null, data.token);
+        processQueue(null, data.accessToken);
 
         return api(originalRequest);
       } catch (refreshError) {

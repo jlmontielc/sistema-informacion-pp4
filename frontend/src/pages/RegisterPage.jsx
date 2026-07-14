@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -19,7 +19,6 @@ const OPCIONES_NIVEL = [
 ];
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
   const { register, loading } = useAuth();
   const [error, setError] = useState('');
   const [form, setForm] = useState({
@@ -27,7 +26,6 @@ export default function RegisterPage() {
     email: '',
     contrasena: '',
     confirmarContrasena: '',
-    rol: 'instruido',
     edad: '',
     peso: '',
     altura: '',
@@ -49,11 +47,9 @@ export default function RegisterPage() {
       return;
     }
 
-    if (form.rol === 'instruido') {
-      if (!form.edad || !form.peso || !form.altura || !form.sexo || !form.nivelActividad) {
-        setError('Completa todos los campos obligatorios para instruido');
-        return;
-      }
+    if (!form.edad || !form.peso || !form.altura || !form.sexo || !form.nivelActividad) {
+      setError('Completa todos los campos obligatorios');
+      return;
     }
 
     try {
@@ -61,19 +57,14 @@ export default function RegisterPage() {
         nombre: form.nombre,
         email: form.email,
         contrasena: form.contrasena,
-        rol: form.rol,
+        edad: parseInt(form.edad, 10),
+        peso: parseFloat(form.peso),
+        altura: parseFloat(form.altura),
+        sexo: form.sexo,
+        nivelActividad: form.nivelActividad,
       };
 
-      if (form.rol === 'instruido') {
-        datosEnvio.edad = parseInt(form.edad, 10);
-        datosEnvio.peso = parseFloat(form.peso);
-        datosEnvio.altura = parseFloat(form.altura);
-        datosEnvio.sexo = form.sexo;
-        datosEnvio.nivelActividad = form.nivelActividad;
-      }
-
       await register(datosEnvio);
-      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrarse');
     }
@@ -149,91 +140,73 @@ export default function RegisterPage() {
               required
             />
 
-            <div className="field">
-              <label className="field-label" htmlFor="rol">Tipo de cuenta</label>
-              <select
-                id="rol"
-                name="rol"
-                className="field-input"
-                value={form.rol}
+            <Input
+              label="Edad"
+              name="edad"
+              type="number"
+              min={1}
+              max={120}
+              placeholder="25"
+              value={form.edad}
+              onChange={handleChange}
+              required
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+              <Input
+                label="Peso (kg)"
+                name="peso"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="70.5"
+                value={form.peso}
                 onChange={handleChange}
+                required
+              />
+              <Input
+                label="Altura (m)"
+                name="altura"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="1.75"
+                value={form.altura}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="sexo">Sexo</label>
+              <select
+                id="sexo"
+                name="sexo"
+                className="field-input"
+                value={form.sexo}
+                onChange={handleChange}
+                required
               >
-                <option value="instruido">Instruido (Cliente)</option>
-                <option value="entrenador">Entrenador</option>
+                <option value="">Seleccionar...</option>
+                {OPCIONES_SEXO.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
-
-            {form.rol === 'instruido' && (
-              <>
-                <Input
-                  label="Edad"
-                  name="edad"
-                  type="number"
-                  min={1}
-                  max={120}
-                  placeholder="25"
-                  value={form.edad}
-                  onChange={handleChange}
-                  required
-                />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                  <Input
-                    label="Peso (kg)"
-                    name="peso"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="70.5"
-                    value={form.peso}
-                    onChange={handleChange}
-                    required
-                  />
-                  <Input
-                    label="Altura (m)"
-                    name="altura"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="1.75"
-                    value={form.altura}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label className="field-label" htmlFor="sexo">Sexo</label>
-                  <select
-                    id="sexo"
-                    name="sexo"
-                    className="field-input"
-                    value={form.sexo}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Seleccionar...</option>
-                    {OPCIONES_SEXO.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="field">
-                  <label className="field-label" htmlFor="nivelActividad">Nivel de actividad</label>
-                  <select
-                    id="nivelActividad"
-                    name="nivelActividad"
-                    className="field-input"
-                    value={form.nivelActividad}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Seleccionar...</option>
-                    {OPCIONES_NIVEL.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
+            <div className="field">
+              <label className="field-label" htmlFor="nivelActividad">Nivel de actividad</label>
+              <select
+                id="nivelActividad"
+                name="nivelActividad"
+                className="field-input"
+                value={form.nivelActividad}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccionar...</option>
+                {OPCIONES_NIVEL.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
 
             <Button type="submit" loading={loading} style={{ marginTop: 'var(--space-2)' }}>
               Crear Cuenta

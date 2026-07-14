@@ -11,6 +11,7 @@ const metabolismoRoutes = require('./modules/metabolismo/metabolismo.routes');
 const entrenamientoRoutes = require('./modules/entrenamiento/entrenamiento.routes');
 const dietasRoutes = require('./modules/dietas/dietas.routes');
 const reportesRoutes = require('./modules/reportes/reportes.routes');
+const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/metabolismo', metabolismoRoutes);
 app.use('/api/entrenamiento', entrenamientoRoutes);
 app.use('/api/dietas', dietasRoutes);
 app.use('/api/reportes', reportesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use(manejadorErrores);
 

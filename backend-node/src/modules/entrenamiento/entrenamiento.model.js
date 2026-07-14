@@ -2,12 +2,17 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../shared/database/connection');
 
 const Ejercicio = sequelize.define('Ejercicio', {
-  nombre: { type: DataTypes.STRING(100), allowNull: false },
+  nombre: { type: DataTypes.STRING(150), allowNull: false },
   descripcion: DataTypes.TEXT,
+  instruccionesEs: { type: DataTypes.TEXT, field: 'instrucciones_es' },
   grupoMuscular: { type: DataTypes.STRING(50), field: 'grupo_muscular' },
+  target: { type: DataTypes.STRING(100) },
   equipoNecesario: { type: DataTypes.STRING(100), field: 'equipo_necesario' },
-  dificultad: { type: DataTypes.ENUM('principiante', 'intermedio', 'avanzado'), defaultValue: 'principiante' },
+  dificultad: { type: DataTypes.ENUM('principiante', 'intermedio', 'avanzado'), allowNull: true, defaultValue: null },
+  musculosSecundarios: { type: DataTypes.JSON, field: 'musculos_secundarios' },
   contraindicaLesiones: { type: DataTypes.TEXT, field: 'contraindica_lesiones' },
+  imagenUrl: { type: DataTypes.STRING(255), field: 'imagen_url' },
+  gifUrl: { type: DataTypes.STRING(255), field: 'gif_url' },
 }, {
   underscored: true,
   tableName: 'ejercicios',
@@ -22,6 +27,7 @@ const PlantillaEntrenamiento = sequelize.define('PlantillaEntrenamiento', {
     allowNull: false,
   },
   ejercicios: { type: DataTypes.JSON, allowNull: false },
+  diasSemana: { type: DataTypes.JSON, field: 'dias_semana' },
   frecuenciaSemanal: { type: DataTypes.INTEGER, field: 'frecuencia_semanal' },
   duracionSemanas: { type: DataTypes.INTEGER, field: 'duracion_semanas' },
   objetivo: { type: DataTypes.ENUM('perdida_peso', 'ganancia_muscular', 'mantenimiento', 'rendimiento', 'rehabilitacion') },
@@ -42,6 +48,7 @@ const RutinaAsignada = sequelize.define('RutinaAsignada', {
     allowNull: false,
   },
   ejercicios: { type: DataTypes.JSON, allowNull: false },
+  diasSemana: { type: DataTypes.JSON, field: 'dias_semana' },
   frecuenciaSemanal: { type: DataTypes.INTEGER, field: 'frecuencia_semanal' },
   duracionSemanas: { type: DataTypes.INTEGER, field: 'duracion_semanas' },
   observaciones: DataTypes.TEXT,

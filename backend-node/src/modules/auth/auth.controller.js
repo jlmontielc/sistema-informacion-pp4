@@ -47,11 +47,20 @@ const actualizarPerfil = async (req, res, next) => {
 
 const cerrarSesion = async (req, res, next) => {
   try {
-    const resultado = await authService.cerrarSesion();
+    const resultado = await authService.cerrarSesion(req.token, req.body.refreshToken);
     res.json(resultado);
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { registrar, iniciarSesion, refrescarToken, cerrarSesion, obtenerPerfil, actualizarPerfil };
+const registrarInstruido = async (req, res, next) => {
+  try {
+    const resultado = await authService.registrar({ ...req.body, rol: 'instruido' }, null);
+    res.status(201).json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { registrar, registrarInstruido, iniciarSesion, refrescarToken, cerrarSesion, obtenerPerfil, actualizarPerfil };
