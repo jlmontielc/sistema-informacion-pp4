@@ -4,9 +4,14 @@ const { Op } = require('sequelize');
 const obtenerTodos = async (filtros = {}) => {
   const where = {};
   if (filtros.grupoMuscular) where.grupoMuscular = filtros.grupoMuscular;
+  if (filtros.target) where.target = filtros.target;
+  if (filtros.equipoNecesario) where.equipoNecesario = filtros.equipoNecesario;
   if (filtros.dificultad) where.dificultad = filtros.dificultad;
   if (filtros.busqueda) {
-    where.nombre = { [Op.like]: `%${filtros.busqueda}%` };
+    where[Op.or] = [
+      { nombre: { [Op.like]: `%${filtros.busqueda}%` } },
+      { instruccionesEs: { [Op.like]: `%${filtros.busqueda}%` } },
+    ];
   }
   return Ejercicio.findAll({ where, order: [['nombre', 'ASC']] });
 };

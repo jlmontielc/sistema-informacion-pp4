@@ -3,8 +3,8 @@ const { sequelize } = require('../../shared/database/connection');
 
 const Instruido = sequelize.define('Instruido', {
   nombre: { type: DataTypes.STRING(100), allowNull: false },
-  email: { type: DataTypes.STRING(100), unique: true },
-  contrasenaHash: { type: DataTypes.STRING(255), field: 'password_hash' },
+  email: { type: DataTypes.STRING(100), allowNull: false, unique: true },
+  contrasenaHash: { type: DataTypes.STRING(255), allowNull: false, field: 'password_hash' },
   edad: { type: DataTypes.INTEGER, allowNull: false },
   peso: { type: DataTypes.DECIMAL(5, 2), allowNull: false },
   altura: { type: DataTypes.DECIMAL(5, 2), allowNull: false },

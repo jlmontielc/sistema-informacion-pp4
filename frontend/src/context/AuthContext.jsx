@@ -31,10 +31,10 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const response = await api.post('/auth/login', { email, contrasena });
-      const { token, refreshToken, user: userData } = response.data;
-      localStorage.setItem('token', token);
+      const { accessToken, refreshToken, user: userData } = response.data;
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       setUser(userData);
       return userData;
     } finally {
@@ -45,11 +45,11 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (datos) => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/register', datos);
-      const { token, refreshToken, user: userData } = response.data;
-      localStorage.setItem('token', token);
+      const response = await api.post('/auth/register/instruido', datos);
+      const { accessToken, refreshToken, user: userData } = response.data;
+      localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
-      api.defaults.headers.common.Authorization = `Bearer ${token}`;
+      api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
       setUser(userData);
       return userData;
     } finally {

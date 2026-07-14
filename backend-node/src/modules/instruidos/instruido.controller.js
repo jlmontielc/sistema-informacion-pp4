@@ -2,7 +2,7 @@ const instruidoService = require('./instruido.service');
 
 const obtenerTodos = async (req, res, next) => {
   try {
-    const instruidos = await instruidoService.obtenerTodos(req.usuario.id);
+    const instruidos = await instruidoService.obtenerTodos(req.usuario.id, req.usuario.rol);
     res.json(instruidos);
   } catch (err) {
     next(err);
@@ -11,7 +11,7 @@ const obtenerTodos = async (req, res, next) => {
 
 const obtenerPorId = async (req, res, next) => {
   try {
-    const instruido = await instruidoService.obtenerPorId(req.params.id, req.usuario.id);
+    const instruido = await instruidoService.obtenerPorId(req.params.id, req.usuario.id, req.usuario.rol);
     if (!instruido) return res.status(404).json({ error: 'Instruido no encontrado' });
     res.json(instruido);
   } catch (err) {
@@ -30,7 +30,7 @@ const crear = async (req, res, next) => {
 
 const actualizar = async (req, res, next) => {
   try {
-    const instruido = await instruidoService.actualizar(req.params.id, req.body, req.usuario.id);
+    const instruido = await instruidoService.actualizar(req.params.id, req.body, req.usuario.id, req.usuario.rol);
     if (!instruido) return res.status(404).json({ error: 'Instruido no encontrado' });
     res.json(instruido);
   } catch (err) {
@@ -40,7 +40,7 @@ const actualizar = async (req, res, next) => {
 
 const eliminar = async (req, res, next) => {
   try {
-    await instruidoService.eliminar(req.params.id, req.usuario.id);
+    await instruidoService.eliminar(req.params.id, req.usuario.id, req.usuario.rol);
     res.status(204).end();
   } catch (err) {
     next(err);

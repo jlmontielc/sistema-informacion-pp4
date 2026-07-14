@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../constants');
+const blacklist = require('../utils/blacklist');
 
 const TIPOS_VALIDOS = ['entrenador', 'instruido'];
 
@@ -10,6 +11,10 @@ const autenticar = (req, res, next) => {
   }
 
   const token = header.split(' ')[1];
+  if (blacklist.estaInvalidado(token)) {
+    return res.status(401).json({ error: 'Token invalidado' });
+  }
+
   try {
     const decodificado = jwt.verify(token, config.JWT_SECRET);
 
@@ -17,6 +22,7 @@ const autenticar = (req, res, next) => {
       return res.status(401).json({ error: 'Token con tipo inválido' });
     }
 
+    req.token = token;
     req.usuario = {
       id: decodificado.id,
       email: decodificado.email,

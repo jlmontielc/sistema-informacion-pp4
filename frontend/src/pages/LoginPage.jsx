@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
 
 export default function LoginPage() {
-  const navigate = useNavigate();
   const { login, loading } = useAuth();
   const [form, setForm] = useState({ email: '', contrasena: '' });
   const [error, setError] = useState('');
@@ -21,7 +20,6 @@ export default function LoginPage() {
     setError('');
     try {
       await login(form.email, form.contrasena);
-      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     }

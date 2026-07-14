@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { Entrenador } = require('./entrenador.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const config = require('../../shared/constants');
+const blacklist = require('../../shared/utils/blacklist');
 
 const encriptarContrasena = async (contrasena) => bcrypt.hash(contrasena, 10);
 
@@ -55,7 +56,7 @@ const iniciarSesion = async (datos) => {
     throw err;
   }
 
-  const token = generarAccessToken(usuario, tipo);
+  const accessToken = generarAccessToken(usuario, tipo);
   const refreshToken = generarRefreshToken(usuario, tipo);
   const user = {
     id: usuario.id,
@@ -67,12 +68,12 @@ const iniciarSesion = async (datos) => {
   if (tipo === 'entrenador') {
     user.especialidad = usuario.especialidad;
   }
-  return { token, refreshToken, user };
+  return { accessToken, refreshToken, user };
 };
 
 const registrar = async (datos, usuarioSolicitante) => {
   if (datos.rol === 'administrador' || datos.rol === 'entrenador') {
-    if (!usuarioSolicitante || usuarioSolicitante.rol !== 'administrador') {
+    if (usuarioSolicitante.rol !== 'administrador') {
       const err = new Error('Solo un administrador puede crear administradores o entrenadores');
       err.status = 403;
       throw err;
@@ -91,10 +92,10 @@ const registrar = async (datos, usuarioSolicitante) => {
       especialidad: datos.especialidad || null,
       rol: datos.rol,
     });
-    const token = generarAccessToken(entrenador, 'entrenador');
+    const accessToken = generarAccessToken(entrenador, 'entrenador');
     const refreshToken = generarRefreshToken(entrenador, 'entrenador');
     return {
-      token,
+      accessToken,
       refreshToken,
       user: {
         id: entrenador.id, nombre: entrenador.nombre, email: entrenador.email,
@@ -122,13 +123,15 @@ const registrar = async (datos, usuarioSolicitante) => {
     nivelActividad: datos.nivelActividad,
     propositoEntrenamiento: datos.propositoEntrenamiento || null,
     diasDisponibles: datos.diasDisponibles || null,
-    entrenadorId: usuarioSolicitante ? usuarioSolicitante.id : null,
+    entrenadorId: !usuarioSolicitante ? null
+      : usuarioSolicitante.rol === 'entrenador' ? usuarioSolicitante.id
+      : (datos.entrenadorId || null),
     rol: 'instruido',
   });
-  const token = generarAccessToken(instruido, 'instruido');
+  const accessToken = generarAccessToken(instruido, 'instruido');
   const refreshToken = generarRefreshToken(instruido, 'instruido');
   return {
-    token,
+    accessToken,
     refreshToken,
     user: {
       id: instruido.id, nombre: instruido.nombre, email: instruido.email,
@@ -154,7 +157,7 @@ const refrescarToken = async (token) => {
   }
   const accessToken = generarAccessToken(usuario, decodificado.tipo);
   const refreshToken = generarRefreshToken(usuario, decodificado.tipo);
-  return { token: accessToken, refreshToken };
+  return { accessToken, refreshToken };
 };
 
 const obtenerPerfil = async (usuarioId, tipo) => {
@@ -244,7 +247,9 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
   return Instruido.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
 };
 
-const cerrarSesion = async () => {
+const cerrarSesion = async (token, refreshToken) => {
+  if (token) blacklist.agregar(token);
+  if (refreshToken) blacklist.agregar(refreshToken);
   return { message: 'Sesión cerrada correctamente' };
 };
 
