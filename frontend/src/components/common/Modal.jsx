@@ -34,7 +34,14 @@ const modalStyles = {
   },
 };
 
-export function Modal({ isOpen, onClose, title, children }) {
+const SIZES = {
+  sm: 480,
+  md: 520,
+  lg: 720,
+  xl: 900,
+};
+
+export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -54,7 +61,7 @@ export function Modal({ isOpen, onClose, title, children }) {
 
   return createPortal(
     <div style={modalStyles.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={modalStyles.content} role="dialog" aria-modal="true" aria-label={title}>
+      <div style={{ ...modalStyles.content, maxWidth: SIZES[size] || SIZES.md }} role="dialog" aria-modal="true" aria-label={title}>
         <div style={modalStyles.header}>
           <h3>{title}</h3>
           <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Cerrar">
