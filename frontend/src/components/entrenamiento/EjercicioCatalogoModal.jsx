@@ -215,7 +215,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
   }, []);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Catálogo de Ejercicios" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Catálogo de Ejercicios" size="xl">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         <div className="filtros-bar">
           <input
@@ -287,19 +287,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
             </div>
           )}
 
-          <div style={{
-            width: 320,
-            minHeight: 350,
-            background: 'var(--color-neutral-50)',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--color-border)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}>
+          <div className="catalogo-sidebar">
             {preview ? (
               <>
                 {getPreviewUrl(preview) ? (
@@ -307,68 +295,27 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                     src={getPreviewUrl(preview)}
                     alt={preview.nombreTraducido}
                     loading="lazy"
-                    style={{
-                      width: '100%',
-                      height: 240,
-                      objectFit: 'contain',
-                      background: '#000',
-                    }}
+                    className="catalogo-sidebar-img"
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 ) : (
-                  <div style={{
-                    width: '100%',
-                    height: 240,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'var(--color-neutral-100)',
-                    color: 'var(--color-text-secondary)',
-                  }}>
+                  <div className="catalogo-sidebar-no-img">
                     <span style={{ fontSize: 48 }}>{GRUPO_EMOJI[preview.grupoMuscular] || '🏋️'}</span>
                     <span style={{ fontSize: 'var(--text-xs)', marginTop: 'var(--space-2)' }}>Sin imagen</span>
                   </div>
                 )}
-                <div style={{ padding: 'var(--space-3)', width: '100%' }}>
-                  <p style={{
-                    fontWeight: 'var(--font-semibold)',
-                    fontSize: 'var(--text-sm)',
-                    margin: 0,
-                    textAlign: 'center',
-                  }}>
-                    {preview.nombreTraducido}
-                  </p>
+                <div className="catalogo-sidebar-info">
+                  <p className="catalogo-sidebar-name">{preview.nombreTraducido}</p>
                   {preview.targetTraducido && (
-                    <p style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--color-text-secondary)',
-                      textAlign: 'center',
-                      margin: 'var(--space-1) 0 0',
-                    }}>
-                      {preview.targetTraducido}
-                    </p>
+                    <p className="catalogo-sidebar-target">{preview.targetTraducido}</p>
                   )}
                   {preview.instruccionesEs && (
-                    <p style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--color-text-secondary)',
-                      marginTop: 'var(--space-2)',
-                      lineHeight: 'var(--line-height-relaxed)',
-                      maxHeight: 80,
-                      overflowY: 'auto',
-                    }}>
-                      {preview.instruccionesEs}
-                    </p>
+                    <p className="catalogo-sidebar-instr">{preview.instruccionesEs}</p>
                   )}
                 </div>
               </>
             ) : (
-              <div style={{
-                textAlign: 'center',
-                color: 'var(--color-text-secondary)',
-                padding: 'var(--space-4)',
-              }}>
+              <div className="catalogo-sidebar-empty">
                 <span style={{ fontSize: 48, opacity: 0.3 }}>🏋️</span>
                 <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
                   Pasa el mouse sobre un ejercicio para ver su GIF
