@@ -3,6 +3,7 @@ import { Modal } from '../common/Modal';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
+import { EmptyState } from '../common/EmptyState';
 import { DiaSelector, obtenerNombreDia } from './DiaSelector';
 import { EjercicioCard } from './EjercicioCard';
 import { EjercicioCatalogoModal } from './EjercicioCatalogoModal';
@@ -40,8 +41,6 @@ const EXERCISE_NAME_MAP = {
   'squat jump': 'Sentadilla con salto', 'tuck jump': 'Salto recogido',
   'box jump': 'Salto a caja', 'depth jump': 'Salto desde altura',
   'broad jump': 'Salto largo', 'vertical jump': 'Salto vertical',
-  'broad jump': 'Salto largo', 'depth jump': 'Salto desde altura',
-  'vertical jump': 'Salto vertical', 'broad jump': 'Salto largo',
 };
 
 function traducirNombre(nombre) {
@@ -63,6 +62,11 @@ const TIPOS = [
   { value: 'funcional', label: 'Funcional' },
   { value: 'flexibilidad', label: 'Flexibilidad' },
 ];
+
+const TIPO_LABELS = {
+  fuerza: 'Fuerza', hipertrofia: 'Hipertrofia', resistencia: 'Resistencia',
+  cardio: 'Cardio', funcional: 'Funcional', flexibilidad: 'Flexibilidad',
+};
 
 const OBJETIVOS = [
   { value: 'perdida_peso', label: 'Perdida de peso' },
@@ -97,6 +101,9 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [paso, setPaso] = useState(1);
+  const [plantillasExistentes, setPlantillasExistentes] = useState([]);
+  const [cargandoPlantillas, setCargandoPlantillas] = useState(false);
+  const [plantillaEditandoId, setPlantillaEditandoId] = useState(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -121,14 +128,61 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         });
       }
       setEjerciciosPorDia(agrupados);
+      setPlantillaEditandoId(plantilla.id);
     } else {
       setForm(defaultForm);
       setEjerciciosPorDia({});
+      setPlantillaEditandoId(null);
     }
     setDiaActivo(null);
     setPaso(1);
     setError(null);
   }, [isOpen, plantilla]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setCargandoPlantillas(true);
+    plantillasApi.listar()
+      .then((res) => setPlantillasExistentes(res.data?.plantillas || res.data || []))
+      .catch(() => setPlantillasExistentes([]))
+      .finally(() => setCargandoPlantillas(false));
+  }, [isOpen]);
+
+  const cargarPlantilla = (p) => {
+    setForm({
+      nombre: p.nombre || '',
+      descripcion: p.descripcion || '',
+      tipo: p.tipo || 'hipertrofia',
+      objetivo: p.objetivo || '',
+      nivelDificultad: p.nivelDificultad || '',
+      diasSemana: p.diasSemana
+        ? Object.keys(p.diasSemana).map(Number)
+        : [],
+      frecuenciaSemanal: p.frecuenciaSemanal || 3,
+      duracionSemanas: p.duracionSemanas || 8,
+    });
+    const agrupados = {};
+    if (p.ejercicios) {
+      p.ejercicios.forEach((ej) => {
+        if (!agrupados[ej.dia]) agrupados[ej.dia] = [];
+        agrupados[ej.dia].push({ ...ej });
+      });
+    }
+    setEjerciciosPorDia(agrupados);
+    setPlantillaEditandoId(p.id);
+    setDiaActivo(null);
+    setPaso(1);
+    setError(null);
+  };
+
+  const handleNuevaPlantilla = () => {
+    setForm(defaultForm);
+    setEjerciciosPorDia({});
+    setPlantillaEditandoId(null);
+    setDiaActivo(null);
+    setPaso(1);
+    setError(null);
+  };
 
   const handleChange = (campo, valor) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
@@ -226,8 +280,8 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
     };
 
     try {
-      if (plantilla?.id) {
-        await plantillasApi.actualizar(plantilla.id, payload);
+      if (plantillaEditandoId) {
+        await plantillasApi.actualizar(plantillaEditandoId, payload);
       } else {
         await plantillasApi.crear(payload);
       }
@@ -246,7 +300,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={plantilla ? 'Editar Plantilla' : 'Crear Plantilla'}
+      title={plantillaEditandoId ? 'Editar Plantilla' : 'Crear Plantilla'}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {error && (
@@ -276,6 +330,13 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             disabled={form.diasSemana.length === 0}
           >
             2. Ejercicios
+          </button>
+          <button
+            type="button"
+            className={`tab-button ${paso === 3 ? 'active' : ''}`}
+            onClick={() => setPaso(3)}
+          >
+            Mis Plantillas ({plantillasExistentes.length})
           </button>
         </div>
 
@@ -455,9 +516,103 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
               <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
               <Button onClick={handleGuardar} loading={saving}>
-                {plantilla ? 'Guardar Cambios' : 'Crear Plantilla'}
+                {plantillaEditandoId ? 'Guardar Cambios' : 'Crear Plantilla'}
               </Button>
             </div>
+          </div>
+        )}
+
+        {paso === 3 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                Selecciona una plantilla para editarla o crea una nueva
+              </p>
+              <Button onClick={handleNuevaPlantilla} size="sm">
+                + Nueva Plantilla
+              </Button>
+            </div>
+
+            {cargandoPlantillas ? (
+              <Loading text="Cargando plantillas..." />
+            ) : plantillasExistentes.length === 0 ? (
+              <div style={{
+                padding: 'var(--space-8)',
+                textAlign: 'center',
+                color: 'var(--color-text-secondary)',
+              }}>
+                <p style={{ fontSize: 48, margin: 0 }}>📋</p>
+                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
+                  Sin plantillas creadas
+                </p>
+                <p style={{ fontSize: 'var(--text-sm)' }}>
+                  Crea tu primera plantilla en el paso 1
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: 400, overflowY: 'auto' }}>
+                {plantillasExistentes.map((p) => {
+                  const diasNombres = p.diasSemana
+                    ? Object.keys(p.diasSemana).map(Number).map(obtenerNombreDia).join(', ')
+                    : 'Sin dias';
+                  const totalEjs = (p.ejercicios || []).length;
+                  const estaSiendoEditada = plantillaEditandoId === p.id;
+
+                  return (
+                    <div
+                      key={p.id}
+                      style={{
+                        padding: 'var(--space-4)',
+                        background: estaSiendoEditada ? 'var(--color-primary-50)' : 'var(--color-bg-card)',
+                        border: `1px solid ${estaSiendoEditada ? 'var(--color-primary-500)' : 'var(--color-border)'}`,
+                        borderRadius: 'var(--radius-lg)',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                            <h4 style={{ margin: 0, fontSize: 'var(--text-base)' }}>{p.nombre}</h4>
+                            <span className={`rutina-tipo-badge ${p.tipo}`}>
+                              {TIPO_LABELS[p.tipo] || p.tipo}
+                            </span>
+                            {estaSiendoEditada && (
+                              <span style={{
+                                fontSize: 'var(--text-xs)',
+                                color: 'var(--color-primary-600)',
+                                fontWeight: 'var(--font-medium)',
+                              }}>
+                                (Editando)
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                            <span>📅 {diasNombres}</span>
+                            <span>🏋️ {totalEjs} ejercicio{totalEjs !== 1 ? 's' : ''}</span>
+                            {p.frecuenciaSemanal && <span>🔄 {p.frecuenciaSemanal}x/semana</span>}
+                            {p.duracionSemanas && <span>⏱ {p.duracionSemanas} semanas</span>}
+                          </div>
+                          {p.descripcion && (
+                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)', margin: 'var(--space-2) 0 0' }}>
+                              {p.descripcion}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => {
+                            cargarPlantilla(p);
+                            setPaso(1);
+                          }}
+                        >
+                          {estaSiendoEditada ? 'Editar' : 'Cargar'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
