@@ -60,5 +60,3 @@ export function obtenerDiaActual() {
   const jsDay = new Date().getDay();
   return jsDay === 0 ? 7 : jsDay;
 }
-
-export default DiaSelector;
