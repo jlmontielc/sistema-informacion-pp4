@@ -4,8 +4,6 @@ const { sequelize, connectDB } = require('./shared/database/connection');
 const { Entrenador } = require('./modules/auth/entrenador.model');
 const config = require('./shared/constants');
 
-require('./shared/database/associations');
-
 const ADMIN_EMAIL = 'admin@sistema.com';
 const ADMIN_PASSWORD = 'Admin123!';
 
