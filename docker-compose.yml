@@ -13,8 +13,6 @@ services:
     env_file: ./backend-node/.env
     environment:
       - FLASK_IA_URL=http://backend-flask:5000
-    depends_on:
-      - backend-flask
     restart: unless-stopped
 
   frontend:
