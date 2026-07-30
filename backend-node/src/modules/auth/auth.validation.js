@@ -33,13 +33,13 @@ const esquemaActualizarPerfil = Joi.object({
     then: Joi.required().messages({ 'any.required': 'Se requiere la contraseña actual para cambiar la contraseña' }),
     otherwise: Joi.optional(),
   }),
-  edad: Joi.number().integer().min(1).max(120).optional().allow(''),
-  peso: Joi.number().positive().optional().allow(''),
-  altura: Joi.number().positive().optional().allow(''),
+  edad: Joi.number().integer().min(1).max(120).optional(),
+  peso: Joi.number().positive().optional(),
+  altura: Joi.number().positive().optional(),
   sexo: Joi.string().valid('masculino', 'femenino').optional().allow(''),
   nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').optional().allow(''),
   propositoEntrenamiento: Joi.string().optional().allow(''),
-  diasDisponibles: Joi.number().integer().min(1).max(7).optional().allow(''),
+  diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
 }).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
 
 const esquemaCertificacion = Joi.object({
