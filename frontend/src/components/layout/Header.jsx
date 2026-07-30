@@ -33,6 +33,16 @@ export function Header() {
 
       <button
         className="btn btn-ghost btn-md"
+        onClick={() => navigate('/perfil')}
+        aria-label="Mi perfil"
+        title="Mi perfil"
+        style={{ marginLeft: 'var(--space-2)' }}
+      >
+        👤
+      </button>
+
+      <button
+        className="btn btn-ghost btn-md"
         onClick={handleLogout}
         aria-label="Cerrar sesión"
         title="Cerrar sesión"

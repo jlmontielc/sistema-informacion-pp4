@@ -1,6 +1,14 @@
+import { useAuth } from '../context/AuthContext';
+import { PerfilEntrenador } from '../components/profile/PerfilEntrenador';
 import { EmptyState } from '../components/common/EmptyState';
 
 export default function ClientesPage() {
+  const { user } = useAuth();
+
+  if (user?.tipo === 'instruido') {
+    return <PerfilEntrenador />;
+  }
+
   return (
     <div>
       <h1>Clientes</h1>

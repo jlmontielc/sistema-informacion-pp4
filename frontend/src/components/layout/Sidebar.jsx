@@ -1,18 +1,23 @@
 import { NavLink } from 'react-router-dom';
 import { useUI } from '../../context/UIContext';
-import { SIDEBAR_ITEMS, APP_SHORT_NAME } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
+import { getSidebarItems, APP_SHORT_NAME } from '../../utils/constants';
 
 const iconMap = {
   dashboard: '📊',
   clientes: '👥',
+  entrenador: '👨‍🏫',
   metabolismo: '⚡',
   entrenamiento: '🏋️',
   dietas: '🥗',
   reportes: '📈',
+  perfil: '👤',
 };
 
 export function Sidebar() {
   const { sidebarOpen } = useUI();
+  const { user } = useAuth();
+  const items = getSidebarItems(user);
 
   return (
     <aside className={`app-sidebar ${!sidebarOpen ? 'collapsed' : ''}`}>
@@ -38,7 +43,7 @@ export function Sidebar() {
       </div>
 
       <nav style={{ padding: 'var(--space-3)' }}>
-        {SIDEBAR_ITEMS.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

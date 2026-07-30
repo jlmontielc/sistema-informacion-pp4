@@ -184,13 +184,18 @@
  *             example:
  *               error: El campo "email" debe ser un correo electrónico válido
  *       401:
- *         description: Credenciales inválidas
+ *         description: Credenciales inválidas (email no registrado o contraseña incorrecta)
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               error: Credenciales inválidas
+ *             examples:
+ *               emailNoRegistrado:
+ *                 summary: El correo electrónico no está registrado
+ *                 value: { error: El correo electrónico no está registrado }
+ *               contrasenaIncorrecta:
+ *                 summary: La contraseña es incorrecta
+ *                 value: { error: La contraseña es incorrecta }
  *       429:
  *         description: Límite de tasa excedido (20 intentos por 15 minutos)
  *         content:
@@ -491,6 +496,190 @@
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example:
  *               error: Error interno del servidor
+ *
+ * /api/auth/trainer:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Obtener perfil del entrenador asignado
+ *     description: Devuelve el perfil del entrenador asignado al instruido autenticado, incluyendo sus certificaciones.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil del entrenador con certificaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/UserEntrenador'
+ *                 - type: object
+ *                   properties:
+ *                     certificaciones:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Certificacion'
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Instruido o entrenador no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               sinEntrenador:
+ *                 summary: No tienes un entrenador asignado
+ *                 value: { error: No tienes un entrenador asignado }
+ *               entrenadorNoEncontrado:
+ *                 summary: Entrenador no encontrado
+ *                 value: { error: Entrenador no encontrado }
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * /api/auth/profiles:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Obtener todos los perfiles de entrenadores
+ *     description: Devuelve todos los entrenadores con sus certificaciones. Solo accesible por administradores.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de entrenadores con certificaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 allOf:
+ *                   - $ref: '#/components/schemas/UserEntrenador'
+ *                   - type: object
+ *                     properties:
+ *                       certificaciones:
+ *                         type: array
+ *                         items:
+ *                           $ref: '#/components/schemas/Certificacion'
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Acceso denegado (solo administradores)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * /api/auth/certifications:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Crear una certificación
+ *     description: Crea una nueva certificación para el entrenador autenticado.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CertificacionRequest'
+ *     responses:
+ *       201:
+ *         description: Certificación creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Certificacion'
+ *       400:
+ *         description: Error de validación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Acceso denegado (solo entrenadores)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *
+ * /api/auth/certifications/{id}:
+ *   delete:
+ *     tags: [Auth]
+ *     summary: Eliminar una certificación
+ *     description: Elimina una certificación del entrenador autenticado.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la certificación a eliminar
+ *     responses:
+ *       200:
+ *         description: Certificación eliminada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *               example: { message: Certificación eliminada correctamente }
+ *       401:
+ *         description: Token no proporcionado o inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Acceso denegado (solo entrenadores)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Certificación no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 const { Router } = require('express');
@@ -499,7 +688,7 @@ const ctrl = require('./auth.controller');
 const { validar } = require('../../shared/middleware/validate');
 const { autenticar } = require('../../shared/middleware/authenticate');
 const { autorizar } = require('../../shared/middleware/autorizar');
-const { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil } = require('./auth.validation');
+const { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil, esquemaCertificacion } = require('./auth.validation');
 
 const limiteInicioSesion = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -534,5 +723,9 @@ router.post('/refresh', limiteRefresh, validar(esquemaRefrescar), ctrl.refrescar
 router.post('/logout', autenticar, ctrl.cerrarSesion);
 router.get('/me', autenticar, ctrl.obtenerPerfil);
 router.put('/profile', autenticar, validar(esquemaActualizarPerfil), ctrl.actualizarPerfil);
+router.get('/trainer', autenticar, autorizar('instruido'), ctrl.obtenerPerfilEntrenador);
+router.get('/profiles', autenticar, autorizar('administrador'), ctrl.obtenerTodosLosPerfiles);
+router.post('/certifications', autenticar, autorizar('entrenador'), validar(esquemaCertificacion), ctrl.crearCertificacion);
+router.delete('/certifications/:id', autenticar, autorizar('entrenador'), ctrl.eliminarCertificacion);
 
 module.exports = router;

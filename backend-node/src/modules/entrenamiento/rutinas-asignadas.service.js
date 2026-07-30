@@ -1,8 +1,12 @@
-const { RutinaAsignada, PlantillaEntrenamiento, Ejercicio, Instruido } = require('./entrenamiento.model');
+const { RutinaAsignada, PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
+const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
 
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
-  const where = { entrenadorId };
+  const where = {};
+  if (!filtros.admin) {
+    where.entrenadorId = entrenadorId;
+  }
   if (filtros.instruidoId) where.instruidoId = filtros.instruidoId;
   if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
   if (filtros.propias === 'true' && filtros.instruidoIdActual) {

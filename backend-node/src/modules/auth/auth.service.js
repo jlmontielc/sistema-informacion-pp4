@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { Entrenador } = require('./entrenador.model');
 const { Instruido } = require('../instruidos/instruido.model');
+const { Certificacion } = require('./certificacion.model');
 const config = require('../../shared/constants');
 const blacklist = require('../../shared/utils/blacklist');
 
@@ -44,14 +45,14 @@ const iniciarSesion = async (datos) => {
   }
 
   if (!usuario) {
-    const err = new Error('Credenciales inválidas');
+    const err = new Error('El correo electrónico no está registrado');
     err.status = 401;
     throw err;
   }
 
   const valido = await verificarContrasena(datos.contrasena, usuario.contrasenaHash);
   if (!valido) {
-    const err = new Error('Credenciales inválidas');
+    const err = new Error('La contraseña es incorrecta');
     err.status = 401;
     throw err;
   }
@@ -111,6 +112,7 @@ const registrar = async (datos, usuarioSolicitante) => {
     throw err;
   }
 
+  const principal = await entrenadorPrincipal();
   const contrasenaHash = await encriptarContrasena(datos.contrasena);
   const instruido = await Instruido.create({
     nombre: datos.nombre,
@@ -123,9 +125,7 @@ const registrar = async (datos, usuarioSolicitante) => {
     nivelActividad: datos.nivelActividad,
     propositoEntrenamiento: datos.propositoEntrenamiento || null,
     diasDisponibles: datos.diasDisponibles || null,
-    entrenadorId: !usuarioSolicitante ? null
-      : usuarioSolicitante.rol === 'entrenador' ? usuarioSolicitante.id
-      : (datos.entrenadorId || null),
+    entrenadorId: principal ? principal.id : null,
     rol: 'instruido',
   });
   const accessToken = generarAccessToken(instruido, 'instruido');
@@ -206,7 +206,8 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
     }
     const datosActualizar = {};
     if (datos.nombre) datosActualizar.nombre = datos.nombre;
-    if (datos.especialidad) datosActualizar.especialidad = datos.especialidad;
+    if (datos.email) datosActualizar.email = datos.email;
+    if (datos.especialidad !== undefined) datosActualizar.especialidad = datos.especialidad;
     if (datos.contrasena) datosActualizar.contrasenaHash = await encriptarContrasena(datos.contrasena);
     await entrenador.update(datosActualizar);
     return Entrenador.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
@@ -242,6 +243,13 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
   const datosActualizar = {};
   if (datos.nombre) datosActualizar.nombre = datos.nombre;
   if (datos.email) datosActualizar.email = datos.email;
+  if (datos.edad) datosActualizar.edad = datos.edad;
+  if (datos.peso) datosActualizar.peso = datos.peso;
+  if (datos.altura) datosActualizar.altura = datos.altura;
+  if (datos.sexo) datosActualizar.sexo = datos.sexo;
+  if (datos.nivelActividad) datosActualizar.nivelActividad = datos.nivelActividad;
+  if (datos.propositoEntrenamiento !== undefined) datosActualizar.propositoEntrenamiento = datos.propositoEntrenamiento;
+  if (datos.diasDisponibles !== undefined) datosActualizar.diasDisponibles = datos.diasDisponibles;
   if (datos.contrasena) datosActualizar.contrasenaHash = await encriptarContrasena(datos.contrasena);
   await instruido.update(datosActualizar);
   return Instruido.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
@@ -253,4 +261,71 @@ const cerrarSesion = async (token, refreshToken) => {
   return { message: 'Sesión cerrada correctamente' };
 };
 
-module.exports = { iniciarSesion, registrar, refrescarToken, cerrarSesion, obtenerPerfil, actualizarPerfil };
+const entrenadorPrincipal = async () => {
+  return Entrenador.findOne({ where: { rol: 'entrenador' } });
+};
+
+const obtenerPerfilEntrenador = async (instruidoId) => {
+  const instruido = await Instruido.findByPk(instruidoId);
+  if (!instruido) {
+    const err = new Error('Instruido no encontrado');
+    err.status = 404;
+    throw err;
+  }
+  if (!instruido.entrenadorId) {
+    const err = new Error('No tienes un entrenador asignado');
+    err.status = 404;
+    throw err;
+  }
+  const entrenador = await Entrenador.findByPk(instruido.entrenadorId, {
+    attributes: { exclude: ['contrasenaHash'] },
+    include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+  });
+  if (!entrenador) {
+    const err = new Error('Entrenador no encontrado');
+    err.status = 404;
+    throw err;
+  }
+  return entrenador;
+};
+
+const obtenerTodosLosPerfiles = async () => {
+  return Entrenador.findAll({
+    attributes: { exclude: ['contrasenaHash'] },
+    include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+  });
+};
+
+const crearCertificacion = async (entrenadorId, datos) => {
+  const entrenador = await Entrenador.findByPk(entrenadorId);
+  if (!entrenador) {
+    const err = new Error('Entrenador no encontrado');
+    err.status = 404;
+    throw err;
+  }
+  return Certificacion.create({ ...datos, entrenadorId });
+};
+
+const eliminarCertificacion = async (entrenadorId, certId) => {
+  const cert = await Certificacion.findOne({ where: { id: certId, entrenadorId } });
+  if (!cert) {
+    const err = new Error('Certificación no encontrada');
+    err.status = 404;
+    throw err;
+  }
+  await cert.destroy();
+  return { message: 'Certificación eliminada correctamente' };
+};
+
+module.exports = {
+  iniciarSesion,
+  registrar,
+  refrescarToken,
+  cerrarSesion,
+  obtenerPerfil,
+  actualizarPerfil,
+  obtenerPerfilEntrenador,
+  obtenerTodosLosPerfiles,
+  crearCertificacion,
+  eliminarCertificacion,
+};

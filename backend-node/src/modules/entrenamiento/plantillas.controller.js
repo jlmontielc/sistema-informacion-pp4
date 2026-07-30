@@ -2,7 +2,11 @@ const plantillasService = require('./plantillas.service');
 
 const obtenerTodos = async (req, res, next) => {
   try {
-    const plantillas = await plantillasService.obtenerTodos(req.usuario.id, req.query);
+    const filtros = { ...req.query };
+    if (req.usuario.rol === 'administrador') {
+      filtros.admin = true;
+    }
+    const plantillas = await plantillasService.obtenerTodos(req.usuario.id, filtros);
     res.json(plantillas);
   } catch (err) {
     next(err);

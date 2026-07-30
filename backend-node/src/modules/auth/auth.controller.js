@@ -63,4 +63,52 @@ const registrarInstruido = async (req, res, next) => {
   }
 };
 
-module.exports = { registrar, registrarInstruido, iniciarSesion, refrescarToken, cerrarSesion, obtenerPerfil, actualizarPerfil };
+const obtenerPerfilEntrenador = async (req, res, next) => {
+  try {
+    const perfil = await authService.obtenerPerfilEntrenador(req.usuario.id);
+    res.json(perfil);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const obtenerTodosLosPerfiles = async (req, res, next) => {
+  try {
+    const perfiles = await authService.obtenerTodosLosPerfiles();
+    res.json(perfiles);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const crearCertificacion = async (req, res, next) => {
+  try {
+    const certificacion = await authService.crearCertificacion(req.usuario.id, req.body);
+    res.status(201).json(certificacion);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const eliminarCertificacion = async (req, res, next) => {
+  try {
+    const resultado = await authService.eliminarCertificacion(req.usuario.id, req.params.id);
+    res.json(resultado);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  registrar,
+  registrarInstruido,
+  iniciarSesion,
+  refrescarToken,
+  cerrarSesion,
+  obtenerPerfil,
+  actualizarPerfil,
+  obtenerPerfilEntrenador,
+  obtenerTodosLosPerfiles,
+  crearCertificacion,
+  eliminarCertificacion,
+};

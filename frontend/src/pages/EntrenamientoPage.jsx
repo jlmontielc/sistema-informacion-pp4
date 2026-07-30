@@ -1,6 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { AdminRutinasView } from '../components/entrenamiento/AdminRutinasView';
-import { EntrenadorRutinasView } from '../components/entrenamiento/EntrenadorRutinasView';
+import { GestionRutinasView } from '../components/entrenamiento/GestionRutinasView';
 import { InstruidoRutinasView } from '../components/entrenamiento/InstruidoRutinasView';
 
 export default function EntrenamientoPage() {
@@ -10,9 +9,5 @@ export default function EntrenamientoPage() {
     return <InstruidoRutinasView />;
   }
 
-  if (user?.rol === 'administrador') {
-    return <AdminRutinasView />;
-  }
-
-  return <EntrenadorRutinasView />;
+  return <GestionRutinasView />;
 }

@@ -453,6 +453,21 @@
   color: #166534;
 }
 
+.rutina-tipo-badge.principiante {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.rutina-tipo-badge.intermedio {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.rutina-tipo-badge.avanzado {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
 .rutina-estado-badge {
   display: inline-flex;
   align-items: center;

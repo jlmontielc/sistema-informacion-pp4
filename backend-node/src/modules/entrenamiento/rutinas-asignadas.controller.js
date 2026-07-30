@@ -7,6 +7,9 @@ const obtenerTodos = async (req, res, next) => {
       filtros.instruidoIdActual = req.usuario.id;
       filtros.propias = 'true';
     }
+    if (req.usuario.rol === 'administrador') {
+      filtros.admin = true;
+    }
     const rutinas = await rutinasAsignadasService.obtenerTodos(req.usuario.id, filtros);
     res.json(rutinas);
   } catch (err) {
