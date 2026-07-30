@@ -63,18 +63,17 @@ async function statsEntrenador(entrenadorId) {
     clientesNuevosMes,
     clientesRecientes,
   ] = await Promise.all([
-    Instruido.count({ where: { entrenadorId } }),
+    Instruido.count(),
     sequelize.query(
-      'SELECT COUNT(*) as total FROM rutinas_asignadas WHERE entrenador_id = ? AND activa = 1',
-      { replacements: [entrenadorId], type: 'SELECT' }
+      'SELECT COUNT(*) as total FROM rutinas_asignadas WHERE activa = 1',
+      { type: 'SELECT' }
     ),
     sequelize.query(
-      'SELECT COUNT(*) as total FROM planes_dieta WHERE entrenador_id = ? AND activo = 1',
-      { replacements: [entrenadorId], type: 'SELECT' }
+      'SELECT COUNT(*) as total FROM planes_dieta WHERE activo = 1',
+      { type: 'SELECT' }
     ),
-    Instruido.count({ where: { entrenadorId, fechaRegistro: { [Op.gte]: mesActual } } }),
+    Instruido.count({ where: { fechaRegistro: { [Op.gte]: mesActual } } }),
     Instruido.findAll({
-      where: { entrenadorId },
       attributes: ['id', 'nombre', 'peso', 'nivelActividad', 'fechaRegistro'],
       order: [['createdAt', 'DESC']],
       limit: 5,

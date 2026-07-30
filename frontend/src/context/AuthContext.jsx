@@ -14,9 +14,14 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    const tokenPayload = (() => {
+      try { return JSON.parse(atob(token.split('.')[1])); }
+      catch { return {}; }
+    })();
+
     api.get('/auth/me')
       .then((res) => {
-        setUser(res.data);
+        setUser({ ...tokenPayload, ...res.data });
       })
       .catch(() => {
         localStorage.removeItem('token');
@@ -71,8 +76,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, isAuthenticated: !!user }),
-    [user, loading, login, register, logout],
+    () => ({ user, setUser, loading, login, register, logout, isAuthenticated: !!user }),
+    [user, setUser, loading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

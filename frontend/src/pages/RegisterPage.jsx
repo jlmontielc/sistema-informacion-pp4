@@ -18,6 +18,16 @@ const OPCIONES_NIVEL = [
   { value: 'muy_activo', label: 'Muy activo' },
 ];
 
+const OPCIONES_PROPOSTO = [
+  { value: 'Perder peso', label: 'Perder peso' },
+  { value: 'Tonificar', label: 'Tonificar' },
+  { value: 'Ganar masa muscular', label: 'Ganar masa muscular' },
+  { value: 'Mejorar condición física general', label: 'Mejorar condición física general' },
+  { value: 'Rendimiento deportivo', label: 'Rendimiento deportivo' },
+  { value: 'Salud y bienestar', label: 'Salud y bienestar' },
+  { value: 'Otro', label: 'Otro' },
+];
+
 export default function RegisterPage() {
   const { register, loading } = useAuth();
   const [error, setError] = useState('');
@@ -31,6 +41,8 @@ export default function RegisterPage() {
     altura: '',
     sexo: '',
     nivelActividad: '',
+    propositoEntrenamiento: '',
+    propositoCustom: '',
   });
 
   const handleChange = (e) => {
@@ -62,6 +74,7 @@ export default function RegisterPage() {
         altura: parseFloat(form.altura),
         sexo: form.sexo,
         nivelActividad: form.nivelActividad,
+        propositoEntrenamiento: form.propositoEntrenamiento === 'Otro' ? form.propositoCustom : form.propositoEntrenamiento,
       };
 
       await register(datosEnvio);
@@ -207,6 +220,32 @@ export default function RegisterPage() {
                 ))}
               </select>
             </div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="propositoEntrenamiento">Propósito de entrenamiento</label>
+              <select
+                id="propositoEntrenamiento"
+                name="propositoEntrenamiento"
+                className="field-input"
+                value={form.propositoEntrenamiento}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar...</option>
+                {OPCIONES_PROPOSTO.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {form.propositoEntrenamiento === 'Otro' && (
+              <Input
+                label="Especifica tu propósito"
+                name="propositoCustom"
+                placeholder="Ej: Rehabilitación, flexibilidad, etc."
+                value={form.propositoCustom}
+                onChange={handleChange}
+              />
+            )}
 
             <Button type="submit" loading={loading} style={{ marginTop: 'var(--space-2)' }}>
               Crear Cuenta

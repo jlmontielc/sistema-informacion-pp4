@@ -3,11 +3,13 @@ import { Modal } from '../common/Modal';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
+import { EmptyState } from '../common/EmptyState';
 import { rutinasAsignadasApi, instruidosApi } from '../../services/rutinasApi';
 
 export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
   const [clientes, setClientes] = useState([]);
   const [loadingClientes, setLoadingClientes] = useState(true);
+  const [errorClientes, setErrorClientes] = useState(null);
   const [clienteId, setClienteId] = useState('');
   const [nombre, setNombre] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
@@ -18,9 +20,16 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
   useEffect(() => {
     if (!isOpen) return;
     setLoadingClientes(true);
+    setErrorClientes(null);
     instruidosApi.listar()
-      .then((res) => setClientes(res.data?.instruidos || res.data || []))
-      .catch(() => setClientes([]))
+      .then((res) => {
+        const data = res.data?.instruidos || res.data || [];
+        setClientes(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        setClientes([]);
+        setErrorClientes(err.response?.data?.message || 'Error al cargar clientes');
+      })
       .finally(() => setLoadingClientes(false));
   }, [isOpen]);
 
@@ -100,6 +109,20 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
 
         {loadingClientes ? (
           <Loading text="Cargando clientes..." />
+        ) : errorClientes ? (
+          <div style={{
+            padding: 'var(--space-4)',
+            textAlign: 'center',
+            color: 'var(--color-error)',
+          }}>
+            <p>{errorClientes}</p>
+          </div>
+        ) : clientes.length === 0 ? (
+          <EmptyState
+            icon="👥"
+            title="Sin clientes"
+            description="No hay clientes registrados. Crea un cliente primero para poder asignarle rutinas."
+          />
         ) : (
           <>
             <div className="field">
@@ -111,7 +134,9 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
               >
                 <option value="">Seleccionar cliente...</option>
                 {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}{c.email ? ` (${c.email})` : ''}
+                  </option>
                 ))}
               </select>
             </div>

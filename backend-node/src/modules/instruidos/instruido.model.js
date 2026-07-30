@@ -14,6 +14,10 @@ const Instruido = sequelize.define('Instruido', {
     allowNull: false,
     field: 'nivel_actividad',
   },
+  nivelExperiencia: {
+    type: DataTypes.ENUM('principiante', 'intermedio', 'avanzado'),
+    field: 'nivel_experiencia',
+  },
   propositoEntrenamiento: { type: DataTypes.TEXT, field: 'proposito_entrenamiento' },
   diasDisponibles: { type: DataTypes.INTEGER, field: 'dias_disponibles' },
   fechaRegistro: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW, field: 'fecha_registro' },

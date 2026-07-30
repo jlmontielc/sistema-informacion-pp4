@@ -16,6 +16,7 @@ const MetabolismoPage = lazy(() => import('./pages/MetabolismoPage'));
 const EntrenamientoPage = lazy(() => import('./pages/EntrenamientoPage'));
 const DietasPage = lazy(() => import('./pages/DietasPage'));
 const ReportesPage = lazy(() => import('./pages/ReportesPage'));
+const PerfilPage = lazy(() => import('./pages/PerfilPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const OfflinePage = lazy(() => import('./pages/OfflinePage'));
 
@@ -98,10 +99,12 @@ function AppContent() {
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/clientes" element={<ClientesPage />} />
+                        <Route path="/entrenador" element={<ClientesPage />} />
                         <Route path="/metabolismo" element={<MetabolismoPage />} />
                         <Route path="/entrenamiento" element={<EntrenamientoPage />} />
                         <Route path="/dietas" element={<DietasPage />} />
                         <Route path="/reportes" element={<ReportesPage />} />
+                        <Route path="/perfil" element={<PerfilPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>

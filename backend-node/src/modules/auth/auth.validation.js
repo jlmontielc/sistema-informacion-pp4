@@ -24,16 +24,32 @@ const esquemaRefrescar = Joi.object({
 });
 
 const esquemaActualizarPerfil = Joi.object({
-  nombre: Joi.string().max(100).optional(),
-  email: Joi.string().email().max(100).optional(),
-  especialidad: Joi.string().max(100).optional(),
+  nombre: Joi.string().max(100).optional().allow(''),
+  email: Joi.string().email().max(100).optional().allow(''),
+  especialidad: Joi.string().max(100).optional().allow(''),
   contrasena: Joi.string().min(8).max(100).optional(),
   contrasenaActual: Joi.string().when('contrasena', {
     is: Joi.exist(),
     then: Joi.required().messages({ 'any.required': 'Se requiere la contraseña actual para cambiar la contraseña' }),
     otherwise: Joi.optional(),
   }),
+  edad: Joi.number().integer().min(1).max(120).optional().allow(''),
+  peso: Joi.number().positive().optional().allow(''),
+  altura: Joi.number().positive().optional().allow(''),
+  sexo: Joi.string().valid('masculino', 'femenino').optional().allow(''),
+  nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').optional().allow(''),
+  propositoEntrenamiento: Joi.string().optional().allow(''),
+  diasDisponibles: Joi.number().integer().min(1).max(7).optional().allow(''),
 }).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
+
+const esquemaCertificacion = Joi.object({
+  nombre: Joi.string().max(150).required(),
+  institucion: Joi.string().max(150).optional().allow(''),
+  fechaObtencion: Joi.date().optional().allow(null, ''),
+  fechaExpiracion: Joi.date().optional().allow(null, ''),
+  descripcion: Joi.string().optional().allow(''),
+  imagenUrl: Joi.string().uri().optional().allow(''),
+});
 
 const esquemaRegistroInstruido = Joi.object({
   nombre: Joi.string().max(100).required(),
@@ -48,4 +64,4 @@ const esquemaRegistroInstruido = Joi.object({
   diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
 });
 
-module.exports = { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil };
+module.exports = { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil, esquemaCertificacion };

@@ -2,7 +2,10 @@ const { PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
 const { Op } = require('sequelize');
 
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
-  const where = { entrenadorId };
+  const where = {};
+  if (!filtros.admin) {
+    where.entrenadorId = entrenadorId;
+  }
   if (filtros.tipo) where.tipo = filtros.tipo;
   if (filtros.objetivo) where.objetivo = filtros.objetivo;
   if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
@@ -171,7 +174,7 @@ const reordenarDia = async (id, dia, nuevoOrden, entrenadorId) => {
     .sort((a, b) => a.orden - b.orden);
 
   if (nuevoOrden.length !== ejerciciosDelDia.length) {
-    const err = new Error('El数组 de orden debe contener todos los ejercicios del día');
+    const err = new Error('El array de orden debe contener todos los ejercicios del día');
     err.status = 400;
     throw err;
   }
