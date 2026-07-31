@@ -78,6 +78,7 @@ export default function RegisterPage() {
       };
 
       await register(datosEnvio);
+      window.location.href = '/complete-profile';
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrarse');
     }
