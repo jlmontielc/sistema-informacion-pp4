@@ -19,6 +19,7 @@ const ReportesPage = lazy(() => import('./pages/ReportesPage'));
 const PerfilPage = lazy(() => import('./pages/PerfilPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const OfflinePage = lazy(() => import('./pages/OfflinePage'));
+const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -104,6 +105,7 @@ function AppContent() {
                         <Route path="/entrenamiento" element={<EntrenamientoPage />} />
                         <Route path="/dietas" element={<DietasPage />} />
                         <Route path="/reportes" element={<ReportesPage />} />
+                        <Route path="/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/perfil" element={<PerfilPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="*" element={<NotFound />} />

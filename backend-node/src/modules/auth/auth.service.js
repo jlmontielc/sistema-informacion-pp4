@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { Entrenador } = require('./entrenador.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Certificacion } = require('./certificacion.model');
+const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const config = require('../../shared/constants');
 const blacklist = require('../../shared/utils/blacklist');
 
@@ -180,7 +181,11 @@ const obtenerPerfil = async (usuarioId, tipo) => {
     err.status = 404;
     throw err;
   }
-  return instruido;
+  const perfilMedico = await PerfilMedico.findOne({ where: { instruidoId: usuarioId } });
+  const perfilMedicoCompleto = perfilMedico
+    ? !!(perfilMedico.alergias || perfilMedico.intolerancias || perfilMedico.lesiones || perfilMedico.condicionesPreexistentes)
+    : false;
+  return { ...instruido.toJSON(), perfilMedicoCompleto };
 };
 
 const actualizarPerfil = async (usuarioId, tipo, datos) => {

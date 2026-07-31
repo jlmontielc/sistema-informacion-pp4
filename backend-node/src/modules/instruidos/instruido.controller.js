@@ -1,4 +1,5 @@
 const instruidoService = require('./instruido.service');
+const perfilMedicoService = require('./perfil-medico.service');
 
 const obtenerTodos = async (req, res, next) => {
   try {
@@ -67,4 +68,22 @@ const actualizarMiPerfil = async (req, res, next) => {
   }
 };
 
-module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar, obtenerMiPerfil, actualizarMiPerfil };
+const obtenerMiPerfilMedico = async (req, res, next) => {
+  try {
+    const perfil = await perfilMedicoService.obtenerPorInstruidoId(req.usuario.id, req.usuario);
+    res.json(perfil || {});
+  } catch (err) {
+    next(err);
+  }
+};
+
+const actualizarMiPerfilMedico = async (req, res, next) => {
+  try {
+    const perfil = await perfilMedicoService.crearOActualizar(req.usuario.id, req.body, req.usuario);
+    res.json(perfil);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { obtenerTodos, obtenerPorId, crear, actualizar, eliminar, obtenerMiPerfil, actualizarMiPerfil, obtenerMiPerfilMedico, actualizarMiPerfilMedico };

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from '../common/Card';
 import { EmptyState } from '../common/EmptyState';
@@ -13,11 +14,15 @@ export default function InstruidoDashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (user?.tipo === 'instruido' && user?.perfilMedicoCompleto !== true) {
+      window.location.href = '/complete-profile';
+      return;
+    }
     api.get('/dashboard/stats')
       .then(res => setData(res.data))
       .catch(() => setError('No se pudieron cargar los datos'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
   if (loading) return <Loading text="Cargando tu dashboard..." />;
   if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
@@ -32,6 +37,39 @@ export default function InstruidoDashboard() {
         <h1>Mi Dashboard</h1>
         <p style={{ color: 'var(--color-text-secondary)' }}>Resumen de tu progreso</p>
       </div>
+
+      {user?.tipo === 'instruido' && user?.perfilMedicoCompleto !== true && (
+        <div style={{
+          padding: 'var(--space-3) var(--space-4)',
+          backgroundColor: 'var(--color-warning-light, #fff3e0)',
+          border: '1px solid var(--color-warning, #ff9800)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'var(--space-3)',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-warning, #e65100)' }}>
+            Completa tu perfil médico para que tu entrenador pueda generar rutinas personalizadas y seguras.
+          </span>
+          <Link
+            to="/complete-profile"
+            style={{
+              padding: 'var(--space-1) var(--space-3)',
+              backgroundColor: 'var(--color-warning, #ff9800)',
+              color: '#fff',
+              borderRadius: 'var(--radius-sm)',
+              textDecoration: 'none',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--font-medium)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Completar perfil
+          </Link>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
         <KpiCard icon="⚖️" label="Peso" value={(medicion?.peso || user?.peso) ? `${medicion?.peso || user?.peso} kg` : '—'} />

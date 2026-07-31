@@ -8,7 +8,11 @@ const cifrarCampos = (datos) => {
   const cifrados = { ...datos };
   for (const campo of CAMPOS_SENSIBLES) {
     if (cifrados[campo] !== undefined) {
-      cifrados[campo] = cifrar(cifrados[campo]);
+      if (cifrados[campo] === '') {
+        cifrados[campo] = null;
+      } else {
+        cifrados[campo] = cifrar(cifrados[campo]);
+      }
     }
   }
   return cifrados;
@@ -25,15 +29,21 @@ const descifrarCampos = (registro) => {
   return datos;
 };
 
-const obtenerPorInstruidoId = async (instruidoId, entrenadorId) => {
-  const instruido = await Instruido.findOne({ where: { id: instruidoId, entrenadorId } });
+const obtenerPorInstruidoId = async (instruidoId, usuario) => {
+  const where = { id: instruidoId };
+  if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
+  if (usuario.rol === 'instruido' && Number(instruidoId) !== Number(usuario.id)) return null;
+  const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
   const perfil = await PerfilMedico.findOne({ where: { instruidoId } });
   return perfil ? descifrarCampos(perfil) : null;
 };
 
-const crearOActualizar = async (instruidoId, datos, entrenadorId) => {
-  const instruido = await Instruido.findOne({ where: { id: instruidoId, entrenadorId } });
+const crearOActualizar = async (instruidoId, datos, usuario) => {
+  const where = { id: instruidoId };
+  if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
+  if (usuario.rol === 'instruido' && Number(instruidoId) !== Number(usuario.id)) return null;
+  const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
   const datosCifrados = cifrarCampos(datos);
   const [perfil] = await PerfilMedico.upsert({ instruidoId, ...datosCifrados });

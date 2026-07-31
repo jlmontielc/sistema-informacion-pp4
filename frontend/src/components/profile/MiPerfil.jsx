@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
@@ -17,12 +17,34 @@ const sexoLabels = {
   femenino: 'Femenino',
 };
 
+const CAMPOS_MEDICOS = [
+  { name: 'alergias', label: 'Alergias' },
+  { name: 'intolerancias', label: 'Intolerancias' },
+  { name: 'lesiones', label: 'Lesiones' },
+  { name: 'condicionesPreexistentes', label: 'Condiciones preexistentes' },
+  { name: 'medicacionActual', label: 'Medicación actual' },
+  { name: 'observaciones', label: 'Observaciones' },
+];
+
 export function MiPerfil({ perfil, onActualizar }) {
   const [editando, setEditando] = useState(false);
   const [datos, setDatos] = useState({});
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [perfilMedico, setPerfilMedico] = useState(null);
+  const [editandoMedico, setEditandoMedico] = useState(false);
+  const [datosMedicos, setDatosMedicos] = useState({});
+  const [guardandoMedico, setGuardandoMedico] = useState(false);
+  const [errorMedico, setErrorMedico] = useState(null);
+
+  useEffect(() => {
+    if (perfil.tipo === 'instruido') {
+      api.get('/instruidos/yo/perfil-medico')
+        .then(res => setPerfilMedico(res.data))
+        .catch(() => {});
+    }
+  }, [perfil.tipo]);
 
   const iniciarEdicion = () => {
     setDatos({
@@ -87,6 +109,44 @@ export function MiPerfil({ perfil, onActualizar }) {
       setError(err.response?.data?.error || 'Error al guardar');
     } finally {
       setGuardando(false);
+    }
+  };
+
+  const iniciarEdicionMedico = () => {
+    const inicial = {};
+    CAMPOS_MEDICOS.forEach(({ name }) => {
+      inicial[name] = (perfilMedico && perfilMedico[name]) || '';
+    });
+    setDatosMedicos(inicial);
+    setEditandoMedico(true);
+    setErrorMedico(null);
+  };
+
+  const cancelarEdicionMedico = () => {
+    setEditandoMedico(false);
+    setErrorMedico(null);
+  };
+
+  const handleChangeMedico = (e) => {
+    setDatosMedicos({ ...datosMedicos, [e.target.name]: e.target.value });
+  };
+
+  const guardarMedico = async () => {
+    setGuardandoMedico(true);
+    setErrorMedico(null);
+    try {
+      const payload = {};
+      CAMPOS_MEDICOS.forEach(({ name }) => {
+        payload[name] = datosMedicos[name] || '';
+      });
+      const res = await api.put('/instruidos/yo/perfil-medico', payload);
+      setPerfilMedico(res.data);
+      setEditandoMedico(false);
+      setSuccess('Datos médicos guardados correctamente');
+    } catch (err) {
+      setErrorMedico(err.response?.data?.error || 'Error al guardar datos médicos');
+    } finally {
+      setGuardandoMedico(false);
     }
   };
 
@@ -175,6 +235,49 @@ export function MiPerfil({ perfil, onActualizar }) {
         </div>
       </div>
     </Card>
+
+      {perfil.tipo === 'instruido' && !editandoMedico && (
+        <Card header="Datos Médicos">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+              {CAMPOS_MEDICOS.map(({ name, label }) => (
+                <InfoField key={name} label={label} value={perfilMedico?.[name] || '—'} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="primary" onClick={iniciarEdicionMedico}>
+                {perfilMedico && Object.values(perfilMedico).some(v => v) ? 'Editar datos médicos' : 'Completar datos médicos'}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {perfil.tipo === 'instruido' && editandoMedico && (
+        <Card header="Editar Datos Médicos">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            {CAMPOS_MEDICOS.map(({ name, label }) => (
+              <div className="field" key={name}>
+                <label className="field-label" htmlFor={name}>{label}</label>
+                <textarea
+                  id={name}
+                  name={name}
+                  className="field-input"
+                  value={datosMedicos[name] || ''}
+                  onChange={handleChangeMedico}
+                  rows={2}
+                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                />
+              </div>
+            ))}
+            {errorMedico && <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }}>{errorMedico}</p>}
+            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={cancelarEdicionMedico}>Cancelar</Button>
+              <Button variant="primary" loading={guardandoMedico} onClick={guardarMedico}>Guardar</Button>
+            </div>
+          </div>
+        </Card>
+      )}
     </>
   );
 }
