@@ -38,7 +38,8 @@ const esquemaActualizarPerfil = Joi.object({
   altura: Joi.number().positive().optional(),
   sexo: Joi.string().valid('masculino', 'femenino').optional().allow(''),
   nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').optional().allow(''),
-  propositoEntrenamiento: Joi.string().optional().allow(''),
+  propositoEntrenamiento: Joi.string().valid('perdida_peso', 'ganancia_muscular', 'mantenimiento', 'rendimiento', 'rehabilitacion').optional().allow(''),
+  nivelExperiencia: Joi.string().valid('principiante', 'intermedio', 'avanzado').optional().allow('', null),
   diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
 }).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
 
@@ -60,7 +61,8 @@ const esquemaRegistroInstruido = Joi.object({
   altura: Joi.number().positive().required(),
   sexo: Joi.string().valid('masculino', 'femenino').required(),
   nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').required(),
-  propositoEntrenamiento: Joi.string().optional(),
+  propositoEntrenamiento: Joi.string().valid('perdida_peso', 'ganancia_muscular', 'mantenimiento', 'rendimiento', 'rehabilitacion').optional().allow(''),
+  nivelExperiencia: Joi.string().valid('principiante', 'intermedio', 'avanzado').optional().allow('', null),
   diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
 });
 

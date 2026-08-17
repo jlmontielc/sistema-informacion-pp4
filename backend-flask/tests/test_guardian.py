@@ -2,7 +2,12 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from config.constants import NivelRiesgo, MAPA_LESIONES, MAPA_CONDICIONES
+from config.constants import (
+    NivelRiesgo,
+    MAPA_LESIONES,
+    MAPA_CONDICIONES,
+    MAPEO_PROPOSITO_TEXTO,
+)
 from models.rules.injury_rules import (
     detectar_grupo_lesion,
     evaluar_ejercicio_por_lesiones,
@@ -164,6 +169,50 @@ def test_guardian_multi_lesion():
     print("[PASS] test_guardian_multi_lesion")
 
 
+def test_mapeo_proposito_texto():
+    assert MAPEO_PROPOSITO_TEXTO['perder peso'] == 'perdida_peso'
+    assert MAPEO_PROPOSITO_TEXTO['bajar de peso'] == 'perdida_peso'
+    assert MAPEO_PROPOSITO_TEXTO['ganar masa muscular'] == 'ganancia_muscular'
+    assert MAPEO_PROPOSITO_TEXTO['tonificar'] == 'ganancia_muscular'
+    assert MAPEO_PROPOSITO_TEXTO['salud y bienestar'] == 'mantenimiento'
+    assert MAPEO_PROPOSITO_TEXTO['mejorar condición física general'] == 'mantenimiento'
+    assert MAPEO_PROPOSITO_TEXTO['rendimiento deportivo'] == 'rendimiento'
+    assert MAPEO_PROPOSITO_TEXTO['rehabilitación'] == 'rehabilitacion'
+    print("[PASS] test_mapeo_proposito_texto")
+
+
+def test_recommender_normaliza_proposito():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante', 'equipo': ['barra']},
+        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'dificultad': 'principiante', 'equipo': ['barra']},
+        {'id': 3, 'nombre': 'Dominadas', 'grupo_muscular': 'Espalda', 'dificultad': 'intermedio', 'equipo': ['cuerpo_libre']},
+        {'id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'dificultad': 'principiante', 'equipo': ['cuerpo_libre']},
+        {'id': 5, 'nombre': 'Peso muerto', 'grupo_muscular': 'Espalda baja', 'dificultad': 'intermedio', 'equipo': ['barra']},
+        {'id': 6, 'nombre': 'Curl de bíceps', 'grupo_muscular': 'Brazos', 'dificultad': 'principiante', 'equipo': ['mancuernas']},
+    ]
+    datos_cliente = {
+        'edad': 30,
+        'peso': 75,
+        'altura': 1.75,
+        'sexo': 'masculino',
+        'nivel_actividad': 'moderado',
+        'nivel_experiencia': 'principiante',
+        'proposito': 'Ganar masa muscular',
+        'dias_disponibles': 3,
+    }
+
+    resultado = engine.generar_rutina(datos_cliente, pool, historial=[])
+
+    rutina = resultado['rutina_sugerida']
+    assert 'ganancia muscular' in rutina['nombre'].lower()
+    assert rutina['configuracion_objetivo']['rango_repeticiones'] == (8, 12)
+    assert rutina['configuracion_objetivo']['series_por_ejercicio'] == (3, 4)
+    print("[PASS] test_recommender_normaliza_proposito")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -176,4 +225,6 @@ if __name__ == '__main__':
     test_estimar_1rm()
     test_guardian_filtrar_pool()
     test_guardian_multi_lesion()
+    test_mapeo_proposito_texto()
+    test_recommender_normaliza_proposito()
     print("\n=== TODOS LOS TESTS PASARON ===")

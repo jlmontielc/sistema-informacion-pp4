@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
+import { OBJETIVOS_ENTRENAMIENTO, NIVELES_EXPERIENCIA } from '../utils/constants';
 
 const OPCIONES_SEXO = [
   { value: 'masculino', label: 'Masculino' },
@@ -18,15 +19,7 @@ const OPCIONES_NIVEL = [
   { value: 'muy_activo', label: 'Muy activo' },
 ];
 
-const OPCIONES_PROPOSTO = [
-  { value: 'Perder peso', label: 'Perder peso' },
-  { value: 'Tonificar', label: 'Tonificar' },
-  { value: 'Ganar masa muscular', label: 'Ganar masa muscular' },
-  { value: 'Mejorar condición física general', label: 'Mejorar condición física general' },
-  { value: 'Rendimiento deportivo', label: 'Rendimiento deportivo' },
-  { value: 'Salud y bienestar', label: 'Salud y bienestar' },
-  { value: 'Otro', label: 'Otro' },
-];
+const OPCIONES_PROPOSTO = OBJETIVOS_ENTRENAMIENTO;
 
 export default function RegisterPage() {
   const { register, loading } = useAuth();
@@ -42,7 +35,7 @@ export default function RegisterPage() {
     sexo: '',
     nivelActividad: '',
     propositoEntrenamiento: '',
-    propositoCustom: '',
+    nivelExperiencia: '',
   });
 
   const handleChange = (e) => {
@@ -74,7 +67,8 @@ export default function RegisterPage() {
         altura: parseFloat(form.altura),
         sexo: form.sexo,
         nivelActividad: form.nivelActividad,
-        propositoEntrenamiento: form.propositoEntrenamiento === 'Otro' ? form.propositoCustom : form.propositoEntrenamiento,
+        propositoEntrenamiento: form.propositoEntrenamiento,
+        nivelExperiencia: form.nivelExperiencia || null,
       };
 
       await register(datosEnvio);
@@ -230,6 +224,7 @@ export default function RegisterPage() {
                 className="field-input"
                 value={form.propositoEntrenamiento}
                 onChange={handleChange}
+                required
               >
                 <option value="">Seleccionar...</option>
                 {OPCIONES_PROPOSTO.map((o) => (
@@ -238,15 +233,21 @@ export default function RegisterPage() {
               </select>
             </div>
 
-            {form.propositoEntrenamiento === 'Otro' && (
-              <Input
-                label="Especifica tu propósito"
-                name="propositoCustom"
-                placeholder="Ej: Rehabilitación, flexibilidad, etc."
-                value={form.propositoCustom}
+            <div className="field">
+              <label className="field-label" htmlFor="nivelExperiencia">Nivel de experiencia</label>
+              <select
+                id="nivelExperiencia"
+                name="nivelExperiencia"
+                className="field-input"
+                value={form.nivelExperiencia}
                 onChange={handleChange}
-              />
-            )}
+              >
+                <option value="">Seleccionar...</option>
+                {NIVELES_EXPERIENCIA.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
 
             <Button type="submit" loading={loading} style={{ marginTop: 'var(--space-2)' }}>
               Crear Cuenta
