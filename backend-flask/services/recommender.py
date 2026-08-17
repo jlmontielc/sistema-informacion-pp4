@@ -2,6 +2,7 @@ import random
 from collections import defaultdict
 from config.constants import (
     MAPEO_OBJETIVO_CONFIG,
+    MAPEO_PROPOSITO_TEXTO,
     DIFICULTAD_ORDEN,
     GRUPOS_MUSCULARES,
 )
@@ -26,7 +27,8 @@ class RecommenderEngine:
         historial: list = None,
         plantillas_existentes: list = None,
     ) -> dict:
-        objetivo = datos_cliente.get('proposito', 'mantenimiento').lower()
+        proposito_bruto = (datos_cliente.get('proposito') or 'mantenimiento').strip().lower()
+        objetivo = MAPEO_PROPOSITO_TEXTO.get(proposito_bruto, proposito_bruto)
         nivel = datos_cliente.get('nivel_experiencia') or datos_cliente.get('nivel_actividad', 'moderado')
         dias = datos_cliente.get('dias_disponibles', 3)
         edad = datos_cliente.get('edad', 30)

@@ -36,3 +36,27 @@ export function getSidebarItems(user) {
 
 export const APP_NAME = 'Entrenador Personal';
 export const APP_SHORT_NAME = 'Entrenador';
+
+export const OBJETIVOS_ENTRENAMIENTO = [
+  { value: 'perdida_peso', label: 'Perder peso' },
+  { value: 'ganancia_muscular', label: 'Ganar masa muscular' },
+  { value: 'mantenimiento', label: 'Mantenimiento / Salud y bienestar' },
+  { value: 'rendimiento', label: 'Rendimiento deportivo' },
+  { value: 'rehabilitacion', label: 'Rehabilitación' },
+];
+
+export const NIVELES_EXPERIENCIA = [
+  { value: 'principiante', label: 'Principiante' },
+  { value: 'intermedio', label: 'Intermedio' },
+  { value: 'avanzado', label: 'Avanzado' },
+];
+
+export function labelObjetivo(value) {
+  const obj = OBJETIVOS_ENTRENAMIENTO.find((o) => o.value === value);
+  return obj ? obj.label : value;
+}
+
+export function labelNivelExperiencia(value) {
+  const nivel = NIVELES_EXPERIENCIA.find((n) => n.value === value);
+  return nivel ? nivel.label : value;
+}

@@ -4,6 +4,7 @@ import { EmptyState } from '../common/EmptyState';
 import { Loading } from '../common/Loading';
 import { Modal } from '../common/Modal';
 import api from '../../services/api';
+import { labelObjetivo } from '../../utils/constants';
 
 export function ListaPerfiles() {
   const [entrenadores, setEntrenadores] = useState([]);
@@ -141,7 +142,7 @@ export function ListaPerfiles() {
                 <InfoField label="Peso" value={`${seleccionado.peso} kg`} />
                 <InfoField label="Altura" value={`${seleccionado.altura} m`} />
                 <InfoField label="Nivel" value={nivelLabels[seleccionado.nivelActividad] || seleccionado.nivelActividad} />
-                <InfoField label="Propósito" value={seleccionado.propositoEntrenamiento || '—'} />
+                <InfoField label="Propósito" value={seleccionado.propositoEntrenamiento ? labelObjetivo(seleccionado.propositoEntrenamiento) : '—'} />
               </>
             )}
           </div>

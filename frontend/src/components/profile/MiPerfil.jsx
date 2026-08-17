@@ -3,6 +3,7 @@ import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
 import api from '../../services/api';
+import { labelObjetivo, labelNivelExperiencia } from '../../utils/constants';
 
 const nivelLabels = {
   sedentario: 'Sedentario',
@@ -57,6 +58,7 @@ export function MiPerfil({ perfil, onActualizar }) {
       sexo: perfil.sexo || '',
       nivelActividad: perfil.nivelActividad || '',
       propositoEntrenamiento: perfil.propositoEntrenamiento || '',
+      nivelExperiencia: perfil.nivelExperiencia || '',
       diasDisponibles: perfil.diasDisponibles || '',
       contrasena: '',
       contrasenaActual: '',
@@ -95,6 +97,7 @@ export function MiPerfil({ perfil, onActualizar }) {
       if (!payload.sexo) delete payload.sexo;
       if (!payload.nivelActividad) delete payload.nivelActividad;
       if (!payload.propositoEntrenamiento) delete payload.propositoEntrenamiento;
+      if (!payload.nivelExperiencia) delete payload.nivelExperiencia;
       if (!payload.diasDisponibles) delete payload.diasDisponibles;
       if (payload.edad) payload.edad = Number(payload.edad);
       if (payload.peso) payload.peso = Number(payload.peso);
@@ -168,6 +171,8 @@ export function MiPerfil({ perfil, onActualizar }) {
               <Field label="Altura (m)" name="altura" type="number" step="0.01" value={datos.altura} onChange={handleChange} />
               <SelectField label="Sexo" name="sexo" value={datos.sexo} onChange={handleChange} options={sexoLabels} />
               <SelectField label="Nivel de actividad" name="nivelActividad" value={datos.nivelActividad} onChange={handleChange} options={nivelLabels} />
+              <SelectField label="Propósito de entrenamiento" name="propositoEntrenamiento" value={datos.propositoEntrenamiento} onChange={handleChange} options={{ perdida_peso: 'Perder peso', ganancia_muscular: 'Ganar masa muscular', mantenimiento: 'Mantenimiento / Salud y bienestar', rendimiento: 'Rendimiento deportivo', rehabilitacion: 'Rehabilitación' }} />
+              <SelectField label="Nivel de experiencia" name="nivelExperiencia" value={datos.nivelExperiencia} onChange={handleChange} options={{ principiante: 'Principiante', intermedio: 'Intermedio', avanzado: 'Avanzado' }} />
               <Field label="Días disponibles" name="diasDisponibles" type="number" min="1" max="7" value={datos.diasDisponibles} onChange={handleChange} />
             </div>
           )}
@@ -226,7 +231,8 @@ export function MiPerfil({ perfil, onActualizar }) {
             <InfoField label="Sexo" value={sexoLabels[perfil.sexo] || '—'} />
             <InfoField label="Nivel de actividad" value={nivelLabels[perfil.nivelActividad] || '—'} />
             <InfoField label="Días disponibles" value={perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'} />
-            <InfoField label="Propósito" value={perfil.propositoEntrenamiento || '—'} />
+            <InfoField label="Propósito" value={perfil.propositoEntrenamiento ? labelObjetivo(perfil.propositoEntrenamiento) : '—'} />
+            <InfoField label="Nivel de experiencia" value={perfil.nivelExperiencia ? labelNivelExperiencia(perfil.nivelExperiencia) : '—'} />
             <InfoField label="Fecha de registro" value={perfil.fechaRegistro || '—'} />
           </div>
         )}

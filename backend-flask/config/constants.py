@@ -184,6 +184,35 @@ MAPEO_OBJETIVO_CONFIG = {
     },
 }
 
+MAPEO_PROPOSITO_TEXTO = {
+    'perder peso': 'perdida_peso',
+    'bajar de peso': 'perdida_peso',
+    'pérdida de peso': 'perdida_peso',
+    'loss weight': 'perdida_peso',
+    'weight loss': 'perdida_peso',
+    'tonificar': 'ganancia_muscular',
+    'ganar masa muscular': 'ganancia_muscular',
+    'ganar musculo': 'ganancia_muscular',
+    'masa muscular': 'ganancia_muscular',
+    'gain muscle': 'ganancia_muscular',
+    'muscle gain': 'ganancia_muscular',
+    'mejorar condicion fisica general': 'mantenimiento',
+    'mejorar condición física general': 'mantenimiento',
+    'condicion fisica': 'mantenimiento',
+    'salud y bienestar': 'mantenimiento',
+    'bienestar': 'mantenimiento',
+    'salud': 'mantenimiento',
+    'mantenimiento': 'mantenimiento',
+    'mantener': 'mantenimiento',
+    'rendimiento deportivo': 'rendimiento',
+    'rendimiento': 'rendimiento',
+    'deportivo': 'rendimiento',
+    'performance': 'rendimiento',
+    'rehabilitacion': 'rehabilitacion',
+    'rehabilitación': 'rehabilitacion',
+    'rehab': 'rehabilitacion',
+}
+
 DIFICULTAD_ORDEN = {'principiante': 1, 'intermedio': 2, 'avanzado': 3}
 
 GRUPOS_MUSCULARES = [

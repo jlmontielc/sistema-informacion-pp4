@@ -3,7 +3,7 @@ const ctrl = require('./instruido.controller');
 const { validar } = require('../../shared/middleware/validate');
 const { autenticar } = require('../../shared/middleware/authenticate');
 const { autorizar } = require('../../shared/middleware/autorizar');
-const { esquemaCrear, esquemaActualizar } = require('./instruido.validation');
+const { esquemaCrear, esquemaActualizar, esquemaActualizarPropio } = require('./instruido.validation');
 const { esquemaPerfilMedico } = require('./perfil-medico.validation');
 const rutasPerfilMedico = require('./perfil-medico.routes');
 
@@ -12,7 +12,7 @@ const router = Router();
 router.use(autenticar);
 
 router.get('/yo', autorizar('instruido'), ctrl.obtenerMiPerfil);
-router.put('/yo', autorizar('instruido'), ctrl.actualizarMiPerfil);
+router.put('/yo', autorizar('instruido'), validar(esquemaActualizarPropio), ctrl.actualizarMiPerfil);
 
 router.get('/yo/perfil-medico', autorizar('instruido'), ctrl.obtenerMiPerfilMedico);
 router.put('/yo/perfil-medico', autorizar('instruido'), validar(esquemaPerfilMedico), ctrl.actualizarMiPerfilMedico);

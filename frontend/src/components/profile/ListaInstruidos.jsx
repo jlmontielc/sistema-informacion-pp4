@@ -5,6 +5,7 @@ import { Loading } from '../common/Loading';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import api from '../../services/api';
+import { labelObjetivo } from '../../utils/constants';
 
 const nivelLabels = {
   sedentario: 'Sedentario',
@@ -122,7 +123,7 @@ export function ListaInstruidos() {
             <InfoField label="Altura" value={`${seleccionado.altura} m`} />
             <InfoField label="Sexo" value={seleccionado.sexo === 'masculino' ? 'Masculino' : 'Femenino'} />
             <InfoField label="Nivel de actividad" value={nivelLabels[seleccionado.nivelActividad] || seleccionado.nivelActividad} />
-            <InfoField label="Propósito" value={seleccionado.propositoEntrenamiento || '—'} />
+            <InfoField label="Propósito" value={seleccionado.propositoEntrenamiento ? labelObjetivo(seleccionado.propositoEntrenamiento) : '—'} />
             <InfoField label="Días disponibles" value={seleccionado.diasDisponibles ? `${seleccionado.diasDisponibles} días/semana` : '—'} />
             <InfoField label="Fecha de registro" value={seleccionado.fechaRegistro} />
 
