@@ -9,5 +9,7 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
-database/
-coverage/   
+database/*
+!database/schema.sql
+!database/migrations/
+coverage/

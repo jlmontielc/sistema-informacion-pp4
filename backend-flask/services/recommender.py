@@ -1,24 +1,40 @@
 import random
+import logging
 from collections import defaultdict
 from config.constants import (
     MAPEO_OBJETIVO_CONFIG,
     MAPEO_PROPOSITO_TEXTO,
     DIFICULTAD_ORDEN,
     GRUPOS_MUSCULARES,
+    PESOS_BASE_SCORING,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RecommenderEngine:
 
     def __init__(self):
-        self.weights = {
-            'objetivo': 3.0,
-            'nivel': 2.0,
-            'balance_grupal': 2.0,
-            'progresion': 1.5,
-            'diversidad': 1.0,
-            'equipo': 0.5,
+        self.weights = dict(PESOS_BASE_SCORING)
+        self._cargar_pesos_persistidos()
+
+    def _cargar_pesos_persistidos(self):
+        try:
+            from services.feedback_learner import cargar_pesos_persistidos
+            persistidos = cargar_pesos_persistidos()
+            if persistidos:
+                self.weights.update(persistidos)
+                logger.info('Pesos de scoring cargados: %s', self.weights)
+        except Exception as e:
+            logger.warning('Usando pesos base (sin persistencia disponible): %s', e)
+
+    def actualizar_pesos(self, pesos: dict):
+        validos = {
+            k: float(v) for k, v in pesos.items() if k in PESOS_BASE_SCORING
         }
+        if validos:
+            self.weights.update(validos)
+            logger.info('Pesos actualizados en caliente: %s', self.weights)
 
     def generar_rutina(
         self,
@@ -166,20 +182,51 @@ class RecommenderEngine:
 
         scored = []
         for ej in candidatos:
-            score = self._score_ejercicio(ej, config_obj, datos_cliente, historial_map, ejercicios_usados)
+            score = self._score_inicial(
+                ej, config_obj, datos_cliente, historial_map
+            )
             scored.append((ej, score))
 
-        scored.sort(key=lambda x: x[1], reverse=True)
-
         max_ejercicios = min(6, len(scored))
-        seleccionados = [ej for ej, _ in scored[:max_ejercicios]]
+        conteo_grupos = defaultdict(int)
+        seleccionados = []
+        disponibles = list(candidatos)
+
+        while len(seleccionados) < max_ejercicios and disponibles:
+            mejor_ej = None
+            mejor_score = None
+            for ej in disponibles:
+                score = self._score_ejercicio(
+                    ej, config_obj, datos_cliente, historial_map,
+                    ejercicios_usados, conteo_grupos,
+                )
+                if mejor_score is None or score > mejor_score:
+                    mejor_ej, mejor_score = ej, score
+            seleccionados.append(mejor_ej)
+            conteo_grupos[mejor_ej.get('grupo_muscular') or ''] += 1
+            disponibles.remove(mejor_ej)
 
         if len(seleccionados) < 3:
-            restantes = [ej for ej, _ in scored[max_ejercicios:]]
-            random.shuffle(restantes)
-            seleccionados.extend(restantes[:3 - len(seleccionados)])
+            restantes = random.sample(
+                disponibles, min(3 - len(seleccionados), len(disponibles))
+            )
+            seleccionados.extend(restantes)
 
         return seleccionados
+
+    def _score_inicial(
+        self,
+        ejercicio: dict,
+        config_obj: dict,
+        datos_cliente: dict,
+        historial_map: dict,
+    ) -> float:
+        return (
+            self._score_objetivo(ejercicio, config_obj)
+            + self._score_nivel(ejercicio, datos_cliente)
+            + self._score_progresion(ejercicio, historial_map)
+            + self._score_equipo(ejercicio, datos_cliente)
+        )
 
     def _score_ejercicio(
         self,
@@ -188,12 +235,13 @@ class RecommenderEngine:
         datos_cliente: dict,
         historial_map: dict,
         ejercicios_usados: set,
+        conteo_grupos: dict,
     ) -> float:
         score = 0.0
 
         score += self._score_objetivo(ejercicio, config_obj)
         score += self._score_nivel(ejercicio, datos_cliente)
-        score += self._score_balance_grupal(ejercicio, ejercicios_usados)
+        score += self._score_balance_grupal(ejercicio, conteo_grupos)
         score += self._score_progresion(ejercicio, historial_map)
         score += self._score_diversidad(ejercicio, ejercicios_usados)
         score += self._score_equipo(ejercicio, datos_cliente)
@@ -227,11 +275,9 @@ class RecommenderEngine:
         diferencia = abs(nivel_cliente - nivel_ejercicio)
         return max(0, (3 - diferencia)) * (self.weights['nivel'] / 3)
 
-    def _score_balance_grupal(self, ejercicio: dict, usados: set) -> float:
+    def _score_balance_grupal(self, ejercicio: dict, conteo_grupos: dict) -> float:
         grupo = ejercicio.get('grupo_muscular', '')
-        count_grupo = sum(
-            1 for ej_id in usados
-        )
+        count_grupo = conteo_grupos.get(grupo, 0)
         if count_grupo < 2:
             return self.weights['balance_grupal']
         return self.weights['balance_grupal'] * 0.3

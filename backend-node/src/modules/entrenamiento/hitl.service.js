@@ -1,5 +1,6 @@
 const http = require('http');
 const url = require('url');
+const jwt = require('jsonwebtoken');
 const config = require('../../shared/constants');
 const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
@@ -8,6 +9,12 @@ const { descifrar } = require('../../shared/utils/crypto');
 const { GuardianSeguridad } = require('../../shared/guardian/guardian');
 
 const FLASK_URL = config.FLASK_IA_URL || 'http://localhost:5000';
+
+const generarTokenServicio = () => jwt.sign(
+  { service: 'backend-node' },
+  config.JWT_SECRET,
+  { expiresIn: '5m' },
+);
 
 const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
@@ -56,6 +63,7 @@ const httpRequest = (path, method, body, timeout) => new Promise((resolve, rejec
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(data),
+      'Authorization': `Bearer ${generarTokenServicio()}`,
     },
   };
 

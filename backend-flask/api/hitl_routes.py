@@ -1,5 +1,6 @@
 import logging
 from flask import Blueprint, request, jsonify
+from api.auth import require_jwt
 from services.hitl_engine import HitlEngine
 from services.feedback_store import (
     registrar_feedback_hitl,
@@ -15,6 +16,7 @@ engine = HitlEngine()
 
 
 @hitl_bp.route('/routine', methods=['POST'])
+@require_jwt
 def predict_routine():
     data = request.get_json()
     if not data:
@@ -32,6 +34,7 @@ def predict_routine():
 
 
 @hitl_bp.route('/validate', methods=['POST'])
+@require_jwt
 def validate_exercise():
     data = request.get_json()
     if not data:
@@ -47,10 +50,27 @@ def validate_exercise():
 
     resultado = engine.validar_ejercicio_individual(ejercicio_id, cliente_id, carga_kg)
 
+    if resultado.get('error'):
+        mensaje = resultado['error']
+        if 'no encontrad' in mensaje.lower():
+            return jsonify(resultado), 404
+        return jsonify({'error': mensaje}), 400
+
+    return jsonify(resultado)
+
+
+@hitl_bp.route('/recalibrar', methods=['POST'])
+@require_jwt
+def recalibrar_pesos():
+    resultado = engine.recalibrar_pesos()
+    if not resultado.get('success'):
+        status = resultado.pop('status', 500)
+        return jsonify(resultado), status
     return jsonify(resultado)
 
 
 @hitl_bp.route('/feedback', methods=['POST'])
+@require_jwt
 def registrar_feedback():
     data = request.get_json()
     if not data:
@@ -77,6 +97,7 @@ def registrar_feedback():
 
 
 @hitl_bp.route('/history/<int:cliente_id>', methods=['GET'])
+@require_jwt
 def historial(cliente_id):
     limit = request.args.get('limit', 20, type=int)
     historial = obtener_historial_feedback(cliente_id, limit)
@@ -88,12 +109,14 @@ def historial(cliente_id):
 
 
 @hitl_bp.route('/stats', methods=['GET'])
+@require_jwt
 def estadisticas():
     stats = obtener_estadisticas_feedback()
     return jsonify(stats)
 
 
 @hitl_bp.route('/last/<int:cliente_id>', methods=['GET'])
+@require_jwt
 def ultima_sugerencia(cliente_id):
     ultima = obtener_ultima_sugerencia(cliente_id)
     if not ultima:
