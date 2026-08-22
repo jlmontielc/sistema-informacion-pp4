@@ -1,8 +1,8 @@
 services:
   backend-flask:
     build: ./backend-flask
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     env_file: ./backend-flask/.env
     restart: unless-stopped
 

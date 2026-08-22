@@ -20,6 +20,8 @@ User -> nginx:80 (frontend SPA)
 - **backend-node** — monolith with modular domain folders (`auth/`, `instruidos/`, `entrenamiento/`, `metabolismo/`, `dietas/`, `reportes/`, `dashboard/`).
 - **backend-flask** — microservicio aislado, solo logica matematica/predictiva.
 - **Flujo HITL:** Flask predice -> Node valida contra historial medico -> bloquea si hay contraindicacion -> entrenador revisa, modifica o acepta antes de publicar.
+- **Auth servicio a servicio:** Node firma un JWT interno (`{service:'backend-node'}`, 5 min) con `JWT_SECRET` compartido y lo envia como `Bearer` a todas las rutas `/api/predict/*`. Flask valida firma+exp+emisor con PyJWT (`api/auth.py`). Solo `/api/health` es publico; puerto 5000 no expuesto en docker-compose.
+- **Recalibracion de pesos:** `POST /api/predict/recalibrar` recalcula pesos de scoring del RecommenderEngine desde tasas de `feedback_hitl` (minimo 5 registros), persiste en `pesos_modelo_ia` y aplica en caliente. El engine carga los pesos persistidos al iniciar.
 
 ## Comandos exactos
 
@@ -42,7 +44,7 @@ npm test                 # Jest --coverage (tests/ vacio actualmente)
 ### Backend Flask (`cd backend-flask`)
 ```bash
 python app.py                        # Dev server (debug=True, puerto 5000)
-python tests/test_guardian.py        # Tests manuales (11 asserts)
+python tests/test_guardian.py        # Tests manuales (13 funciones de test)
 gunicorn --bind 0.0.0.0:5000 app:app # Produccion
 ```
 
@@ -66,7 +68,7 @@ npm test        # Jest (react-scripts test, sin tests aun)
 - Schema en `database/schema.sql` (seed admin + 20 ejercicios).
 - Migraciones manuales SQL en `database/migrations/`.
 - Sequelize `sync()` al iniciar crea tablas si no existen.
-- Cuidado: `.gitignore` tiene `database/   ` (trailing spaces) — **verificar que schema.sql y migraciones esten trackeados**.
+- Tabla `pesos_modelo_ia` (migracion 003): persiste pesos de scoring del motor IA, recalibrados desde feedback. Flask tambien la crea con CREATE TABLE IF NOT EXISTS al recalibrar.
 
 ## Variables de entorno requeridas
 

@@ -215,6 +215,15 @@ MAPEO_PROPOSITO_TEXTO = {
 
 DIFICULTAD_ORDEN = {'principiante': 1, 'intermedio': 2, 'avanzado': 3}
 
+PESOS_BASE_SCORING = {
+    'objetivo': 3.0,
+    'nivel': 2.0,
+    'balance_grupal': 2.0,
+    'progresion': 1.5,
+    'diversidad': 1.0,
+    'equipo': 0.5,
+}
+
 GRUPOS_MUSCULARES = [
     'Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core',
     'Trapecios', 'Gemelos', 'Isquiotibiales', 'Cuadriceps',

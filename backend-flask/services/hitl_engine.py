@@ -5,9 +5,9 @@ from services.data_fetcher import (
     fetch_perfil_medico,
     fetch_todos_ejercicios,
     fetch_historial_entrenamiento,
-    fetch_rutinas_activas,
     parsear_lesiones,
     parsear_condiciones,
+    parsear_alergias,
 )
 from services.guardian import GuardianSeguridad
 from services.recommender import RecommenderEngine
@@ -44,7 +44,12 @@ class HitlEngine:
             pool_ejercicios, datos_cliente, perfil_medico
         )
 
-        if pool_filtrado['total_seguros'] == 0:
+        pool_seguro = self._filtrar_excluidos(
+            pool_filtrado['pool_seguro'],
+            (datos_cliente.get('preferencias') or {}).get('ejercicios_excluir'),
+        )
+
+        if len(pool_seguro) == 0:
             return {
                 'success': False,
                 'error': 'No hay ejercicios seguros disponibles para este perfil',
@@ -60,11 +65,11 @@ class HitlEngine:
                 'tiempo_ms': round((time.time() - inicio) * 1000, 1),
             }
 
-        historial = fetch_historial_entrenamiento(cliente_id, semanas=4)
+        historial = self._obtener_historial(request_data, cliente_id)
 
         resultado_recommender = self.recommender.generar_rutina(
             datos_cliente=datos_cliente,
-            pool_seguro=pool_filtrado['pool_seguro'],
+            pool_seguro=pool_seguro,
             historial=historial,
         )
 
@@ -99,11 +104,13 @@ class HitlEngine:
                 'total_seguros': pool_filtrado['total_seguros'],
                 'total_bloqueados': pool_filtrado['total_bloqueados'],
                 'total_precaucion': pool_filtrado['total_precaucion'],
+                'excluidos_preferencia': len(pool_filtrado['pool_seguro']) - len(pool_seguro),
             },
             'metadata': {
                 'tiempo_ms': tiempo_total,
-                'version_modelo': '1.0.0',
+                'version_modelo': '1.1.0',
                 'motor': 'reglas+scoring',
+                'pesos_scoring': dict(self.recommender.weights),
             },
         }
 
@@ -116,6 +123,15 @@ class HitlEngine:
         )
 
         return respuesta
+
+    def recalibrar_pesos(self) -> dict:
+        from services.feedback_learner import recalcular_y_persistir_pesos
+
+        resultado = recalcular_y_persistir_pesos()
+        if resultado.get('success'):
+            self.recommender.actualizar_pesos(resultado['pesos_nuevos'])
+            self.weights = dict(self.recommender.weights)
+        return resultado
 
     def validar_ejercicio_individual(
         self, ejercicio_id: int, cliente_id: int, carga_kg: float = None
@@ -151,6 +167,36 @@ class HitlEngine:
             },
             'validacion': resultado,
         }
+
+    def _obtener_historial(self, request_data: dict, cliente_id: int) -> list:
+        historial_payload = request_data.get('historial_reciente')
+        if isinstance(historial_payload, dict):
+            registros = historial_payload.get('ultimas_4_semanas')
+            if isinstance(registros, list):
+                return registros
+        elif isinstance(historial_payload, list):
+            return historial_payload
+        return fetch_historial_entrenamiento(cliente_id, semanas=4)
+
+    @staticmethod
+    def _filtrar_excluidos(pool_seguro: list, excluidos) -> list:
+        if not excluidos:
+            return pool_seguro
+        ids_excluir = set()
+        nombres_excluir = set()
+        for item in excluidos:
+            texto = str(item).strip()
+            if not texto:
+                continue
+            if texto.isdigit():
+                ids_excluir.add(int(texto))
+            else:
+                nombres_excluir.add(texto.lower())
+        return [
+            ej for ej in pool_seguro
+            if ej.get('id') not in ids_excluir
+            and (ej.get('nombre') or '').strip().lower() not in nombres_excluir
+        ]
 
     def _construir_datos_cliente(self, request_data: dict, cliente_id: int) -> dict:
         if 'edad' in request_data and 'peso' in request_data:
@@ -201,7 +247,7 @@ class HitlEngine:
         return {
             'lesiones': parsear_lesiones(perfil_raw),
             'condiciones_preexistentes': parsear_condiciones(perfil_raw),
-            'alergias': parsear_lesiones(perfil_raw),
+            'alergias': parsear_alergias(perfil_raw),
             'medicacion': [],
         }
 

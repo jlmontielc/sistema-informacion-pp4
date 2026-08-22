@@ -60,7 +60,7 @@ const REGLAS_LESION_EJERCICIO = {
       'extensiones de cuádriceps': NivelRiesgo.MEDIUM,
       'curl femoral': NivelRiesgo.MEDIUM,
       'peso muerto rumano': NivelRiesgo.MEDIUM,
-      step ups: NivelRiesgo.HIGH,
+      'step ups': NivelRiesgo.HIGH,
       saltos: NivelRiesgo.CRITICAL,
       plyometrics: NivelRiesgo.CRITICAL,
     },
