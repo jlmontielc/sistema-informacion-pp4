@@ -112,27 +112,90 @@ function useDebounce(value, delay) {
 }
 
 export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionados = [] }) {
-  const [ejerciciosRaw, setEjerciciosRaw] = useState([]);
+  const [itemsRaw, setItemsRaw] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState('');
   const [filtroGrupo, setFiltroGrupo] = useState('');
   const [seleccionLocal, setSeleccionLocal] = useState([]);
   const [preview, setPreview] = useState(null);
-  const [pagina, setPagina] = useState(1);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalServer, setTotalServer] = useState(0);
+  const [cargandoMas, setCargandoMas] = useState(false);
   const busquedaDebounced = useDebounce(busqueda, 200);
+
+  const peticionIdRef = useRef(0);
+  const cargandoRef = useRef(false);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    const idPeticion = ++peticionIdRef.current;
     setLoading(true);
-    setPagina(1);
-    ejerciciosApi.listar()
+    setCargandoMas(false);
+    cargandoRef.current = false;
+    setItemsRaw([]);
+    setPaginaActual(1);
+    setTotalPaginas(1);
+    setTotalServer(0);
+    ejerciciosApi.listar({
+      pagina: 1,
+      limite: PAGE_SIZE,
+      busqueda: busquedaDebounced,
+      grupoMuscular: filtroGrupo || undefined,
+    })
       .then((res) => {
-        const raw = res.data?.ejercicios || res.data || [];
-        setEjerciciosRaw(preComputeTranslations(raw));
+        if (peticionIdRef.current !== idPeticion) return;
+        const raw = res.data?.ejercicios || [];
+        setTotalPaginas(res.data?.totalPaginas || 1);
+        setTotalServer(res.data?.total ?? raw.length);
+        setItemsRaw(preComputeTranslations(raw));
       })
-      .catch(() => setEjerciciosRaw([]))
-      .finally(() => setLoading(false));
-  }, [isOpen]);
+      .catch(() => {
+        if (peticionIdRef.current !== idPeticion) return;
+        setItemsRaw([]);
+        setTotalPaginas(1);
+        setTotalServer(0);
+      })
+      .finally(() => {
+        if (peticionIdRef.current === idPeticion) setLoading(false);
+      });
+  }, [isOpen, busquedaDebounced, filtroGrupo]);
+
+  const cargarMas = useCallback(async () => {
+    if (loading || cargandoRef.current || paginaActual >= totalPaginas) return;
+    const idPeticion = ++peticionIdRef.current;
+    const siguiente = paginaActual + 1;
+    cargandoRef.current = true;
+    setCargandoMas(true);
+    try {
+      const res = await ejerciciosApi.listar({
+        pagina: siguiente,
+        limite: PAGE_SIZE,
+        busqueda: busquedaDebounced,
+        grupoMuscular: filtroGrupo || undefined,
+      });
+      if (peticionIdRef.current !== idPeticion) return;
+      const nuevos = preComputeTranslations(res.data?.ejercicios || []);
+      setTotalPaginas(res.data?.totalPaginas || totalPaginas);
+      setTotalServer(res.data?.total ?? totalServer);
+      setPaginaActual(siguiente);
+      setItemsRaw((prev) => {
+        const idsExistentes = new Set(prev.map((e) => e.id));
+        return [...prev, ...nuevos.filter((e) => !idsExistentes.has(e.id))];
+      });
+    } catch {
+      // error silencioso: se puede reintentar con el botón o el scroll
+    } finally {
+      cargandoRef.current = false;
+      if (peticionIdRef.current === idPeticion) setCargandoMas(false);
+    }
+  }, [loading, paginaActual, totalPaginas, totalServer, busquedaDebounced, filtroGrupo]);
+
+  const cargarMasRef = useRef(cargarMas);
+  useEffect(() => {
+    cargarMasRef.current = cargarMas;
+  });
 
   useEffect(() => {
     setSeleccionLocal([...seleccionados]);
@@ -142,10 +205,6 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
     if (!isOpen) setPreview(null);
   }, [isOpen]);
 
-  useEffect(() => {
-    setPagina(1);
-  }, [busquedaDebounced, filtroGrupo]);
-
   const seleccionIds = useMemo(() => {
     const set = new Set();
     seleccionLocal.forEach((e) => set.add(e.ejercicio_id));
@@ -154,7 +213,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
 
   const filtrados = useMemo(() => {
     const term = busquedaDebounced.toLowerCase();
-    return ejerciciosRaw.filter((ej) => {
+    return itemsRaw.filter((ej) => {
       const matchBusqueda = !term ||
         ej.nombre?.toLowerCase().includes(term) ||
         ej.nombreTraducido?.toLowerCase().includes(term) ||
@@ -164,13 +223,23 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
       const matchGrupo = !filtroGrupo || ej.grupoMuscular === filtroGrupo;
       return matchBusqueda && matchGrupo;
     });
-  }, [ejerciciosRaw, busquedaDebounced, filtroGrupo]);
+  }, [itemsRaw, busquedaDebounced, filtroGrupo]);
 
-  const visibles = useMemo(() => {
-    return filtrados.slice(0, pagina * PAGE_SIZE);
-  }, [filtrados, pagina]);
+  const hayMasPaginas = paginaActual < totalPaginas;
 
-  const hayMas = filtrados.length > visibles.length;
+  useEffect(() => {
+    if (!isOpen || loading || cargandoMas || !hayMasPaginas) return undefined;
+    const nodo = sentinelRef.current;
+    if (!nodo) return undefined;
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) cargarMasRef.current();
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    observador.observe(nodo);
+    return () => observador.disconnect();
+  }, [isOpen, loading, cargandoMas, hayMasPaginas, cargarMas]);
 
   const toggleSeleccion = useCallback((ejercicio) => {
     setSeleccionLocal((prev) => {
@@ -254,7 +323,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
             </div>
           ) : (
             <div className="catalogo-grid" style={{ flex: 1, maxHeight: 450 }}>
-              {visibles.map((ej) => {
+              {filtrados.map((ej) => {
                 const seleccionado = seleccionIds.has(ej.id);
                 const estaEnPreview = preview?.id === ej.id;
                 return (
@@ -275,14 +344,31 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                   </div>
                 );
               })}
-              {hayMas && (
+              {cargandoMas && (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 'var(--space-2)',
+                  padding: 'var(--space-3)',
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--color-text-secondary)',
+                }}>
+                  Cargando más ejercicios...
+                </div>
+              )}
+              {!cargandoMas && hayMasPaginas && (
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setPagina((p) => p + 1)}
+                  onClick={cargarMas}
                   style={{ gridColumn: '1 / -1', marginTop: 'var(--space-2)' }}
                 >
-                  Cargar mas ({filtrados.length - visibles.length} restantes)
+                  Cargar mas ({Math.max(totalServer - filtrados.length, 0)} restantes)
                 </button>
+              )}
+              {!cargandoMas && hayMasPaginas && (
+                <div ref={sentinelRef} aria-hidden="true" style={{ gridColumn: '1 / -1', height: 1 }} />
               )}
             </div>
           )}

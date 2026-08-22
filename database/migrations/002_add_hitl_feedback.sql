@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS feedback_hitl (
     entrenador_id INT NOT NULL,
     cliente_id INT NOT NULL,
     accion ENUM('aprobada', 'rechazada', 'modificada') NOT NULL,
-    rutina_original JSON NOT NULL COMMENT 'Copia completa de lo que la IA sugirió',
+    rutina_original JSON COMMENT 'Copia completa de lo que la IA sugirió',
     rutina_final JSON COMMENT 'Lo que el entrenador finalmente dejó',
     ejercicios_agregados JSON COMMENT 'Ejercicios que el entrenador añadió',
     ejercicios_eliminados JSON COMMENT 'Ejercicios que el entrenador quitó',
