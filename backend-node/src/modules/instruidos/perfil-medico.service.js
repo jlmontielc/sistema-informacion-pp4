@@ -2,7 +2,7 @@ const { PerfilMedico } = require('./perfil-medico.model');
 const { Instruido } = require('./instruido.model');
 const { cifrar, descifrar } = require('../../shared/utils/crypto');
 
-const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes'];
+const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
 const cifrarCampos = (datos) => {
   const cifrados = { ...datos };
@@ -18,12 +18,20 @@ const cifrarCampos = (datos) => {
   return cifrados;
 };
 
+const descifrarSeguro = (valor) => {
+  try {
+    return descifrar(valor);
+  } catch {
+    return valor;
+  }
+};
+
 const descifrarCampos = (registro) => {
   if (!registro) return registro;
   const datos = registro.toJSON ? registro.toJSON() : { ...registro };
   for (const campo of CAMPOS_SENSIBLES) {
     if (datos[campo]) {
-      datos[campo] = descifrar(datos[campo]);
+      datos[campo] = descifrarSeguro(datos[campo]);
     }
   }
   return datos;

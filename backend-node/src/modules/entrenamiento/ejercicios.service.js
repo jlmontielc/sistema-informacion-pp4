@@ -13,7 +13,33 @@ const obtenerTodos = async (filtros = {}) => {
       { instruccionesEs: { [Op.like]: `%${filtros.busqueda}%` } },
     ];
   }
-  return Ejercicio.findAll({ where, order: [['nombre', 'ASC']] });
+
+  const paginaSolicitada = parseInt(filtros.pagina, 10);
+  const limiteSolicitado = parseInt(filtros.limite, 10);
+  const paginado =
+    (Number.isInteger(paginaSolicitada) && paginaSolicitada > 0) ||
+    (Number.isInteger(limiteSolicitado) && limiteSolicitado > 0);
+
+  if (!paginado) {
+    return Ejercicio.findAll({ where, order: [['nombre', 'ASC']] });
+  }
+
+  const limite = Math.min(Math.max(limiteSolicitado || 50, 1), 100);
+  const pagina = Math.max(paginaSolicitada || 1, 1);
+  const offset = (pagina - 1) * limite;
+  const { rows, count } = await Ejercicio.findAndCountAll({
+    where,
+    order: [['nombre', 'ASC']],
+    limit: limite,
+    offset,
+  });
+  return {
+    ejercicios: rows,
+    total: count,
+    pagina,
+    limite,
+    totalPaginas: Math.max(Math.ceil(count / limite), 1),
+  };
 };
 
 const obtenerPorId = async (id) => Ejercicio.findByPk(id);

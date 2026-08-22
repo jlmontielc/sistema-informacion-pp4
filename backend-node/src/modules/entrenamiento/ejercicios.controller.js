@@ -2,8 +2,10 @@ const ejerciciosService = require('./ejercicios.service');
 
 const obtenerTodos = async (req, res, next) => {
   try {
-    const ejercicios = await ejerciciosService.obtenerTodos(req.query);
-    res.json(ejercicios);
+    const { pagina, limite, grupoMuscular, target, equipoNecesario, dificultad, busqueda } = req.query;
+    const filtros = { pagina, limite, grupoMuscular, target, equipoNecesario, dificultad, busqueda };
+    const resultado = await ejerciciosService.obtenerTodos(filtros);
+    res.json(resultado);
   } catch (err) {
     next(err);
   }

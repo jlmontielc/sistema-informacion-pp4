@@ -1,7 +1,10 @@
 const { Router } = require('express');
 const ctrl = require('./hitl.controller');
+const feedbackCtrl = require('./hitl-feedback.controller');
 const { autenticar } = require('../../shared/middleware/authenticate');
 const { autorizar } = require('../../shared/middleware/autorizar');
+const { validar } = require('../../shared/middleware/validate');
+const { esquemaFeedbackHitl } = require('./hitl-feedback.validation');
 
 const router = Router();
 
@@ -17,6 +20,21 @@ router.get(
   autenticar,
   autorizar('administrador', 'entrenador'),
   ctrl.validarEjercicio,
+);
+
+router.post(
+  '/ia/feedback',
+  autenticar,
+  autorizar('administrador', 'entrenador'),
+  validar(esquemaFeedbackHitl),
+  feedbackCtrl.registrarFeedback,
+);
+
+router.get(
+  '/ia/feedback',
+  autenticar,
+  autorizar('administrador', 'entrenador'),
+  feedbackCtrl.listarFeedback,
 );
 
 module.exports = router;

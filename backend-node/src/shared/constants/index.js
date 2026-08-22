@@ -7,6 +7,14 @@ for (const varName of REQUERIDOS) {
   }
 }
 
+const esHexValido = (valor) => /^[0-9a-fA-F]+$/.test(valor);
+if (!esHexValido(process.env.ENC_KEY) || process.env.ENC_KEY.length !== 64) {
+  throw new Error('ENC_KEY invalida: debe ser hexadecimal de exactamente 64 caracteres (32 bytes para AES-256)');
+}
+if (!esHexValido(process.env.ENC_IV) || process.env.ENC_IV.length !== 32) {
+  throw new Error('ENC_IV invalido: debe ser hexadecimal de exactamente 32 caracteres (16 bytes para AES-256-CBC)');
+}
+
 module.exports = {
   PORT: process.env.PORT || 3000,
   DB: {
