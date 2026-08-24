@@ -6,7 +6,7 @@ const options = {
     info: {
       title: 'Sistema de Información - API',
       version: '1.0.0',
-      description: 'API del sistema de información para entrenamiento físico. Gestiona autenticación, perfiles, metabolismo, entrenamientos, dietas y reportes.',
+      description: 'API del sistema de información para entrenamiento físico. Gestiona autenticación, perfiles, metabolismo, entrenamientos, dietas, pagos y reportes.',
     },
     servers: [
       { url: 'http://localhost:3000', description: 'Servidor de desarrollo' },
@@ -18,6 +18,16 @@ const options = {
           scheme: 'bearer',
           bearerFormat: 'JWT',
           description: 'Ingresa tu token JWT de acceso en el formato: Bearer <token>',
+        },
+      },
+      responses: {
+        Error: {
+          description: 'Error controlado por la API',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' },
+            },
+          },
         },
       },
       schemas: {
@@ -285,6 +295,7 @@ const options = {
       { name: 'Entrenamiento', description: 'Ejercicios, plantillas, rutinas y registros' },
       { name: 'HITL', description: 'Motor de IA con validación Guardian y feedback del entrenador' },
       { name: 'Dietas', description: 'Planes de dieta' },
+      { name: 'Pagos', description: 'Planes de mensualidad, métodos de pago, tasa de cambio y verificación de pagos' },
       { name: 'Dashboard', description: 'Estadísticas por rol' },
     ],
   },
@@ -301,6 +312,7 @@ const options = {
     './src/modules/entrenamiento/registro-entrenamiento.routes.js',
     './src/modules/entrenamiento/hitl.routes.js',
     './src/modules/dietas/dietas.routes.js',
+    './src/modules/pagos/pagos.routes.js',
     './src/modules/reportes/reportes.routes.js',
     './src/modules/dashboard/dashboard.routes.js',
   ],

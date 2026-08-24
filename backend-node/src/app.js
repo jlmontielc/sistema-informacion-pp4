@@ -13,12 +13,16 @@ const metabolismoRoutes = require('./modules/metabolismo/metabolismo.routes');
 const entrenamientoRoutes = require('./modules/entrenamiento/entrenamiento.routes');
 const hitlRoutes = require('./modules/entrenamiento/hitl.routes');
 const dietasRoutes = require('./modules/dietas/dietas.routes');
+const pagosRoutes = require('./modules/pagos/pagos.routes');
 const reportesRoutes = require('./modules/reportes/reportes.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 const app = express();
 
 app.use(cors());
+// Límite elevado SOLO para /api/pagos: admite comprobantes en base64 (~2 MB decodificados).
+// El resto de la API conserva el límite por defecto (100kb).
+app.use('/api/pagos', express.json({ limit: '5mb' }));
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -56,6 +60,7 @@ app.use('/api/metabolismo', metabolismoRoutes);
 app.use('/api/entrenamiento', entrenamientoRoutes);
 app.use('/api/entrenamiento', hitlRoutes);
 app.use('/api/dietas', dietasRoutes);
+app.use('/api/pagos', pagosRoutes);
 app.use('/api/reportes', reportesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 

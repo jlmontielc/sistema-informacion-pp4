@@ -16,6 +16,8 @@ const MetabolismoPage = lazy(() => import('./pages/MetabolismoPage'));
 const EntrenamientoPage = lazy(() => import('./pages/EntrenamientoPage'));
 const DietasPage = lazy(() => import('./pages/DietasPage'));
 const ReportesPage = lazy(() => import('./pages/ReportesPage'));
+const PlanesPage = lazy(() => import('./pages/PlanesPage'));
+const MiPlanPage = lazy(() => import('./pages/MiPlanPage'));
 const PerfilPage = lazy(() => import('./pages/PerfilPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const OfflinePage = lazy(() => import('./pages/OfflinePage'));
@@ -105,6 +107,8 @@ function AppContent() {
                         <Route path="/entrenamiento" element={<EntrenamientoPage />} />
                         <Route path="/dietas" element={<DietasPage />} />
                         <Route path="/reportes" element={<ReportesPage />} />
+                        <Route path="/planes" element={<PlanesPage />} />
+                        <Route path="/mi-plan" element={<MiPlanPage />} />
                         <Route path="/complete-profile" element={<CompleteProfilePage />} />
                         <Route path="/perfil" element={<PerfilPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />

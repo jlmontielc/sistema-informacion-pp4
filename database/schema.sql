@@ -303,6 +303,97 @@ CREATE TABLE rendimiento (
 ) ENGINE=InnoDB;
 
 -- =============================================================
+-- 12. PLANES DE PAGO (mensualidades creadas por el entrenador)
+-- =============================================================
+CREATE TABLE planes_pago (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  entrenador_id INT NOT NULL,
+  nombre VARCHAR(150) NOT NULL,
+  descripcion TEXT,
+  monto_usd DECIMAL(10,2) NOT NULL,
+  dias_vigencia INT NOT NULL DEFAULT 30,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_plan_entrenador
+    FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
+    ON DELETE CASCADE,
+  INDEX idx_planes_pago_entrenador (entrenador_id),
+  INDEX idx_planes_pago_activo (entrenador_id, activo)
+) ENGINE=InnoDB;
+
+-- =============================================================
+-- 13. MÉTODOS DE PAGO configurados por el entrenador
+-- =============================================================
+CREATE TABLE metodos_pago (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  entrenador_id INT NOT NULL,
+  tipo ENUM('pago_movil','transferencia','zelle','binance','otro') NOT NULL,
+  datos JSON NOT NULL,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_metodo_entrenador
+    FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
+    ON DELETE CASCADE,
+  INDEX idx_metodos_pago_entrenador (entrenador_id)
+) ENGINE=InnoDB;
+
+-- =============================================================
+-- 14. CONFIGURACIÓN DE PAGOS por entrenador (tasa $ -> Bs)
+-- =============================================================
+CREATE TABLE configuracion_pagos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  entrenador_id INT NOT NULL,
+  tasa_cambio DECIMAL(10,4) NOT NULL DEFAULT 40.0000 COMMENT 'Bolivares por 1 USD',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT uq_configuracion_entrenador UNIQUE (entrenador_id),
+  CONSTRAINT fk_configuracion_entrenador
+    FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =============================================================
+-- 15. PAGOS de mensualidades con comprobante y verificación HITL
+-- =============================================================
+CREATE TABLE pagos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  entrenador_id INT NOT NULL,
+  plan_id INT NOT NULL,
+  metodo_pago_id INT NOT NULL,
+  monto_usd DECIMAL(10,2) NOT NULL,
+  monto_bs DECIMAL(14,2) NOT NULL,
+  tasa_aplicada DECIMAL(10,4) NOT NULL,
+  referencia VARCHAR(100) NOT NULL,
+  fecha_pago DATE NOT NULL,
+  comprobante LONGTEXT NOT NULL COMMENT 'Capture del pago en base64',
+  comprobante_mime VARCHAR(100) NOT NULL DEFAULT 'image/jpeg',
+  estado ENUM('pendiente','verificado','rechazado') NOT NULL DEFAULT 'pendiente',
+  comentario_rechazo VARCHAR(255),
+  verificado_por INT,
+  fecha_verificacion DATETIME,
+  fecha_inicio DATE COMMENT 'Inicio de vigencia al verificar el pago',
+  fecha_fin DATE COMMENT 'Fin de vigencia (inicio + dias_vigencia del plan)',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pago_cliente
+    FOREIGN KEY (cliente_id) REFERENCES instruidos(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_pago_entrenador
+    FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_pago_plan
+    FOREIGN KEY (plan_id) REFERENCES planes_pago(id),
+  CONSTRAINT fk_pago_metodo
+    FOREIGN KEY (metodo_pago_id) REFERENCES metodos_pago(id),
+  INDEX idx_pagos_estado (entrenador_id, estado),
+  INDEX idx_pagos_cliente (cliente_id),
+  INDEX idx_pagos_vigencia (cliente_id, estado, fecha_fin)
+) ENGINE=InnoDB;
+
+-- =============================================================
 -- VISTAS ÚTILES
 -- =============================================================
 
