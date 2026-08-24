@@ -8,6 +8,8 @@ export const ROUTES = {
   ENTRENAMIENTO: '/entrenamiento',
   DIETAS: '/dietas',
   REPORTES: '/reportes',
+  PLANES: '/planes',
+  MI_PLAN: '/mi-plan',
   PERFIL: '/perfil',
 };
 
@@ -18,6 +20,7 @@ const BASE_SIDEBAR_ITEMS = [
   { label: 'Entrenamiento', path: ROUTES.ENTRENAMIENTO, icon: 'entrenamiento' },
   { label: 'Dietas', path: ROUTES.DIETAS, icon: 'dietas' },
   { label: 'Reportes', path: ROUTES.REPORTES, icon: 'reportes' },
+  { label: 'Planes', path: ROUTES.PLANES, icon: 'planes' },
   { label: 'Mi Perfil', path: ROUTES.PERFIL, icon: 'perfil' },
 ];
 
@@ -25,11 +28,15 @@ export function getSidebarItems(user) {
   if (user?.tipo === 'instruido') {
     return BASE_SIDEBAR_ITEMS
       .filter((item) => item.label !== 'Metabolismo')
-      .map((item) =>
-        item.label === 'Clientes'
-          ? { ...item, label: 'Entrenador', path: ROUTES.ENTRENADOR, icon: 'entrenador' }
-          : item
-      );
+      .map((item) => {
+        if (item.label === 'Clientes') {
+          return { ...item, label: 'Entrenador', path: ROUTES.ENTRENADOR, icon: 'entrenador' };
+        }
+        if (item.label === 'Planes') {
+          return { ...item, label: 'Mi Plan', path: ROUTES.MI_PLAN, icon: 'miplan' };
+        }
+        return item;
+      });
   }
   return BASE_SIDEBAR_ITEMS;
 }

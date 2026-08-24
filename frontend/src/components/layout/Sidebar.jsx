@@ -11,6 +11,8 @@ const iconMap = {
   entrenamiento: '🏋️',
   dietas: '🥗',
   reportes: '📈',
+  planes: '💳',
+  miplan: '🧾',
   perfil: '👤',
 };
 

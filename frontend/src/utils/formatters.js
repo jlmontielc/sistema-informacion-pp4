@@ -37,3 +37,16 @@ export function formatCurrency(amount, currency = 'COP') {
     currency,
   }).format(amount);
 }
+
+export function formatUsd(monto) {
+  return `$${Number(monto || 0).toFixed(2)}`;
+}
+
+export function formatBs(montoUsd, tasaCambio) {
+  const bs = Number(montoUsd || 0) * Number(tasaCambio || 0);
+  return `Bs ${formatNumber(bs, 2)}`;
+}
+
+export function fechaHoyISO() {
+  return new Date().toISOString().slice(0, 10);
+}
