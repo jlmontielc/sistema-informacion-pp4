@@ -12,6 +12,12 @@ const Dieta = sequelize.define('Dieta', {
   fechaInicio: { type: DataTypes.DATEONLY, field: 'fecha_inicio' },
   fechaFin: { type: DataTypes.DATEONLY, field: 'fecha_fin' },
   activo: { type: DataTypes.BOOLEAN, defaultValue: true },
+  decision: {
+    type: DataTypes.ENUM('pendiente', 'aprobada', 'rechazada', 'modificada'),
+    allowNull: false,
+    defaultValue: 'pendiente',
+    field: 'decision',
+  },
 }, {
   underscored: true,
   tableName: 'planes_dieta',

@@ -1,34 +1,19 @@
-const http = require('http');
-const url = require('url');
-const jwt = require('jsonwebtoken');
-const config = require('../../shared/constants');
 const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const { RegistroEntrenamiento, RutinaAsignada } = require('./entrenamiento.model');
-const { descifrar } = require('../../shared/utils/crypto');
+const { CalculoMetabolico } = require('../metabolismo/metabolismo.model');
+const {
+  httpRequest,
+  descifrarSeguro,
+  parsearCampoJson,
+} = require('../../shared/utils/flask-client');
 
-const FLASK_URL = config.FLASK_IA_URL || 'http://localhost:5000';
-
-const generarTokenServicio = () => jwt.sign(
-  { service: 'backend-node' },
-  config.JWT_SECRET,
-  { expiresIn: '5m' },
-);
-
-const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
-
-const descifrarSeguro = (valor) => {
-  try {
-    return descifrar(valor);
-  } catch {
-    return valor;
-  }
-};
+const CAMPOS_SENSIBLES_HITL = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
 const descifrarCampos = (registro) => {
   if (!registro) return registro;
   const datos = registro.toJSON ? registro.toJSON() : { ...registro };
-  for (const campo of CAMPOS_SENSIBLES) {
+  for (const campo of CAMPOS_SENSIBLES_HITL) {
     if (datos[campo]) {
       datos[campo] = descifrarSeguro(datos[campo]);
     }
@@ -36,70 +21,31 @@ const descifrarCampos = (registro) => {
   return datos;
 };
 
-const parsearCampoJson = (raw) => {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
-    return [String(parsed)];
-  } catch {
-    if (typeof raw === 'string') {
-      return raw.split(',').map(s => s.trim()).filter(Boolean);
-    }
-    return [];
-  }
+const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) => {
+  if (!resultado || !resultado.success || !resultado.rutina_sugerida) return null;
+
+  const rutina = resultado.rutina_sugerida;
+
+  await RutinaAsignada.update(
+    { activa: false },
+    { where: { instruidoId: clienteId, activa: true } },
+  );
+
+  return RutinaAsignada.create({
+    instruidoId: clienteId,
+    entrenadorId,
+    nombre: rutina.nombre || 'Rutina IA - Auto-generada',
+    tipo: rutina.tipo || 'fuerza',
+    ejercicios: rutina,
+    diasSemana: rutina.distribucion_dias || null,
+    frecuenciaSemanal: rutina.dias_semana || null,
+    observaciones: resultado.explicacion || null,
+    personalizadaPorEntrenador: false,
+    activa: false,
+  });
 };
 
-const httpRequest = (path, method, body, timeout) => new Promise((resolve, reject) => {
-  const parsedUrl = url.parse(FLASK_URL);
-  const data = body ? JSON.stringify(body) : '';
-  const options = {
-    hostname: parsedUrl.hostname,
-    port: parsedUrl.port || 80,
-    path,
-    method,
-    timeout: timeout || 10000,
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(data),
-      'Authorization': `Bearer ${generarTokenServicio()}`,
-    },
-  };
-
-  const req = http.request(options, (res) => {
-    let responseData = '';
-    res.on('data', (chunk) => { responseData += chunk; });
-    res.on('end', () => {
-      try {
-        const parsed = JSON.parse(responseData);
-        resolve({ status: res.statusCode, data: parsed });
-      } catch {
-        resolve({ status: res.statusCode, data: responseData });
-      }
-    });
-  });
-
-  req.on('error', (err) => {
-    if (err.code === 'ECONNREFUSED') {
-      const error = new Error('Servicio de IA no disponible');
-      error.status = 503;
-      return reject(error);
-    }
-    reject(err);
-  });
-
-  req.on('timeout', () => {
-    req.destroy();
-    const error = new Error('Timeout al conectar con servicio de IA');
-    error.status = 504;
-    reject(error);
-  });
-
-  if (data) req.write(data);
-  req.end();
-});
-
-const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}) => {
+const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = {}) => {
   const instruido = await Instruido.findOne({
     where: { id: clienteId, entrenadorId },
   });
@@ -161,6 +107,10 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}) => {
     throw err;
   }
 
+  if (opts.persistir) {
+    await persistRoutineFromPrediction(clienteId, entrenadorId, response.data);
+  }
+
   return response.data;
 };
 
@@ -185,4 +135,91 @@ const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {
   return response.data;
 };
 
-module.exports = { sugerirRutina, validarEjercicio };
+const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) => {
+  if (!resultado || !resultado.objetivo_calorico) return null;
+
+  const { Dieta } = require('../dietas/dietas.model');
+
+  await Dieta.update(
+    { activo: false },
+    { where: { instruidoId: clienteId, activo: true } },
+  );
+
+  return Dieta.create({
+    instruidoId: clienteId,
+    entrenadorId,
+    objetivoCalorico: resultado.objetivo_calorico,
+    proteinas: resultado.proteinas_gramos,
+    carbohidratos: resultado.carbohidratos_gramos,
+    grasas: resultado.grasas_gramos,
+    observaciones: resultado.justificacion || 'Generada por IA tras activacion de plan',
+    activo: false,
+    decision: 'pendiente',
+  });
+};
+
+const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {}) => {
+  const instruido = await Instruido.findOne({
+    where: { id: clienteId, entrenadorId },
+  });
+  if (!instruido) {
+    const err = new Error('Instruido no encontrado o no pertenece al entrenador');
+    err.status = 404;
+    throw err;
+  }
+
+  const perfilMedicoRaw = await PerfilMedico.findOne({
+    where: { instruidoId: clienteId },
+  });
+  const perfilDescifrado = perfilMedicoRaw ? descifrarCampos(perfilMedicoRaw) : null;
+
+  const calculoMetabolico = await CalculoMetabolico.findOne({
+    where: { clienteId },
+    order: [['fechaCalculo', 'DESC']],
+  });
+
+  if (!calculoMetabolico) {
+    const err = new Error('No existe cálculo metabólico para este cliente. Genere uno primero desde metabolismo.');
+    err.status = 400;
+    throw err;
+  }
+
+  const payload = {
+    tmb: Number(calculoMetabolico.tmb),
+    gct: Number(calculoMetabolico.gct),
+    nivelActividad: instruido.nivelActividad,
+    proposito: preferencias.proposito || 'mantener',
+    peso: Number(instruido.peso),
+    altura: Number(instruido.altura),
+    edad: instruido.edad,
+    sexo: instruido.sexo,
+    datosMedicos: {
+      alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
+      intolerancias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.intolerancias) : [],
+      condiciones: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
+    },
+  };
+
+  const response = await httpRequest('/api/predict/dieta', 'POST', payload, 10000);
+
+  if (response.status >= 400) {
+    const err = new Error(`Flask API error: ${response.status}`);
+    err.status = response.status;
+    err.data = response.data;
+    throw err;
+  }
+
+  if (opts.persistir) {
+    await persistDietaFromPrediction(clienteId, entrenadorId, response.data);
+  }
+
+  return response.data;
+};
+
+module.exports = {
+  sugerirRutina,
+  validarEjercicio,
+  sugerirDieta,
+  persistRoutineFromPrediction,
+  persistDietaFromPrediction,
+};

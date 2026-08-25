@@ -27,13 +27,22 @@ def ensure_tabla_pesos():
     execute_query(query)
 
 
-def obtener_tasas_feedback() -> dict:
-    query = """
-        SELECT accion, COUNT(*) AS total
-        FROM feedback_hitl
-        GROUP BY accion
-    """
-    filas = execute_query(query)
+def obtener_tasas_feedback(tipo: str = None) -> dict:
+    if tipo:
+        query = """
+            SELECT accion, COUNT(*) AS total
+            FROM feedback_hitl
+            WHERE tipo = %s
+            GROUP BY accion
+        """
+        filas = execute_query(query, (tipo,))
+    else:
+        query = """
+            SELECT accion, COUNT(*) AS total
+            FROM feedback_hitl
+            GROUP BY accion
+        """
+        filas = execute_query(query)
     totales = {f['accion']: int(f['total']) for f in filas}
     total = sum(totales.values())
     if total == 0:
@@ -79,10 +88,10 @@ def calcular_nuevos_pesos(pesos_actuales: dict, tasas: dict) -> dict:
     return nuevos
 
 
-def recalcular_y_persistir_pesos() -> dict:
+def recalcular_y_persistir_pesos(tipo: str = 'rutina') -> dict:
     ensure_tabla_pesos()
 
-    tasas = obtener_tasas_feedback()
+    tasas = obtener_tasas_feedback(tipo=tipo)
     if not tasas or tasas['total'] < MINIMO_FEEDBACK:
         return {
             'success': False,

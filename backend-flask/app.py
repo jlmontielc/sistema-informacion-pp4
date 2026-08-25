@@ -44,7 +44,7 @@ def manejar_error_generico(error):
 
 @app.route('/api/health')
 def health():
-    return {'status': 'ok', 'service': 'backend-flask', 'modules': ['predict', 'hitl']}
+    return {'status': 'ok', 'service': 'backend-flask', 'modules': ['predict', 'hitl', 'diet']}
 
 
 @app.route('/api/health/detailed')
@@ -66,6 +66,7 @@ def health_detailed():
             'hitl': 'active',
             'guardian': 'active',
             'recommender': 'active',
+            'diet': 'active',
         },
     }
 

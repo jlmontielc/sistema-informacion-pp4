@@ -122,3 +122,17 @@ def ultima_sugerencia(cliente_id):
     if not ultima:
         return jsonify({'mensaje': 'No hay sugerencias previas para este cliente'}), 404
     return jsonify(ultima)
+
+
+@hitl_bp.route('/dieta', methods=['POST'])
+@require_jwt
+def predict_dieta():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request body requerido'}), 400
+
+    resultado = engine.procesar_solicitud_dieta(data)
+
+    status = resultado.pop('status', 200) if not resultado.get('success') else 200
+
+    return jsonify(resultado), status

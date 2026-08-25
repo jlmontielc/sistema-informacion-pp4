@@ -9,7 +9,7 @@ const calcular = async (req, res, next) => {
     } else if (req.body.clienteId) {
       datos.clienteId = Number(req.body.clienteId);
     } else {
-      return res.status(400).json({ message: 'clienteId es requerido para calcular y guardar el histórico metabólico' });
+      return res.status(400).json({ error: 'clienteId es requerido para calcular y guardar el histórico metabólico' });
     }
 
     const resultado = await metabolismoService.calcular(datos);

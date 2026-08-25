@@ -14,6 +14,7 @@ const crearFeedback = async (entrenadorId, datos) => {
     confianzaIa = null,
     tiempoRevisionSeg = null,
     observaciones = null,
+    tipo = 'rutina',
   } = datos;
 
   const instruido = await Instruido.findOne({
@@ -38,6 +39,7 @@ const crearFeedback = async (entrenadorId, datos) => {
     confianzaIa,
     tiempoRevisionSeg,
     observaciones: observaciones === '' ? null : observaciones,
+    tipo,
   });
 };
 
@@ -45,6 +47,7 @@ const listarFeedbackPorEntrenador = async (entrenadorId, filtros = {}) => {
   const where = { entrenadorId };
   if (filtros.clienteId) where.clienteId = filtros.clienteId;
   if (filtros.accion) where.accion = filtros.accion;
+  if (filtros.tipo) where.tipo = filtros.tipo;
 
   return HitlFeedback.findAll({
     where,

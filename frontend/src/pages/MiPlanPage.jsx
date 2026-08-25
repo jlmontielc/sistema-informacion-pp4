@@ -33,6 +33,24 @@ const formatearFechaISO = (fecha) => {
 const labelTipo = (tipo) =>
   TIPOS_METODO.find((t) => t.value === tipo)?.label || tipo;
 
+const labelOfrecimiento = (valor) => {
+  const mapa = {
+    entrenamiento: 'Entrenamiento',
+    dietas: 'Dietas',
+    ambos: 'Entrenamiento + Dietas',
+  };
+  return mapa[valor] || valor;
+};
+
+const iconoOfrecimiento = (valor) => {
+  const mapa = {
+    entrenamiento: '🏋️',
+    dietas: '🥗',
+    ambos: '🏋️🥗',
+  };
+  return mapa[valor] || '📦';
+};
+
 export default function MiPlanPage() {
   const { user, setUser } = useAuth();
 
@@ -192,6 +210,22 @@ export default function MiPlanPage() {
                   <Card key={plan.id}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', height: '100%' }}>
                       <strong>{plan.nombre}</strong>
+                      {plan.ofrecimiento && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '2px 8px',
+                          borderRadius: '9999px',
+                          fontSize: 'var(--text-xs)',
+                          fontWeight: 600,
+                          background: 'var(--color-info-bg, #d1ecf1)',
+                          color: 'var(--color-info, #0c5460)',
+                          alignSelf: 'flex-start',
+                        }}>
+                          {iconoOfrecimiento(plan.ofrecimiento)} {labelOfrecimiento(plan.ofrecimiento)}
+                        </span>
+                      )}
                       <div>
                         <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
                           {formatUsd(plan.montoUsd)}

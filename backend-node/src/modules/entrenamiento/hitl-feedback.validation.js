@@ -12,6 +12,7 @@ const esquemaFeedbackHitl = Joi.object({
   confianzaIa: Joi.number().min(0).max(1).optional().allow(null),
   tiempoRevisionSeg: Joi.number().integer().min(0).optional().allow(null),
   observaciones: Joi.string().max(2000).optional().allow('', null),
+  tipo: Joi.string().valid('rutina', 'dieta').optional().default('rutina'),
 });
 
 module.exports = { esquemaFeedbackHitl };
