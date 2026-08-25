@@ -19,7 +19,7 @@ User -> nginx:80 (frontend SPA)
 
 - **backend-node** — monolith with modular domain folders (`auth/`, `instruidos/`, `entrenamiento/`, `metabolismo/`, `dietas/`, `reportes/`, `dashboard/`).
 - **backend-flask** — microservicio aislado, solo logica matematica/predictiva.
-- **Flujo HITL:** Flask predice -> Node valida contra historial medico -> bloquea si hay contraindicacion -> entrenador revisa, modifica o acepta antes de publicar.
+- **Flujo HITL:** Flask predice + valida con Guardian (reglas de lesiones/condiciones/carga) -> Node persiste resultado -> entrenador revisa, modifica o acepta antes de publicar.
 - **Auth servicio a servicio:** Node firma un JWT interno (`{service:'backend-node'}`, 5 min) con `JWT_SECRET` compartido y lo envia como `Bearer` a todas las rutas `/api/predict/*`. Flask valida firma+exp+emisor con PyJWT (`api/auth.py`). Solo `/api/health` es publico; puerto 5000 no expuesto en docker-compose.
 - **Recalibracion de pesos:** `POST /api/predict/recalibrar` recalcula pesos de scoring del RecommenderEngine desde tasas de `feedback_hitl` (minimo 5 registros), persiste en `pesos_modelo_ia` y aplica en caliente. El engine carga los pesos persistidos al iniciar.
 
@@ -58,7 +58,7 @@ npm test        # Jest (react-scripts test, sin tests aun)
 ## Tests
 
 - **Flask:** `python tests/test_guardian.py` desde `backend-flask/`. Patron manual: NO usa pytest, es `if __name__ == '__main__'` con `assert`. Agregar funciones nuevas al bloque `__main__`.
-- **Node (Jest):** `npm test` — directorio `tests/` vacio.
+- **Node (Jest):** `npm test` — directorio `tests/` vacio (crypto.test.js disponible).
 - **Frontend (Jest):** `npm test` — sin tests aun.
 - **Pendientes (segun guia PP4):** pruebas de carga/estres y usabilidad.
 
@@ -87,7 +87,7 @@ FLASK_IA_URL=http://localhost:5000
 - **Roles:** Administrador (crea entrenadores), Entrenador (gestiona clientes), Instruido (cliente final, se auto-registra).
 - **Seed admin:** `admin@sistema.com` / `Admin123!` se crea automaticamente al iniciar backend-node (tambien en schema.sql).
 - **Datos medicos cifrados:** `alergias`, `intolerancias`, `lesiones`, `condiciones_preexistentes` en AES-256-CBC. Node descifra antes de enviar a Flask.
-- **HITL workflow:** Flask genera recomendacion -> Node ejecuta Guardian (reglas de lesiones/condiciones/carga) -> si hay contraindicacion, bloquea y alerta -> entrenador acepta/modifica/rechaza -> feedback guardado en `feedback_hitl`.
+- **HITL workflow:** Flask genera recomendacion + ejecuta Guardian (reglas de lesiones/condiciones/carga) -> si hay contraindicacion, bloquea y alerta -> Node persiste resultado -> entrenador acepta/modifica/rechaza -> feedback guardado en `feedback_hitl`.
 - **Token blacklist:** en memoria (Set). Se pierde al reiniciar servidor.
 - **Rate limiting:** 20 login/15min, 10 registros/hora en rutas de auth.
 - **Swagger:** documentacion interactiva en `/api/docs`.

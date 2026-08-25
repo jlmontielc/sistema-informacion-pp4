@@ -24,7 +24,7 @@ Eres el agente experto del motor de IA del sistema PP4: el microservicio Flask. 
 ## Contrato con Node (crítico, no romper)
 
 - Node llama por HTTP a Flask con los datos medicos YA descifrados (Node usa AES-256-CBC antes de enviar).
-- Flask predice -> Node ejecuta su copia de las reglas Guardian contra el historial medico -> bloquea si hay contraindicacion -> el entrenador revisa/acepta/modifica/rechaza -> feedback se persiste via `feedback_store.py` (tabla `feedback_hitl`).
+- Flask predice + valida con Guardian (reglas de lesiones/condiciones/carga) -> Node persiste resultado -> entrenador revisa/acepta/modifica/rechaza -> feedback se persiste via `feedback_store.py` (tabla `feedback_hitl`).
 - Los campos esperados por las rutas: ejercicio, lesiones, condiciones, carga, historial. Manten la compatibilidad del JSON de entrada/salida.
 
 ## Convenciones

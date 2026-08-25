@@ -13,11 +13,10 @@ El sistema PP4 usa un flujo HITL para las recomendaciones de entrenamiento: la I
 Instruido -> Node (entrenamiento/hitl.service.js)
    1. Node descifra datos medicos (AES-256-CBC via shared/utils/crypto.js)
    2. POST HTTP -> Flask /api/predict/routine con los datos en claro
-      Flask: RecommenderEngine genera recomendacion (services/recommender.py)
-   3. Node ejecuta Guardian (reglas en backend-flask/models/rules/:
-      injury_rules.py, condition_rules.py, load_rules.py)
-      -> si hay contraindicacion: BLOQUEA y alerta al entrenador
-   4. Entrenador revisa: acepta / modifica / rechaza
+      Flask: Guardian evalua cliente -> filtra pool de ejercicios inseguros
+      Flask: RecommenderEngine genera rutina con pool seguro
+   3. Flask retorna rutina validada + alertas_seguridad + ejercicios_filtrados
+   4. Node persiste resultado; entrenador revisa: acepta / modifica / rechaza
       -> resultado persistido en feedback_hitl (backend-node
       entrenamiento/hitl-feedback.model.js + Flask feedback_store.py)
 ```
@@ -25,7 +24,7 @@ Instruido -> Node (entrenamiento/hitl.service.js)
 ## Puntos criticos (no romper)
 
 - **Cifrado:** `alergias`, `intolerancias`, `lesiones`, `condiciones_preexistentes` se cifran en la DB (AES-256-CBC). Node las descifra SOLO antes de enviarlas a Flask. El frontend nunca las recibe en claro.
-- **Guardian doble:** Flask no bloquea; solo predice. La validacion de contraindicaciones ocurre en Node (nivel de riesgo). Ambos lados deben estar sincronizados en el formato de la respuesta (NivelRiesgo, motivos).
+- **Guardian unificado:** Flask es la unica fuente de verdad del Guardian. Filtra el pool de ejercicios ANTES del RecommenderEngine y retorna ejercicios_filtrados, ejercicios_con_precaucion y nivel_riesgo_global en la respuesta.
 - **Contratos HTTP:** el JSON de entrada (ejercicio, historial medico, carga) y salida (recomendacion, nivel de riesgo, motivos de bloqueo) es compartido. Cambiarlo en un lado sin el otro rompe el flujo.
 
 ## Archivos clave

@@ -23,7 +23,7 @@ Eres el revisor de calidad del sistema PP4. No hay linter ni CI en el proyecto: 
 
 ### Flujo HITL (no romper)
 - [ ] Node sigue enviando a Flask los datos descifrados.
-- [ ] El Guardian sigue bloqueando ante contraindicaciones (lesiones/condiciones/carga).
+- [ ] El Guardian de Flask sigue bloqueando ejercicios con contraindicaciones (lesiones/condiciones/carga) antes del RecommenderEngine.
 - [ ] El feedback del entrenador sigue persistiendose en `feedback_hitl`.
 - [ ] Los contratos JSON con Flask no cambiaron sin actualizar ambas partes.
 
