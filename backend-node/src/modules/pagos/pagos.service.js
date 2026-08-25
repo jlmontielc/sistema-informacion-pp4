@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../../shared/database/connection');
 const { PlanPago, MetodoPago, ConfiguracionPago, Pago } = require('./pagos.model');
 const { Instruido } = require('../instruidos/instruido.model');
+const hitlService = require('../entrenamiento/hitl.service');
 
 const TASA_POR_DEFECTO = 40.0000;
 
@@ -250,6 +251,30 @@ const verificarPago = async (pagoId, usuario) => {
 
     return pago;
   });
+
+  // Disparar predicciones IA segun ofrecimiento del plan (fire-and-forget)
+  try {
+    const plan = await PlanPago.findByPk(resultado.planId);
+    if (plan && plan.ofrecimiento) {
+      const clienteId = resultado.instruidoId;
+      const entrenadorId = resultado.entrenadorId;
+
+      if (plan.ofrecimiento === 'entrenamiento' || plan.ofrecimiento === 'ambos') {
+        hitlService.sugerirRutina(clienteId, entrenadorId, {}, { persistir: true }).catch((err) => {
+          console.error('[Pago] Error prediccion rutina automatica:', err.message);
+        });
+      }
+
+      if (plan.ofrecimiento === 'dietas' || plan.ofrecimiento === 'ambos') {
+        hitlService.sugerirDieta(clienteId, entrenadorId, {}, { persistir: true }).catch((err) => {
+          console.error('[Pago] Error prediccion dieta automatica:', err.message);
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[Pago] Error disparando predicciones IA:', err.message);
+  }
+
   return limpiar(resultado);
 };
 

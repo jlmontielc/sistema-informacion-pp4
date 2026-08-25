@@ -3,6 +3,7 @@ const Joi = require('joi');
 const esquemaCrearPlan = Joi.object({
   nombre: Joi.string().min(2).max(150).required(),
   descripcion: Joi.string().max(2000).optional().allow('', null),
+  ofrecimiento: Joi.string().valid('entrenamiento', 'dietas', 'ambos').required(),
   montoUsd: Joi.number().positive().precision(2).max(99999999).required(),
   diasVigencia: Joi.number().integer().min(1).max(365).optional(),
   activo: Joi.boolean().optional(),
@@ -11,6 +12,7 @@ const esquemaCrearPlan = Joi.object({
 const esquemaActualizarPlan = Joi.object({
   nombre: Joi.string().min(2).max(150).optional(),
   descripcion: Joi.string().max(2000).optional().allow('', null),
+  ofrecimiento: Joi.string().valid('entrenamiento', 'dietas', 'ambos').optional(),
   montoUsd: Joi.number().positive().precision(2).max(99999999).optional(),
   diasVigencia: Joi.number().integer().min(1).max(365).optional(),
   activo: Joi.boolean().optional(),

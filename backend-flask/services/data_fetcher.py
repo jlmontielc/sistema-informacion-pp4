@@ -116,7 +116,7 @@ def fetch_calculos_metabolicos(cliente_id: int) -> dict:
     query = """
         SELECT
             cm.tmb, cm.gct, cm.nivel_actividad_usado,
-            cm.peso_usado, cm.metodo_calculo, cm.fecha_calculo
+            cm.peso_usado, cm.fecha_calculo
         FROM calculos_metabolicos cm
         WHERE cm.cliente_id = %s
         ORDER BY cm.fecha_calculo DESC

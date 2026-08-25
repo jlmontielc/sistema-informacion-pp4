@@ -7,8 +7,8 @@ def registrar_feedback_hitl(feedback_data: dict) -> int:
         (rutina_sugerida_id, entrenador_id, cliente_id, accion,
          rutina_original, rutina_final, ejercicios_agregados,
          ejercicios_eliminados, modificacion_cargas, confianza_ia,
-         tiempo_revision_seg, observaciones)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+         tiempo_revision_seg, observaciones, tipo)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     params = (
         feedback_data.get('rutina_sugerida_id'),
@@ -23,6 +23,7 @@ def registrar_feedback_hitl(feedback_data: dict) -> int:
         feedback_data.get('confianza_ia', 0),
         feedback_data.get('tiempo_revision_seg', 0),
         feedback_data.get('observaciones', ''),
+        feedback_data.get('tipo', 'rutina'),
     )
     return execute_insert(query, params)
 

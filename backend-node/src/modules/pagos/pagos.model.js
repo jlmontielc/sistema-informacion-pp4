@@ -5,6 +5,11 @@ const PlanPago = sequelize.define('PlanPago', {
   entrenadorId: { type: DataTypes.INTEGER, allowNull: false, field: 'entrenador_id' },
   nombre: { type: DataTypes.STRING(150), allowNull: false },
   descripcion: { type: DataTypes.TEXT, allowNull: true },
+  ofrecimiento: {
+    type: DataTypes.ENUM('entrenamiento', 'dietas', 'ambos'),
+    allowNull: false,
+    defaultValue: 'entrenamiento',
+  },
   montoUsd: { type: DataTypes.DECIMAL(10, 2), allowNull: false, field: 'monto_usd' },
   diasVigencia: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 30, field: 'dias_vigencia' },
   activo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },

@@ -213,6 +213,118 @@ def test_recommender_normaliza_proposito():
     print("[PASS] test_recommender_normaliza_proposito")
 
 
+def test_motor_nutricional_deficit():
+    from services.nutricion_engine import calcular_macros
+
+    macros = calcular_macros(gct=2500, peso=75, proposito='perder_peso')
+    assert macros['objetivo_calorico'] == 2000
+    assert macros['proteinas_gramos'] == 165
+    assert macros['grasas_gramos'] > 0
+    assert macros['carbohidratos_gramos'] > 0
+
+    total_kcal = (macros['proteinas_gramos'] * 4 +
+                  macros['carbohidratos_gramos'] * 4 +
+                  macros['grasas_gramos'] * 9)
+    diff = abs(total_kcal - macros['objetivo_calorico'])
+    assert diff < 20, f'Diferencia kcal {diff} demasiado alta'
+    print("[PASS] test_motor_nutricional_deficit")
+
+
+def test_motor_nutricional_superavit():
+    from services.nutricion_engine import calcular_macros
+
+    macros = calcular_macros(gct=2500, peso=80, proposito='ganar_musculo')
+    assert macros['objetivo_calorico'] == 2875
+    assert macros['proteinas_gramos'] == 128
+    assert macros['grasas_gramos'] > 0
+    assert macros['carbohidratos_gramos'] > 0
+    print("[PASS] test_motor_nutricional_superavit")
+
+
+def test_motor_nutricional_mantenimiento():
+    from services.nutricion_engine import calcular_macros
+
+    macros = calcular_macros(gct=2200, peso=70, proposito='mantener')
+    assert macros['objetivo_calorico'] == 2200
+    assert macros['proteinas_gramos'] == 126
+    assert macros['grasas_gramos'] > 0
+    assert macros['carbohidratos_gramos'] > 0
+    print("[PASS] test_motor_nutricional_mantenimiento")
+
+
+def test_guardian_dieta_bloqueo_tmb():
+    from services.nutricion_engine import guardian_dieta
+
+    tmb = 1600
+    gct = 1920
+    macros = {'objetivo_calorico': 1500, 'proteinas_gramos': 120, 'carbohidratos_gramos': 100, 'grasas_gramos': 50}
+
+    resultado = guardian_dieta(macros, tmb, gct)
+    assert resultado['aprobado'] is False
+    assert len(resultado['alertas']) > 0
+    assert resultado['alertas'][0]['tipo'] == 'deficit_peligroso'
+    print("[PASS] test_guardian_dieta_bloqueo_tmb")
+
+
+def test_guardian_dieta_aprobado():
+    from services.nutricion_engine import guardian_dieta
+
+    tmb = 1600
+    gct = 2000
+    macros = {'objetivo_calorico': 2000, 'proteinas_gramos': 130, 'carbohidratos_gramos': 200, 'grasas_gramos': 60}
+
+    resultado = guardian_dieta(macros, tmb, gct)
+    assert resultado['aprobado'] is True
+    assert len(resultado['alertas']) == 0
+    print("[PASS] test_guardian_dieta_aprobado")
+
+
+def test_guardian_dieta_alerta_diabetes():
+    from services.nutricion_engine import guardian_dieta
+
+    tmb = 1800
+    gct = 2200
+    macros = {'objetivo_calorico': 2200, 'proteinas_gramos': 140, 'carbohidratos_gramos': 230, 'grasas_gramos': 65}
+    datos_medicos = {'condiciones': ['Diabetes tipo 2']}
+
+    resultado = guardian_dieta(macros, tmb, gct, datos_medicos)
+    assert resultado['aprobado'] is True
+    alertas_diabetes = [a for a in resultado['alertas'] if a['tipo'] == 'diabetes_alerta']
+    assert len(alertas_diabetes) == 1
+    assert 'diabetes' in alertas_diabetes[0]['mensaje'].lower()
+    print("[PASS] test_guardian_dieta_alerta_diabetes")
+
+
+def test_guardian_dieta_alertas_alergias():
+    from services.nutricion_engine import guardian_dieta
+
+    tmb = 1600
+    gct = 2000
+    macros = {'objetivo_calorico': 2000, 'proteinas_gramos': 130, 'carbohidratos_gramos': 200, 'grasas_gramos': 60}
+    datos_medicos = {'alergias': ['Gluten', 'Lactosa'], 'intolerancias': ['Fructosa']}
+
+    resultado = guardian_dieta(macros, tmb, gct, datos_medicos)
+    assert resultado['aprobado'] is True
+    alergias = [a for a in resultado['alertas'] if a['tipo'] == 'alergia_informativa']
+    assert len(alergias) == 2
+    intolerancias = [a for a in resultado['alertas'] if a['tipo'] == 'intolerancia_informativa']
+    assert len(intolerancias) == 1
+    print("[PASS] test_guardian_dieta_alertas_alergias")
+
+
+def test_normalizar_proposito():
+    from services.nutricion_engine import normalizar_proposito
+
+    assert normalizar_proposito('Perder peso') == 'perder_peso'
+    assert normalizar_proposito('GANAR MUSCULO') == 'ganar_musculo'
+    assert normalizar_proposito('mantener') == 'mantener'
+    assert normalizar_proposito('') == 'mantener'
+    assert normalizar_proposito(None) == 'mantener'
+    assert normalizar_proposito('xyz_unknown') == 'mantener'
+    assert normalizar_proposito('bajar peso') == 'bajar_peso'
+    print("[PASS] test_normalizar_proposito")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -227,4 +339,12 @@ if __name__ == '__main__':
     test_guardian_multi_lesion()
     test_mapeo_proposito_texto()
     test_recommender_normaliza_proposito()
+    test_motor_nutricional_deficit()
+    test_motor_nutricional_superavit()
+    test_motor_nutricional_mantenimiento()
+    test_guardian_dieta_bloqueo_tmb()
+    test_guardian_dieta_aprobado()
+    test_guardian_dieta_alerta_diabetes()
+    test_guardian_dieta_alertas_alergias()
+    test_normalizar_proposito()
     print("\n=== TODOS LOS TESTS PASARON ===")

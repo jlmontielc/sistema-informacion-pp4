@@ -210,6 +210,7 @@ CREATE TABLE feedback_hitl (
   confianza_ia DECIMAL(3,2) COMMENT 'Nivel de confianza de la sugerencia IA (0-1)',
   tiempo_revision_seg INT COMMENT 'Segundos que tardó el entrenador en revisar',
   observaciones TEXT,
+  tipo ENUM('rutina','dieta') NOT NULL DEFAULT 'rutina' COMMENT 'Tipo de sugerencia: rutina o dieta',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_feedback_entrenador
     FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
@@ -270,6 +271,7 @@ CREATE TABLE planes_dieta (
   observaciones TEXT,
   fecha_inicio DATE,
   fecha_fin DATE,
+  decision ENUM('pendiente','aprobada','rechazada','modificada') NOT NULL DEFAULT 'pendiente',
   activo BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -313,6 +315,7 @@ CREATE TABLE planes_pago (
   monto_usd DECIMAL(10,2) NOT NULL,
   dias_vigencia INT NOT NULL DEFAULT 30,
   activo TINYINT(1) NOT NULL DEFAULT 1,
+  ofrecimiento ENUM('entrenamiento','dietas','ambos') NOT NULL DEFAULT 'entrenamiento',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_plan_entrenador

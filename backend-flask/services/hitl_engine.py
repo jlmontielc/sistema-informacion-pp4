@@ -257,3 +257,54 @@ class HitlEngine:
             'error': mensaje,
             'status': status,
         }
+
+    def procesar_solicitud_dieta(self, request_data: dict) -> dict:
+        from services.nutricion_engine import calcular_macros, guardian_dieta, normalizar_proposito
+
+        inicio = time.time()
+
+        tmb = request_data.get('tmb')
+        gct = request_data.get('gct')
+        peso = request_data.get('peso')
+        if not all([tmb, gct, peso]):
+            return self._error_response('tmb, gct y peso son requeridos', 400)
+
+        try:
+            tmb = float(tmb)
+            gct = float(gct)
+            peso = float(peso)
+        except (ValueError, TypeError):
+            return self._error_response('tmb, gct y peso deben ser numericos', 400)
+
+        proposito = normalizar_proposito(request_data.get('proposito', 'mantener'))
+        datos_medicos = request_data.get('datosMedicos', {})
+
+        macros = calcular_macros(gct, peso, proposito)
+
+        resultado_guardian = guardian_dieta(macros, tmb, gct, datos_medicos)
+
+        justificacion = (
+            f'Dieta generada con proposito "{proposito}". '
+            f'TMB: {round(tmb)} kcal, GCT: {round(gct)} kcal. '
+            f'Objetivo calorico ajustado: {macros["objetivo_calorico"]} kcal. '
+            f'Proteina: {macros["proteinas_gramos"]}g, '
+            f'Carbohidratos: {macros["carbohidratos_gramos"]}g, '
+            f'Grasas: {macros["grasas_gramos"]}g.'
+        )
+
+        tiempo_total = round((time.time() - inicio) * 1000, 1)
+
+        return {
+            'success': True,
+            'objetivo_calorico': macros['objetivo_calorico'],
+            'proteinas_gramos': macros['proteinas_gramos'],
+            'carbohidratos_gramos': macros['carbohidratos_gramos'],
+            'grasas_gramos': macros['grasas_gramos'],
+            'guardian': resultado_guardian,
+            'justificacion': justificacion,
+            'metadata': {
+                'tiempo_ms': tiempo_total,
+                'version_modelo': '1.1.0',
+                'motor': 'reglas+nutricion',
+            },
+        }

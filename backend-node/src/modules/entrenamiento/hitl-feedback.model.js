@@ -49,6 +49,11 @@ const HitlFeedback = sequelize.define('HitlFeedback', {
     field: 'tiempo_revision_seg',
   },
   observaciones: DataTypes.TEXT,
+  tipo: {
+    type: DataTypes.ENUM('rutina', 'dieta'),
+    allowNull: false,
+    defaultValue: 'rutina',
+  },
 }, {
   underscored: true,
   tableName: 'feedback_hitl',

@@ -36,4 +36,22 @@ const validarEjercicio = async (req, res, next) => {
   }
 };
 
-module.exports = { sugerirRutina, validarEjercicio };
+const sugerirDieta = async (req, res, next) => {
+  try {
+    const { clienteId } = req.params;
+    const preferencias = req.body.preferencias || {};
+    const resultado = await hitlService.sugerirDieta(
+      Number(clienteId),
+      req.usuario.id,
+      preferencias,
+    );
+    res.json(resultado);
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message, data: err.data });
+    }
+    next(err);
+  }
+};
+
+module.exports = { sugerirRutina, validarEjercicio, sugerirDieta };

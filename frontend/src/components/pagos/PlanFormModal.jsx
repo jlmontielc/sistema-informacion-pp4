@@ -6,7 +6,7 @@ import { planesPagoApi } from '../../services/pagosApi';
 
 export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
   const editando = Boolean(plan);
-  const [form, setForm] = useState({ nombre: '', descripcion: '', montoUsd: '', diasVigencia: 30 });
+  const [form, setForm] = useState({ nombre: '', descripcion: '', ofrecimiento: 'entrenamiento', montoUsd: '', diasVigencia: 30 });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,10 +17,11 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
           ? {
               nombre: plan.nombre || '',
               descripcion: plan.descripcion || '',
+              ofrecimiento: plan.ofrecimiento || 'entrenamiento',
               montoUsd: plan.montoUsd ?? '',
               diasVigencia: plan.diasVigencia ?? 30,
             }
-          : { nombre: '', descripcion: '', montoUsd: '', diasVigencia: 30 }
+          : { nombre: '', descripcion: '', ofrecimiento: 'entrenamiento', montoUsd: '', diasVigencia: 30 }
       );
       setError('');
     }
@@ -49,6 +50,7 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
     const datos = {
       nombre,
       descripcion: form.descripcion.trim(),
+      ofrecimiento: form.ofrecimiento,
       montoUsd: Math.round(monto * 100) / 100,
       diasVigencia: dias,
     };
@@ -117,6 +119,23 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="ofrecimiento">
+              Tipo de ofrecimiento
+            </label>
+            <select
+              id="ofrecimiento"
+              name="ofrecimiento"
+              className="field-input"
+              value={form.ofrecimiento}
+              onChange={handleChange}
+              required
+            >
+              <option value="entrenamiento">Solo Entrenamiento</option>
+              <option value="dietas">Solo Dietas</option>
+              <option value="ambos">Entrenamiento y Dietas</option>
+            </select>
           </div>
           {error && (
             <div
