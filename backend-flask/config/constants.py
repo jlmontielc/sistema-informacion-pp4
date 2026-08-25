@@ -41,7 +41,7 @@ MAPA_LESIONES = {
     ],
     'tobillo': [
         'tobillo', 'esguince tobillo', 'peroneo', 'aquiles', 'tendinitis aquiles',
-        ' fascitis plantar', 'rotura aquiles', 'esguince lateral',
+        'fascitis plantar', 'rotura aquiles', 'esguince lateral',
     ],
     'cuello': [
         'cuello', 'cervical', 'torticolis', 'hernia cervical', 'cervicalgia',

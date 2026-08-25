@@ -6,7 +6,6 @@ const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const { RegistroEntrenamiento, RutinaAsignada } = require('./entrenamiento.model');
 const { descifrar } = require('../../shared/utils/crypto');
-const { GuardianSeguridad } = require('../../shared/guardian/guardian');
 
 const FLASK_URL = config.FLASK_IA_URL || 'http://localhost:5000';
 
@@ -100,69 +99,6 @@ const httpRequest = (path, method, body, timeout) => new Promise((resolve, rejec
   req.end();
 });
 
-const validarRutinaConGuardian = (rutinaFlask, instruido, perfilMedico) => {
-  try {
-    const datosCliente = {
-      edad: instruido.edad,
-      peso: Number(instruido.peso),
-      altura: Number(instruido.altura),
-      sexo: instruido.sexo,
-      nivel_actividad: instruido.nivelActividad,
-    };
-    const perfilParseado = {
-      lesiones: perfilMedico ? perfilMedico.lesiones : [],
-      condiciones_preexistentes: perfilMedico ? perfilMedico.condiciones_preexistentes : [],
-    };
-
-    const guardian = new GuardianSeguridad();
-    let totalBloqueados = 0;
-    let totalPrecaucion = 0;
-
-    const dias = rutinaFlask && rutinaFlask.rutina_sugerida && rutinaFlask.rutina_sugerida.dias;
-    if (dias && typeof dias === 'object') {
-      for (const claveDia of Object.keys(dias)) {
-        const dia = dias[claveDia];
-        if (!dia || !Array.isArray(dia.ejercicios)) continue;
-        for (const ejercicio of dia.ejercicios) {
-          if (!ejercicio || !ejercicio.nombre) continue;
-          const cargaKg = ejercicio.carga_kg != null ? Number(ejercicio.carga_kg) : null;
-          const validacion = guardian.validar_ejercicio(
-            { id: ejercicio.id, nombre: ejercicio.nombre },
-            datosCliente,
-            perfilParseado,
-            cargaKg,
-          );
-          ejercicio.validacion_node = validacion;
-          ejercicio.contraindicado = validacion.bloqueado;
-          if (validacion.bloqueado) {
-            totalBloqueados += 1;
-          } else if (validacion.nivel_riesgo !== 'SAFE') {
-            totalPrecaucion += 1;
-          }
-        }
-      }
-    }
-
-    return {
-      ...rutinaFlask,
-      validacion_node: {
-        ejecutada: true,
-        total_ejercicios_contraindicados: totalBloqueados,
-        total_ejercicios_precaucion: totalPrecaucion,
-        requiere_revision_entrenador: totalBloqueados > 0,
-      },
-    };
-  } catch (err) {
-    return {
-      ...rutinaFlask,
-      validacion_node: {
-        ejecutada: false,
-        error: 'No se pudo completar la validación del Guardian en Node',
-      },
-    };
-  }
-};
-
 const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}) => {
   const instruido = await Instruido.findOne({
     where: { id: clienteId, entrenadorId },
@@ -225,7 +161,7 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}) => {
     throw err;
   }
 
-  return validarRutinaConGuardian(response.data, instruido, payload.perfil_medico);
+  return response.data;
 };
 
 const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {

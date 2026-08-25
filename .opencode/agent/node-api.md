@@ -28,9 +28,9 @@ Eres el agente experto del nucleo del sistema PP4: el backend Node.js. Tu ambito
 ## Flujo HITL (crítico, no romper)
 
 1. `entrenamiento/hitl.service.js` envia la solicitud a Flask (FLASK_IA_URL) con datos medicos descifrados.
-2. Node ejecuta el Guardian (reglas de lesiones/condiciones/carga) contra el historial medico.
-3. Si hay contraindicacion, bloquea y alerta al entrenador.
-4. El entrenador acepta/modifica/rechaza; el resultado se guarda en `feedback_hitl` (modelo `hitl-feedback.model.js`).
+2. Flask ejecuta el Guardian (reglas de lesiones/condiciones/carga) y el RecommenderEngine.
+3. Si hay contraindicacion, Flask bloquea el ejercicio del pool antes de generar la rutina.
+4. Node persiste el resultado; el entrenador acepta/modifica/rechaza; feedback en `feedback_hitl`.
 
 ## Comandos de verificacion
 
