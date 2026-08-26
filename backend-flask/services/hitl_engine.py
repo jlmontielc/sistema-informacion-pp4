@@ -60,6 +60,32 @@ class HitlEngine:
             (datos_cliente.get('preferencias') or {}).get('ejercicios_excluir'),
         )
 
+        if not pool_seguro:
+            alertas_vacias = pool_filtrado['alertas_globales']
+            info_lesiones = perfil_medico.get('lesiones', [])
+            info_condiciones = perfil_medico.get('condiciones_preexistentes', [])
+            if info_lesiones or info_condiciones:
+                detalle = []
+                if info_lesiones:
+                    detalle.append(f"lesiones: {', '.join(str(l) for l in info_lesiones)}")
+                if info_condiciones:
+                    detalle.append(f"condiciones: {', '.join(str(c) for c in info_condiciones)}")
+                mensaje = (
+                    f"No hay ejercicios seguros disponibles para este perfil "
+                    f"({'; '.join(detalle)}). Pool completo filtrado por restricciones médicas."
+                )
+            else:
+                mensaje = (
+                    "No hay ejercicios seguros disponibles. "
+                    "El pool completo fue excluido por preferencias del cliente."
+                )
+            return self._error_response(mensaje, 422, {
+                'alertas_seguridad': alertas_vacias,
+                'ejercicios_bloqueados': len(pool_filtrado['ejercicios_bloqueados']),
+                'ejercicios_precaucion': len(pool_filtrado['ejercicios_precaucion']),
+                'pool_seguro_count': 0,
+            })
+
         historial = self._obtener_historial(request_data, cliente_id)
 
         resultado_recommender = self.recommender.recomendar_plantillas(
@@ -67,6 +93,7 @@ class HitlEngine:
             pool_seguro=pool_seguro,
             datos_cliente=datos_cliente,
             historial=historial,
+            perfil_medico=perfil_medico,
         )
 
         tiempo_total = round((time.time() - inicio) * 1000, 1)
@@ -249,12 +276,15 @@ class HitlEngine:
             'medicacion': [],
         }
 
-    def _error_response(self, mensaje: str, status: int) -> dict:
-        return {
+    def _error_response(self, mensaje: str, status: int, datos_extra: dict = None) -> dict:
+        respuesta = {
             'success': False,
             'error': mensaje,
             'status': status,
         }
+        if datos_extra:
+            respuesta.update(datos_extra)
+        return respuesta
 
     def procesar_solicitud_dieta(self, request_data: dict) -> dict:
         from services.nutricion_engine import calcular_macros, guardian_dieta, normalizar_proposito
