@@ -109,81 +109,6 @@ MAPA_CONDICIONES = {
     },
 }
 
-MAPEO_OBJETIVO_CONFIG = {
-    'perdida_peso': {
-        'peso_cardio': 3,
-        'peso_fuerza': 2,
-        'peso_volumen': 1,
-        'rango_repeticiones': (12, 20),
-        'series_por_ejercicio': (2, 3),
-        'descanso_segundos': (30, 60),
-        'distribucion_dias': {
-            2: ['full_body', 'full_body'],
-            3: ['full_body', 'cardio_core', 'full_body'],
-            4: ['tren_superior', 'tren_inferior', 'tren_superior', 'cardio_core'],
-            5: ['push', 'pull', 'piernas', 'cardio', 'full_body'],
-            6: ['push', 'pull', 'piernas', 'push', 'pull', 'piernas'],
-        },
-    },
-    'ganancia_muscular': {
-        'peso_cardio': 1,
-        'peso_fuerza': 3,
-        'peso_volumen': 3,
-        'rango_repeticiones': (8, 12),
-        'series_por_ejercicio': (3, 4),
-        'descanso_segundos': (60, 120),
-        'distribucion_dias': {
-            2: ['tren_superior', 'tren_inferior'],
-            3: ['pecho_triceps', 'espalda_biceps', 'piernas'],
-            4: ['push', 'pull', 'piernas', 'full_body'],
-            5: ['pecho_hombro', 'espalda', 'piernas', 'brazos', 'full_body'],
-            6: ['push', 'pull', 'piernas', 'push', 'pull', 'piernas'],
-        },
-    },
-    'mantenimiento': {
-        'peso_cardio': 2,
-        'peso_fuerza': 2,
-        'peso_volumen': 2,
-        'rango_repeticiones': (10, 15),
-        'series_por_ejercicio': (3, 3),
-        'descanso_segundos': (45, 90),
-        'distribucion_dias': {
-            2: ['tren_superior', 'tren_inferior'],
-            3: ['full_body', 'cardio', 'full_body'],
-            4: ['push', 'pull', 'piernas', 'cardio'],
-            5: ['full_body', 'push', 'pull', 'piernas', 'cardio'],
-            6: ['push', 'pull', 'piernas', 'push', 'pull', 'piernas'],
-        },
-    },
-    'rehabilitacion': {
-        'peso_cardio': 2,
-        'peso_fuerza': 1,
-        'peso_volumen': 1,
-        'rango_repeticiones': (12, 20),
-        'series_por_ejercicio': (2, 3),
-        'descanso_segundos': (60, 90),
-        'distribucion_dias': {
-            2: ['movilidad_fuerza', 'movilidad_cardio'],
-            3: ['movilidad', 'fuerza_suave', 'movilidad'],
-            4: ['movilidad', 'fuerza', 'cardio_suave', 'movilidad'],
-        },
-    },
-    'rendimiento': {
-        'peso_cardio': 1,
-        'peso_fuerza': 3,
-        'peso_volumen': 2,
-        'rango_repeticiones': (5, 8),
-        'series_por_ejercicio': (4, 5),
-        'descanso_segundos': (120, 180),
-        'distribucion_dias': {
-            3: ['fuerza_tren_sup', 'fuerza_tren_inf', 'potencia'],
-            4: ['fuerza_upper', 'fuerza_lower', 'potencia', 'resistencia'],
-            5: ['fuerza_push', 'fuerza_pull', 'fuerza_piernas', 'potencia', 'resistencia'],
-            6: ['fuerza_upper', 'fuerza_lower', 'potencia', 'fuerza_upper', 'fuerza_lower', 'resistencia'],
-        },
-    },
-}
-
 MAPEO_PROPOSITO_TEXTO = {
     'perder peso': 'perdida_peso',
     'bajar de peso': 'perdida_peso',
@@ -218,23 +143,7 @@ DIFICULTAD_ORDEN = {'principiante': 1, 'intermedio': 2, 'avanzado': 3}
 PESOS_BASE_SCORING = {
     'objetivo': 3.0,
     'nivel': 2.0,
-    'balance_grupal': 2.0,
+    'dias': 2.0,
     'progresion': 1.5,
-    'diversidad': 1.0,
-    'equipo': 0.5,
-}
-
-GRUPOS_MUSCULARES = [
-    'Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core',
-    'Trapecios', 'Gemelos', 'Isquiotibiales', 'Cuadriceps',
-    'Gluteos', 'Abdominales', 'Espalda baja',
-]
-
-EQUIPO_POR_CATEGORIA = {
-    'barra': ['barra', 'barra olimpica', 'barra z'],
-    'mancuernas': ['mancuerna', 'mancuernas'],
-    'polea': ['polea', 'cuerda', 'polea alta', 'polea baja'],
-    'maquina': ['maquina', 'maquinas'],
-    'cuerpo_libre': ['colchoneta', 'paralelas', 'barra de dominadas', 'banco romano'],
-    'disco': ['disco', 'discos'],
+    'seguridad': 1.0,
 }

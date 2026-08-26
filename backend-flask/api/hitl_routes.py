@@ -62,7 +62,8 @@ def validate_exercise():
 @hitl_bp.route('/recalibrar', methods=['POST'])
 @require_jwt
 def recalibrar_pesos():
-    resultado = engine.recalibrar_pesos()
+    tipo = request.args.get('tipo', 'rutina')
+    resultado = engine.recalibrar_pesos(tipo=tipo)
     if not resultado.get('success'):
         status = resultado.pop('status', 500)
         return jsonify(resultado), status

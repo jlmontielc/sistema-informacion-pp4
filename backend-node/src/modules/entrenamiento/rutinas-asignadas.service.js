@@ -12,6 +12,10 @@ const obtenerTodos = async (entrenadorId, filtros = {}) => {
   if (filtros.propias === 'true' && filtros.instruidoIdActual) {
     where.instruidoId = filtros.instruidoIdActual;
   }
+  if (filtros.ia === 'true') {
+    where.activa = false;
+    where.personalizadaPorEntrenador = false;
+  }
   return RutinaAsignada.findAll({
     where,
     include: [{ model: Instruido, attributes: ['id', 'nombre'] }],

@@ -6,6 +6,7 @@ import { EmptyState } from '../common/EmptyState';
 import { plantillasApi, rutinasAsignadasApi } from '../../services/rutinasApi';
 import { PlantillaForm } from './PlantillaForm';
 import { AsignarRutinaModal } from './AsignarRutinaModal';
+import { RecomendacionesIAView } from './RecomendacionesIAView';
 import { DiaSelector, obtenerNombreDia } from './DiaSelector';
 import { EjercicioCard } from './EjercicioCard';
 import { useAuth } from '../../context/AuthContext';
@@ -30,17 +31,21 @@ export function GestionRutinasView() {
   const [plantillaAsignar, setPlantillaAsignar] = useState(null);
   const [verRutina, setVerRutina] = useState(null);
   const [diaVer, setDiaVer] = useState(null);
+  const [recomendacionesCount, setRecomendacionesCount] = useState(0);
 
   const cargarDatos = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [resP, resR] = await Promise.all([
+      const [resP, resR, resIA] = await Promise.all([
         plantillasApi.listar(),
         rutinasAsignadasApi.listar(),
+        rutinasAsignadasApi.listar({ ia: 'true' }),
       ]);
       setPlantillas(resP.data?.plantillas || resP.data || []);
       setRutinas(resR.data?.rutinas || resR.data || []);
+      const iaData = resIA.data?.rutinas || resIA.data || [];
+      setRecomendacionesCount(Array.isArray(iaData) ? iaData.length : 0);
     } catch (err) {
       setError(err.response?.data?.message || 'Error al cargar los datos');
     } finally {
@@ -132,6 +137,13 @@ export function GestionRutinasView() {
           onClick={() => setTab('asignadas')}
         >
           Asignadas ({rutinas.length})
+        </button>
+        <button
+          type="button"
+          className={`tab-button ${tab === 'recomendadas' ? 'active' : ''}`}
+          onClick={() => setTab('recomendadas')}
+        >
+          Recomendadas IA ({recomendacionesCount})
         </button>
       </div>
 
@@ -327,6 +339,10 @@ export function GestionRutinasView() {
             </div>
           )}
         </>
+      )}
+
+      {tab === 'recomendadas' && (
+        <RecomendacionesIAView onRecargar={cargarDatos} />
       )}
 
       <PlantillaForm

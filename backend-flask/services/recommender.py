@@ -1,15 +1,15 @@
-import random
+import json
 import logging
 from collections import defaultdict
 from config.constants import (
-    MAPEO_OBJETIVO_CONFIG,
     MAPEO_PROPOSITO_TEXTO,
     DIFICULTAD_ORDEN,
-    GRUPOS_MUSCULARES,
     PESOS_BASE_SCORING,
 )
 
 logger = logging.getLogger(__name__)
+
+MAX_RECOMENDACIONES = 5
 
 
 class RecommenderEngine:
@@ -36,110 +36,280 @@ class RecommenderEngine:
             self.weights.update(validos)
             logger.info('Pesos actualizados en caliente: %s', self.weights)
 
-    def generar_rutina(
+    def recomendar_plantillas(
         self,
-        datos_cliente: dict,
+        plantillas_disponibles: list,
         pool_seguro: list,
+        datos_cliente: dict,
         historial: list = None,
-        plantillas_existentes: list = None,
     ) -> dict:
-        proposito_bruto = (datos_cliente.get('proposito') or 'mantenimiento').strip().lower()
-        objetivo = MAPEO_PROPOSITO_TEXTO.get(proposito_bruto, proposito_bruto)
-        nivel = datos_cliente.get('nivel_experiencia') or datos_cliente.get('nivel_actividad', 'moderado')
-        dias = datos_cliente.get('dias_disponibles', 3)
-        edad = datos_cliente.get('edad', 30)
-
-        config_obj = MAPEO_OBJETIVO_CONFIG.get(
-            objetivo,
-            MAPEO_OBJETIVO_CONFIG['mantenimiento']
-        )
-
-        dias = max(2, min(dias, 6))
-        distribucion = config_obj['distribucion_dias'].get(
-            dias,
-            config_obj['distribucion_dias'].get(3, ['full_body'] * 3)
-        )
-
-        pool_ordenado = self._ordenar_pool_por_nivel(pool_seguro, nivel)
+        if not plantillas_disponibles:
+            return {
+                'plantillas_recomendadas': [],
+                'total_evaluadas': 0,
+                'total_seguras': 0,
+                'confianza': 0.0,
+                'explicacion': 'No hay plantillas disponibles del entrenador.',
+                'metadata': {},
+            }
 
         historial_map = self._construir_historial_map(historial) if historial else {}
 
-        rutina_dias = {}
-        ejercicios_usados_global = set()
+        ids_pool_seguro = {ej['id'] for ej in pool_seguro}
+        ejercicios_por_id = {ej['id']: ej for ej in pool_seguro}
 
-        for dia_idx, tipo_dia in enumerate(distribucion, 1):
-            ejercicios_dia = self._seleccionar_ejercicios_dia(
-                tipo_dia,
-                pool_ordenado,
-                config_obj,
-                datos_cliente,
-                historial_map,
-                ejercicios_usados_global,
+        objetivo_cliente = self._normalizar_objetivo(datos_cliente)
+        nivel_cliente = DIFICULTAD_ORDEN.get(
+            datos_cliente.get('nivel_experiencia')
+            or datos_cliente.get('nivel_actividad', 'moderado'),
+            2,
+        )
+        dias_disponibles = max(2, min(datos_cliente.get('dias_disponibles', 3), 6))
+
+        plantillas_con_score = []
+
+        for plantilla in plantillas_disponibles:
+            resultado = self._evaluar_plantilla(
+                plantilla, ids_pool_seguro, ejercicios_por_id,
+                objetivo_cliente, nivel_cliente, dias_disponibles,
+                historial_map, datos_cliente,
             )
+            if resultado is not None:
+                plantillas_con_score.append(resultado)
 
-            ejercicios_con_params = self._asignar_parametros(
-                ejercicios_dia,
-                config_obj,
-                datos_cliente,
-                historial_map,
-            )
+        plantillas_con_score.sort(key=lambda p: p['score'], reverse=True)
+        recomendaciones = plantillas_con_score[:MAX_RECOMENDACIONES]
 
-            rutina_dias[dia_idx] = {
-                'dia': dia_idx,
-                'tipo': tipo_dia,
-                'ejercicios': ejercicios_con_params,
-                'total_ejercicios': len(ejercicios_con_params),
-            }
+        total_seguras = sum(
+            1 for p in plantillas_con_score if p['ejercicios_bloqueados_count'] == 0
+        )
 
-            for ej in ejercicios_dia:
-                ejercicios_usados_global.add(ej['id'])
-
-        explicacion = self._generar_explicacion(
-            objetivo, nivel, dias, len(pool_seguro), distribucion
+        explicacion = self._generar_explicacion_recomendaciones(
+            len(plantillas_disponibles), len(recomendaciones), total_seguras, datos_cliente
         )
 
         confianza = self._calcular_confianza(
-            len(pool_seguro), datos_cliente, historial
+            len(plantillas_disponibles), total_seguras, datos_cliente, historial
         )
 
         return {
-            'rutina_sugerida': {
-                'nombre': f'Rutina IA - {objetivo.replace("_", " ").title()}',
-                'tipo': self._mapear_tipo_rutina(objetivo),
-                'dias_semana': dias,
-                'distribucion_dias': distribucion,
-                'configuracion_objetivo': {
-                    'rango_repeticiones': config_obj['rango_repeticiones'],
-                    'series_por_ejercicio': config_obj['series_por_ejercicio'],
-                    'descanso_segundos': config_obj['descanso_segundos'],
-                },
-                'dias': rutina_dias,
-            },
+            'plantillas_recomendadas': recomendaciones,
+            'total_evaluadas': len(plantillas_disponibles),
+            'total_seguras': total_seguras,
             'confianza': confianza,
             'explicacion': explicacion,
             'metadata': {
-                'pool_disponible': len(pool_seguro),
-                'ejercicios_total_usados': len(ejercicios_usados_global),
-                'distribucion': distribucion,
+                'pool_seguro_ejercicios': len(pool_seguro),
+                'pesos_scoring': dict(self.weights),
             },
         }
 
-    def _ordenar_pool_por_nivel(self, pool: list, nivel_cliente: str) -> list:
-        nivel_objetivo = DIFICULTAD_ORDEN.get(nivel_cliente, 2)
-        pool_ordenado = sorted(
-            pool,
-            key=lambda e: abs(
-                DIFICULTAD_ORDEN.get(e.get('dificultad', 'intermedio'), 2) - nivel_objetivo
-            ),
+    def _evaluar_plantilla(
+        self, plantilla: dict, ids_pool_seguro: set,
+        ejercicios_por_id: dict, objetivo_cliente: str,
+        nivel_cliente: int, dias_disponibles: int,
+        historial_map: dict, datos_cliente: dict,
+    ) -> dict:
+        ejercicios_raw = plantilla.get('ejercicios')
+        if not ejercicios_raw:
+            return None
+
+        if isinstance(ejercicios_raw, str):
+            try:
+                ejercicios_lista = json.loads(ejercicios_raw)
+            except (json.JSONDecodeError, TypeError):
+                return None
+        elif isinstance(ejercicios_raw, list):
+            ejercicios_lista = ejercicios_raw
+        else:
+            return None
+
+        if not ejercicios_lista:
+            return None
+
+        ejercicios_seguros = []
+        ejercicios_precaucion = []
+        ejercicios_bloqueados = []
+
+        for ej in ejercicios_lista:
+            ej_id = ej.get('ejercicio_id') or ej.get('id')
+            if ej_id is None:
+                continue
+
+            if ej_id in ids_pool_seguro:
+                ej_info = ejercicios_por_id.get(ej_id, {})
+                tiene_restriccion = bool(ej_info.get('contraindica_lesiones'))
+                if tiene_restriccion:
+                    ejercicios_precaucion.append(ej_id)
+                else:
+                    ejercicios_seguros.append(ej_id)
+            else:
+                ejercicios_bloqueados.append(ej_id)
+
+        total_ejercicios = len(ejercicios_lista)
+        if total_ejercicios == 0:
+            return None
+
+        ratio_seguros = len(ejercicios_seguros) / total_ejercicios
+
+        if ratio_seguros < 0.5:
+            return None
+
+        score_objetivo = self._score_objetivo_plantilla(plantilla, objetivo_cliente)
+        score_nivel = self._score_nivel_plantilla(plantilla, nivel_cliente)
+        score_dias = self._score_dias_plantilla(plantilla, dias_disponibles)
+        score_progresion = self._score_progresion_plantilla(ejercicios_lista, historial_map)
+        score_seguridad = self._score_seguridad_plantilla(
+            ratio_seguros, len(ejercicios_precaucion), len(ejercicios_bloqueados)
         )
-        return pool_ordenado
+
+        score_total = (
+            score_objetivo + score_nivel + score_dias
+            + score_progresion + score_seguridad
+        )
+
+        explicacion = self._explicar_plantilla(
+            plantilla, objetivo_cliente, nivel_cliente, dias_disponibles,
+            len(ejercicios_bloqueados), len(ejercicios_precaucion),
+        )
+
+        return {
+            'plantilla_id': plantilla.get('id'),
+            'nombre': plantilla.get('nombre', 'Sin nombre'),
+            'score': round(score_total, 3),
+            'explicacion': explicacion,
+            'ejercicios_totales': total_ejercicios,
+            'ejercicios_seguros': len(ejercicios_seguros),
+            'ejercicios_con_precaucion': len(ejercicios_precaucion),
+            'ejercicios_bloqueados_count': len(ejercicios_bloqueados),
+            'ejercicios_bloqueados': ejercicios_bloqueados,
+            'dias_semana': plantilla.get('frecuencia_semanal'),
+            'frecuencia_semanal': plantilla.get('frecuencia_semanal'),
+            'tipo': plantilla.get('tipo'),
+            'nivel_dificultad': plantilla.get('nivel_dificultad'),
+            'objetivo': plantilla.get('objetivo'),
+        }
+
+    def _normalizar_objetivo(self, datos_cliente: dict) -> str:
+        proposito_bruto = (datos_cliente.get('proposito') or 'mantenimiento').strip().lower()
+        return MAPEO_PROPOSITO_TEXTO.get(proposito_bruto, proposito_bruto)
+
+    def _score_objetivo_plantilla(self, plantilla: dict, objetivo_cliente: str) -> float:
+        objetivo_plantilla = (plantilla.get('objetivo') or '').strip().lower()
+        if not objetivo_plantilla:
+            return self.weights['objetivo'] * 0.3
+        if objetivo_plantilla == objetivo_cliente:
+            return self.weights['objetivo']
+        compatibilidad = self._compatibilidad_objetivos(objetivo_cliente, objetivo_plantilla)
+        return self.weights['objetivo'] * compatibilidad
+
+    def _compatibilidad_objetivos(self, objetivo_a: str, objetivo_b: str) -> float:
+        matriz = {
+            ('ganancia_muscular', 'rendimiento'): 0.7,
+            ('ganancia_muscular', 'mantenimiento'): 0.5,
+            ('perdida_peso', 'mantenimiento'): 0.6,
+            ('perdida_peso', 'ganancia_muscular'): 0.4,
+            ('mantenimiento', 'ganancia_muscular'): 0.5,
+            ('mantenimiento', 'perdida_peso'): 0.6,
+            ('rendimiento', 'ganancia_muscular'): 0.7,
+            ('rehabilitacion', 'mantenimiento'): 0.4,
+        }
+        return matriz.get((objetivo_a, objetivo_b),
+               matriz.get((objetivo_b, objetivo_a), 0.2))
+
+    def _score_nivel_plantilla(self, plantilla: dict, nivel_cliente: int) -> float:
+        nivel_plantilla = DIFICULTAD_ORDEN.get(
+            (plantilla.get('nivel_dificultad') or 'intermedio').strip().lower(), 2
+        )
+        diferencia = abs(nivel_cliente - nivel_plantilla)
+        return max(0, (3 - diferencia)) * (self.weights['nivel'] / 3)
+
+    def _score_dias_plantilla(self, plantilla: dict, dias_disponibles: int) -> float:
+        frecuencia = plantilla.get('frecuencia_semanal')
+        if not frecuencia:
+            return self.weights['dias'] * 0.3
+        try:
+            frecuencia = int(frecuencia)
+        except (ValueError, TypeError):
+            return self.weights['dias'] * 0.3
+
+        diferencia = abs(frecuencia - dias_disponibles)
+        if diferencia == 0:
+            return self.weights['dias']
+        if diferencia == 1:
+            return self.weights['dias'] * 0.7
+        if diferencia == 2:
+            return self.weights['dias'] * 0.4
+        return self.weights['dias'] * 0.1
+
+    def _score_progresion_plantilla(self, ejercicios: list, historial_map: dict) -> float:
+        if not historial_map:
+            return self.weights['progresion'] * 0.5
+
+        total_ej = 0
+        suma_penalty = 0.0
+
+        for ej in ejercicios:
+            ej_id = ej.get('ejercicio_id') or ej.get('id')
+            if ej_id is None:
+                continue
+            total_ej += 1
+            hist = historial_map.get(ej_id, {})
+            veces = hist.get('veces', 0)
+            if veces > 8:
+                suma_penalty += 0.2
+            elif veces > 4:
+                suma_penalty += 0.8
+            else:
+                suma_penalty += 1.0
+
+        if total_ej == 0:
+            return self.weights['progresion'] * 0.5
+
+        return self.weights['progresion'] * (suma_penalty / total_ej)
+
+    def _score_seguridad_plantilla(
+        self, ratio_seguros: float, precaucion_count: int, bloqueados_count: int
+    ) -> float:
+        score = self.weights['seguridad'] * ratio_seguros
+        if bloqueados_count > 0:
+            score *= 0.5
+        elif precaucion_count > 0:
+            score *= 0.8
+        return score
+
+    def _explicar_plantilla(
+        self, plantilla: dict, objetivo_cliente: str, nivel_cliente: int,
+        dias_disponibles: int, bloqueados: int, precaucion: int,
+    ) -> str:
+        partes = []
+        objetivo_p = (plantilla.get('objetivo') or 'no especificado').replace('_', ' ')
+        if (plantilla.get('objetivo') or '').strip().lower() == objetivo_cliente:
+            partes.append(f"Objetivo '{objetivo_p}' coincide con el del cliente")
+        else:
+            partes.append(f"Objetivo '{objetivo_p}' (parcialmente compatible)")
+
+        nivel_p = (plantilla.get('nivel_dificultad') or 'intermedio')
+        partes.append(f"Nivel: {nivel_p}")
+
+        frecuencia = plantilla.get('frecuencia_semanal')
+        if frecuencia:
+            partes.append(f"Frecuencia: {frecuencia} días/semana (disponibles: {dias_disponibles})")
+
+        if bloqueados > 0:
+            partes.append(f"{bloqueados} ejercicio(s) bloqueado(s) por restricciones médicas")
+        elif precaucion > 0:
+            partes.append(f"{precaucion} ejercicio(s) con precaución médica")
+        else:
+            partes.append("Todos los ejercicios son seguros para este cliente")
+
+        return '. '.join(partes) + '.'
 
     def _construir_historial_map(self, historial: list) -> dict:
         mapa = defaultdict(lambda: {'veces': 0, 'carga_promedio': 0, 'ultima_fecha': None})
         for registro in historial:
             ejercicios_realizados = registro.get('ejercicios_realizados', [])
             if isinstance(ejercicios_realizados, str):
-                import json
                 try:
                     ejercicios_realizados = json.loads(ejercicios_realizados)
                 except (json.JSONDecodeError, TypeError):
@@ -158,271 +328,40 @@ class RecommenderEngine:
                     mapa[ej_id]['ultima_fecha'] = registro.get('fecha')
         return dict(mapa)
 
-    def _seleccionar_ejercicios_dia(
-        self,
-        tipo_dia: str,
-        pool: list,
-        config_obj: dict,
-        datos_cliente: dict,
-        historial_map: dict,
-        ejercicios_usados: set,
-    ) -> list:
-        target_grupos = self._obtener_grupos_por_tipo(tipo_dia)
-        candidatos = [
-            ej for ej in pool
-            if ej.get('grupo_muscular') in target_grupos
-            and ej['id'] not in ejercicios_usados
-        ]
-
-        if len(candidatos) < 3:
-            candidatos = [
-                ej for ej in pool
-                if ej['id'] not in ejercicios_usados
-            ]
-
-        scored = []
-        for ej in candidatos:
-            score = self._score_inicial(
-                ej, config_obj, datos_cliente, historial_map
-            )
-            scored.append((ej, score))
-
-        max_ejercicios = min(6, len(scored))
-        conteo_grupos = defaultdict(int)
-        seleccionados = []
-        disponibles = list(candidatos)
-
-        while len(seleccionados) < max_ejercicios and disponibles:
-            mejor_ej = None
-            mejor_score = None
-            for ej in disponibles:
-                score = self._score_ejercicio(
-                    ej, config_obj, datos_cliente, historial_map,
-                    ejercicios_usados, conteo_grupos,
-                )
-                if mejor_score is None or score > mejor_score:
-                    mejor_ej, mejor_score = ej, score
-            seleccionados.append(mejor_ej)
-            conteo_grupos[mejor_ej.get('grupo_muscular') or ''] += 1
-            disponibles.remove(mejor_ej)
-
-        if len(seleccionados) < 3:
-            restantes = random.sample(
-                disponibles, min(3 - len(seleccionados), len(disponibles))
-            )
-            seleccionados.extend(restantes)
-
-        return seleccionados
-
-    def _score_inicial(
-        self,
-        ejercicio: dict,
-        config_obj: dict,
-        datos_cliente: dict,
-        historial_map: dict,
-    ) -> float:
-        return (
-            self._score_objetivo(ejercicio, config_obj)
-            + self._score_nivel(ejercicio, datos_cliente)
-            + self._score_progresion(ejercicio, historial_map)
-            + self._score_equipo(ejercicio, datos_cliente)
-        )
-
-    def _score_ejercicio(
-        self,
-        ejercicio: dict,
-        config_obj: dict,
-        datos_cliente: dict,
-        historial_map: dict,
-        ejercicios_usados: set,
-        conteo_grupos: dict,
-    ) -> float:
-        score = 0.0
-
-        score += self._score_objetivo(ejercicio, config_obj)
-        score += self._score_nivel(ejercicio, datos_cliente)
-        score += self._score_balance_grupal(ejercicio, conteo_grupos)
-        score += self._score_progresion(ejercicio, historial_map)
-        score += self._score_diversidad(ejercicio, ejercicios_usados)
-        score += self._score_equipo(ejercicio, datos_cliente)
-
-        return score
-
-    def _score_objetivo(self, ejercicio: dict, config_obj: dict) -> float:
-        nombre = ejercicio.get('nombre', '').lower()
-        grupo = (ejercicio.get('grupo_muscular') or '').lower()
-
-        peso = 0.0
-        es_compuesto = any(g in grupo for g in ['piernas', 'pecho', 'espalda', 'hombros'])
-        es_isolation = any(g in grupo for g in ['brazos', 'gemelos', 'abdominales'])
-
-        if es_compuesto:
-            peso = config_obj.get('peso_fuerza', 2) * 0.5
-        elif es_isolation:
-            peso = config_obj.get('peso_volumen', 2) * 0.3
-        else:
-            peso = config_obj.get('peso_cardio', 2) * 0.4
-
-        return peso
-
-    def _score_nivel(self, ejercicio: dict, datos_cliente: dict) -> float:
-        nivel_cliente = DIFICULTAD_ORDEN.get(
-            datos_cliente.get('nivel_experiencia') or datos_cliente.get('nivel_actividad', 'moderado'), 2
-        )
-        nivel_ejercicio = DIFICULTAD_ORDEN.get(
-            ejercicio.get('dificultad', 'intermedio'), 2
-        )
-        diferencia = abs(nivel_cliente - nivel_ejercicio)
-        return max(0, (3 - diferencia)) * (self.weights['nivel'] / 3)
-
-    def _score_balance_grupal(self, ejercicio: dict, conteo_grupos: dict) -> float:
-        grupo = ejercicio.get('grupo_muscular', '')
-        count_grupo = conteo_grupos.get(grupo, 0)
-        if count_grupo < 2:
-            return self.weights['balance_grupal']
-        return self.weights['balance_grupal'] * 0.3
-
-    def _score_progresion(self, ejercicio: dict, historial_map: dict) -> float:
-        ej_id = ejercicio.get('id')
-        if ej_id not in historial_map:
-            return self.weights['progresion'] * 0.5
-        historial = historial_map[ej_id]
-        if historial['veces'] > 8:
-            return self.weights['progresion'] * 0.2
-        if historial['veces'] > 4:
-            return self.weights['progresion'] * 0.8
-        return self.weights['progresion'] * 1.0
-
-    def _score_diversidad(self, ejercicio: dict, usados: set) -> float:
-        if ejercicio.get('id') in usados:
-            return 0.0
-        return self.weights['diversidad']
-
-    def _score_equipo(self, ejercicio: dict, datos_cliente: dict) -> float:
-        equipo = datos_cliente.get('preferencias', {}).get('equipamiento_disponible', [])
-        if not equipo:
-            return self.weights['equipo'] * 0.5
-        equipo_necesario = (ejercicio.get('equipo_necesario') or '').lower()
-        for eq in equipo:
-            if eq.lower() in equipo_necesario:
-                return self.weights['equipo']
-        return self.weights['equipo'] * 0.3
-
-    def _asignar_parametros(
-        self,
-        ejercicios: list,
-        config_obj: dict,
-        datos_cliente: dict,
-        historial_map: dict,
-    ) -> list:
-        rango_rep = config_obj['rango_repeticiones']
-        rango_series = config_obj['series_por_ejercicio']
-        rango_descanso = config_obj['descanso_segundos']
-
-        resultado = []
-        for idx, ej in enumerate(ejercicios):
-            ej_id = ej.get('id')
-            hist = historial_map.get(ej_id, {})
-
-            rep_base = random.randint(rango_rep[0], rango_rep[1])
-            series_base = random.randint(rango_series[0], rango_series[1])
-            descanso = random.randint(rango_descanso[0], rango_descanso[1])
-
-            carga = None
-            if hist.get('carga_promedio'):
-                carga = round(hist['carga_promedio'] * 1.02, 1)
-
-            resultado.append({
-                'ejercicio_id': ej_id,
-                'nombre': ej.get('nombre'),
-                'grupo_muscular': ej.get('grupo_muscular'),
-                'target': ej.get('target'),
-                'dificultad': ej.get('dificultad'),
-                'orden': idx + 1,
-                'series': series_base,
-                'repeticiones': rep_base,
-                'carga_kg': carga,
-                'descanso_segundos': descanso,
-                'notas': '',
-                'equipo_necesario': ej.get('equipo_necesario'),
-                'imagen_url': ej.get('imagen_url'),
-                'gif_url': ej.get('gif_url'),
-            })
-
-        return resultado
-
-    def _obtener_grupos_por_tipo(self, tipo_dia: str) -> list:
-        mapeo = {
-            'full_body': GRUPOS_MUSCULARES,
-            'tren_superior': ['Pecho', 'Espalda', 'Hombros', 'Brazos', 'Trapecios'],
-            'tren_inferior': ['Piernas', 'Isquiotibiales', 'Cuadriceps', 'Gluteos', 'Gemelos', 'Core'],
-            'push': ['Pecho', 'Hombros', 'Brazos'],
-            'pull': ['Espalda', 'Trapecios', 'Brazos'],
-            'piernas': ['Piernas', 'Isquiotibiales', 'Cuadriceps', 'Gluteos', 'Gemelos'],
-            'cardio': ['Core', 'Abdominales'],
-            'cardio_core': ['Core', 'Abdominales'],
-            'pecho_triceps': ['Pecho', 'Brazos'],
-            'espalda_biceps': ['Espalda', 'Brazos'],
-            'pecho_hombro': ['Pecho', 'Hombros'],
-            'brazos': ['Brazos'],
-            'fuerza_tren_sup': ['Pecho', 'Espalda', 'Hombros'],
-            'fuerza_tren_inf': ['Piernas', 'Gluteos'],
-            'potencia': ['Piernas', 'Pecho', 'Core'],
-            'resistencia': ['Core', 'Piernas'],
-            'movilidad': ['Core', 'Piernas'],
-            'fuerza_suave': ['Pecho', 'Espalda'],
-            'movilidad_fuerza': ['Pecho', 'Piernas', 'Core'],
-            'movilidad_cardio': ['Core', 'Piernas'],
-            'fuerza_upper': ['Pecho', 'Espalda', 'Hombros'],
-            'fuerza_lower': ['Piernas', 'Gluteos'],
-            'fuerza_push': ['Pecho', 'Hombros'],
-            'fuerza_pull': ['Espalda'],
-            'fuerza_piernas': ['Piernas'],
-            'cardio_suave': ['Core'],
-        }
-        return mapeo.get(tipo_dia, GRUPOS_MUSCULARES)
-
-    def _mapear_tipo_rutina(self, objetivo: str) -> str:
-        mapeo = {
-            'perdida_peso': 'hipertrofia',
-            'ganancia_muscular': 'hipertrofia',
-            'mantenimiento': 'fuerza',
-            'rendimiento': 'fuerza',
-            'rehabilitacion': 'funcional',
-        }
-        return mapeo.get(objetivo, 'fuerza')
-
-    def _generar_explicacion(
-        self, objetivo: str, nivel: str, dias: int, pool_total: int, distribucion: list
+    def _generar_explicacion_recomendaciones(
+        self, total_evaluadas: int, total_recomendadas: int,
+        total_seguras: int, datos_cliente: dict,
     ) -> str:
-        obj_texto = objetivo.replace('_', ' ')
-        dist_texto = ', '.join(distribucion[:dias])
+        nivel = datos_cliente.get('nivel_experiencia') or datos_cliente.get('nivel_actividad', 'moderado')
+        dias = datos_cliente.get('dias_disponibles', 3)
         return (
-            f"Rutina generada para objetivo '{objetivo}' con {dias} días/semana. "
-            f"Distribución: {dist_texto}. "
-            f"Pool de ejercicios seguros evaluados: {pool_total}. "
-            f"Nivel de actividad: {nivel}."
+            f"Se evaluaron {total_evaluadas} plantillas del entrenador. "
+            f"{total_seguras} son completamente seguras para este perfil. "
+            f"Se recomiendan las {total_recomendadas} mejores opciones "
+            f"para nivel {nivel} con {dias} días/semana disponibles."
         )
 
     def _calcular_confianza(
-        self, pool_seguro: int, datos_cliente: dict, historial: list
+        self, total_plantillas: int, total_seguras: int,
+        datos_cliente: dict, historial: list,
     ) -> float:
-        confianza_base = 0.5
+        confianza_base = 0.4
 
-        if pool_seguro >= 15:
+        if total_plantillas >= 5:
             confianza_base += 0.15
-        elif pool_seguro >= 8:
+        elif total_plantillas >= 3:
             confianza_base += 0.10
-        elif pool_seguro >= 4:
+        elif total_plantillas >= 1:
             confianza_base += 0.05
 
-        if datos_cliente.get('edad'):
+        if total_seguras > 0:
+            ratio = total_seguras / total_plantillas
+            confianza_base += ratio * 0.15
+
+        if datos_cliente.get('nivel_experiencia'):
             confianza_base += 0.05
 
         if datos_cliente.get('nivel_actividad'):
-            confianza_base += 0.05
-
-        if datos_cliente.get('nivel_experiencia'):
             confianza_base += 0.05
 
         if historial and len(historial) >= 4:

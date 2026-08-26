@@ -5,6 +5,7 @@ from services.data_fetcher import (
     fetch_perfil_medico,
     fetch_todos_ejercicios,
     fetch_historial_entrenamiento,
+    fetch_plantillas_disponibles,
     parsear_lesiones,
     parsear_condiciones,
     parsear_alergias,
@@ -28,11 +29,21 @@ class HitlEngine:
         if not cliente_id:
             return self._error_response('cliente_id es requerido', 400)
 
+        entrenador_id = request_data.get('entrenador_id')
+        if not entrenador_id:
+            return self._error_response('entrenador_id es requerido', 400)
+
         datos_cliente = self._construir_datos_cliente(request_data, cliente_id)
         if not datos_cliente:
             return self._error_response('Cliente no encontrado o inactivo', 404)
 
         perfil_medico = self._construir_perfil_medico(request_data, cliente_id)
+
+        plantillas = fetch_plantillas_disponibles(entrenador_id)
+        if not plantillas:
+            return self._error_response(
+                'No hay plantillas activas disponibles para este entrenador', 404
+            )
 
         pool_ejercicios = fetch_todos_ejercicios()
         if not pool_ejercicios:
@@ -49,27 +60,12 @@ class HitlEngine:
             (datos_cliente.get('preferencias') or {}).get('ejercicios_excluir'),
         )
 
-        if len(pool_seguro) == 0:
-            return {
-                'success': False,
-                'error': 'No hay ejercicios seguros disponibles para este perfil',
-                'alertas_seguridad': pool_filtrado['alertas_globales'],
-                'ejercicios_bloqueados': [
-                    {
-                        'nombre': b['ejercicio']['nombre'],
-                        'razon': b['razon']['alertas'][0]['mensaje'] if b['razon']['alertas'] else 'Restricción médica',
-                    }
-                    for b in pool_filtrado['ejercicios_bloqueados']
-                ],
-                'sugerencia': 'Consultar con el entrenador para ejercicios personalizados o rehabilitación específica.',
-                'tiempo_ms': round((time.time() - inicio) * 1000, 1),
-            }
-
         historial = self._obtener_historial(request_data, cliente_id)
 
-        resultado_recommender = self.recommender.generar_rutina(
-            datos_cliente=datos_cliente,
+        resultado_recommender = self.recommender.recomendar_plantillas(
+            plantillas_disponibles=plantillas,
             pool_seguro=pool_seguro,
+            datos_cliente=datos_cliente,
             historial=historial,
         )
 
@@ -77,7 +73,7 @@ class HitlEngine:
 
         respuesta = {
             'success': True,
-            'rutina_sugerida': resultado_recommender['rutina_sugerida'],
+            'plantillas_recomendadas': resultado_recommender['plantillas_recomendadas'],
             'alertas_seguridad': pool_filtrado['alertas_globales'],
             'ejercicios_filtrados': [
                 {
@@ -97,6 +93,8 @@ class HitlEngine:
             ],
             'precauciones_condicion': resultado_guardian.get('precauciones', []),
             'nivel_riesgo_global': resultado_guardian.get('nivel_riesgo_global', 'SAFE'),
+            'total_evaluadas': resultado_recommender['total_evaluadas'],
+            'total_seguras': resultado_recommender['total_seguras'],
             'confianza': resultado_recommender['confianza'],
             'explicacion': resultado_recommender['explicacion'],
             'resumen_pool': {
@@ -108,26 +106,26 @@ class HitlEngine:
             },
             'metadata': {
                 'tiempo_ms': tiempo_total,
-                'version_modelo': '1.1.0',
-                'motor': 'reglas+scoring',
+                'version_modelo': '2.0.0',
+                'motor': 'recomendacion_plantillas',
                 'pesos_scoring': dict(self.recommender.weights),
             },
         }
 
         logger.info(
-            f"HITL processed cliente={cliente_id} "
-            f"ejercicios={pool_filtrado['total_evaluados']} "
-            f"seguros={pool_filtrado['total_seguros']} "
-            f"bloqueados={pool_filtrado['total_bloqueados']} "
+            f"HITL recomendacion cliente={cliente_id} entrenador={entrenador_id} "
+            f"plantillas_evaluadas={resultado_recommender['total_evaluadas']} "
+            f"recomendadas={len(resultado_recommender['plantillas_recomendadas'])} "
+            f"ejercicios_pool={pool_filtrado['total_evaluados']} "
             f"tiempo={tiempo_total}ms"
         )
 
         return respuesta
 
-    def recalibrar_pesos(self) -> dict:
+    def recalibrar_pesos(self, tipo: str = 'rutina') -> dict:
         from services.feedback_learner import recalcular_y_persistir_pesos
 
-        resultado = recalcular_y_persistir_pesos()
+        resultado = recalcular_y_persistir_pesos(tipo=tipo)
         if resultado.get('success'):
             self.recommender.actualizar_pesos(resultado['pesos_nuevos'])
             self.weights = dict(self.recommender.weights)

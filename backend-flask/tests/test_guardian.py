@@ -186,12 +186,40 @@ def test_recommender_normaliza_proposito():
 
     engine = RecommenderEngine()
     pool = [
-        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante', 'equipo': ['barra']},
-        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'dificultad': 'principiante', 'equipo': ['barra']},
-        {'id': 3, 'nombre': 'Dominadas', 'grupo_muscular': 'Espalda', 'dificultad': 'intermedio', 'equipo': ['cuerpo_libre']},
-        {'id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'dificultad': 'principiante', 'equipo': ['cuerpo_libre']},
-        {'id': 5, 'nombre': 'Peso muerto', 'grupo_muscular': 'Espalda baja', 'dificultad': 'intermedio', 'equipo': ['barra']},
-        {'id': 6, 'nombre': 'Curl de bíceps', 'grupo_muscular': 'Brazos', 'dificultad': 'principiante', 'equipo': ['mancuernas']},
+        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante', 'equipo_necesario': 'barra'},
+        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'dificultad': 'principiante', 'equipo_necesario': 'barra'},
+        {'id': 3, 'nombre': 'Dominadas', 'grupo_muscular': 'Espalda', 'dificultad': 'intermedio', 'equipo_necesario': 'cuerpo_libre'},
+        {'id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'dificultad': 'principiante', 'equipo_necesario': 'cuerpo_libre'},
+        {'id': 5, 'nombre': 'Peso muerto', 'grupo_muscular': 'Espalda baja', 'dificultad': 'intermedio', 'equipo_necesario': 'barra'},
+        {'id': 6, 'nombre': 'Curl de bíceps', 'grupo_muscular': 'Brazos', 'dificultad': 'principiante', 'equipo_necesario': 'mancuernas'},
+    ]
+    plantillas = [
+        {
+            'id': 10,
+            'nombre': 'Rutina Ganancia Muscular 4 dias',
+            'tipo': 'hipertrofia',
+            'objetivo': 'ganancia_muscular',
+            'nivel_dificultad': 'intermedio',
+            'frecuencia_semanal': 4,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 4, 'repeticiones': 10},
+                {'ejercicio_id': 2, 'series': 4, 'repeticiones': 8},
+                {'ejercicio_id': 3, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 5, 'series': 3, 'repeticiones': 8},
+            ],
+        },
+        {
+            'id': 11,
+            'nombre': 'Rutina Perdida de Peso',
+            'tipo': 'resistencia',
+            'objetivo': 'perdida_peso',
+            'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 4, 'series': 3, 'repeticiones': 15},
+                {'ejercicio_id': 6, 'series': 3, 'repeticiones': 12},
+            ],
+        },
     ]
     datos_cliente = {
         'edad': 30,
@@ -204,13 +232,145 @@ def test_recommender_normaliza_proposito():
         'dias_disponibles': 3,
     }
 
-    resultado = engine.generar_rutina(datos_cliente, pool, historial=[])
+    resultado = engine.recomendar_plantillas(plantillas, pool, datos_cliente, historial=[])
 
-    rutina = resultado['rutina_sugerida']
-    assert 'ganancia muscular' in rutina['nombre'].lower()
-    assert rutina['configuracion_objetivo']['rango_repeticiones'] == (8, 12)
-    assert rutina['configuracion_objetivo']['series_por_ejercicio'] == (3, 4)
+    assert resultado['total_evaluadas'] == 2
+    assert len(resultado['plantillas_recomendadas']) >= 1
+    mejor = resultado['plantillas_recomendadas'][0]
+    assert mejor['plantilla_id'] == 10
+    assert mejor['nombre'] == 'Rutina Ganancia Muscular 4 dias'
     print("[PASS] test_recommender_normaliza_proposito")
+
+
+def test_recommender_plantilla_ejercicios_bloqueados():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante'},
+        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'dificultad': 'principiante'},
+        {'id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'dificultad': 'principiante'},
+    ]
+    plantillas_con_bloqueados = [
+        {
+            'id': 20, 'nombre': 'Rutina con bloqueados', 'tipo': 'hipertrofia',
+            'objetivo': 'ganancia_muscular', 'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 4, 'repeticiones': 10},
+                {'ejercicio_id': 2, 'series': 4, 'repeticiones': 8},
+                {'ejercicio_id': 99, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 100, 'series': 3, 'repeticiones': 8},
+            ],
+        },
+    ]
+    plantillas_segura = [
+        {
+            'id': 21, 'nombre': 'Rutina segura', 'tipo': 'hipertrofia',
+            'objetivo': 'ganancia_muscular', 'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 4, 'repeticiones': 10},
+                {'ejercicio_id': 2, 'series': 4, 'repeticiones': 8},
+            ],
+        },
+    ]
+    datos = {
+        'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
+        'nivel_actividad': 'activo', 'nivel_experiencia': 'principiante',
+        'proposito': 'ganar masa muscular', 'dias_disponibles': 3,
+    }
+
+    r_bloq = engine.recomendar_plantillas(plantillas_con_bloqueados, pool, datos)
+    r_seg = engine.recomendar_plantillas(plantillas_segura, pool, datos)
+    rec_bloq = r_bloq['plantillas_recomendadas'][0]
+    rec_seg = r_seg['plantillas_recomendadas'][0]
+
+    assert rec_bloq['ejercicios_bloqueados_count'] == 2
+    assert rec_bloq['ejercicios_seguros'] == 2
+    assert rec_seg['ejercicios_bloqueados_count'] == 0
+    assert rec_seg['score'] > rec_bloq['score']
+    print("[PASS] test_recommender_plantilla_ejercicios_bloqueados")
+
+
+def test_recommender_plantilla_ratio_bajo_excluida():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante'},
+    ]
+    plantillas = [
+        {
+            'id': 30,
+            'nombre': 'Rutina mayoritariamente bloqueada',
+            'tipo': 'fuerza',
+            'objetivo': 'mantenimiento',
+            'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 80, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 81, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 82, 'series': 3, 'repeticiones': 10},
+            ],
+        },
+    ]
+    datos_cliente = {
+        'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
+        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
+        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+    }
+
+    resultado = engine.recomendar_plantillas(plantillas, pool, datos_cliente)
+    assert resultado['total_evaluadas'] == 1
+    assert len(resultado['plantillas_recomendadas']) == 0
+    print("[PASS] test_recommender_plantilla_ratio_bajo_excluida")
+
+
+def test_recommender_plantillas_sin_historial():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'dificultad': 'principiante'},
+        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'dificultad': 'principiante'},
+    ]
+    plantillas = [
+        {
+            'id': 40,
+            'nombre': 'Rutina basica',
+            'tipo': 'fuerza',
+            'objetivo': 'mantenimiento',
+            'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 2, 'series': 3, 'repeticiones': 10},
+            ],
+        },
+    ]
+    datos_cliente = {
+        'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
+        'nivel_actividad': 'moderado', 'nivel_experiencia': 'principiante',
+        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+    }
+
+    resultado = engine.recomendar_plantillas(plantillas, pool, datos_cliente, historial=None)
+    assert resultado['total_evaluadas'] == 1
+    assert len(resultado['plantillas_recomendadas']) == 1
+    assert resultado['confianza'] > 0
+    print("[PASS] test_recommender_plantillas_sin_historial")
+
+
+def test_recommender_plantillas_vacia():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    resultado = engine.recomendar_plantillas([], [], {'proposito': 'mantenimiento'})
+    assert resultado['total_evaluadas'] == 0
+    assert len(resultado['plantillas_recomendadas']) == 0
+    print("[PASS] test_recommender_plantillas_vacia")
 
 
 def test_motor_nutricional_deficit():
@@ -339,6 +499,10 @@ if __name__ == '__main__':
     test_guardian_multi_lesion()
     test_mapeo_proposito_texto()
     test_recommender_normaliza_proposito()
+    test_recommender_plantilla_ejercicios_bloqueados()
+    test_recommender_plantilla_ratio_bajo_excluida()
+    test_recommender_plantillas_sin_historial()
+    test_recommender_plantillas_vacia()
     test_motor_nutricional_deficit()
     test_motor_nutricional_superavit()
     test_motor_nutricional_mantenimiento()
