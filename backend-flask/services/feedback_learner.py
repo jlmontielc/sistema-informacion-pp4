@@ -76,8 +76,8 @@ def calcular_nuevos_pesos(pesos_actuales: dict, tasas: dict) -> dict:
         factor_rechazo = 1 + FACTOR_APRENDIZAJE * min(
             (tasas['tasa_rechazada'] - UMBRAL_RECHAZADAS) / UMBRAL_RECHAZADAS, 1
         )
-        nuevos['diversidad'] *= factor_rechazo
-        nuevos['balance_grupal'] *= factor_rechazo
+        nuevos['dias'] *= factor_rechazo
+        nuevos['seguridad'] *= factor_rechazo
         nuevos['objetivo'] *= (1 - FACTOR_APRENDIZAJE * 0.5)
 
     for clave, base in PESOS_BASE_SCORING.items():

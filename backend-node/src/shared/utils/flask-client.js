@@ -83,7 +83,7 @@ const parsearCampoJson = (raw) => {
   }
 };
 
-const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes'];
+const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
 module.exports = {
   FLASK_URL,

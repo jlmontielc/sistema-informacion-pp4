@@ -6,14 +6,13 @@ const {
   httpRequest,
   descifrarSeguro,
   parsearCampoJson,
+  CAMPOS_SENSIBLES,
 } = require('../../shared/utils/flask-client');
-
-const CAMPOS_SENSIBLES_HITL = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
 const descifrarCampos = (registro) => {
   if (!registro) return registro;
   const datos = registro.toJSON ? registro.toJSON() : { ...registro };
-  for (const campo of CAMPOS_SENSIBLES_HITL) {
+  for (const campo of CAMPOS_SENSIBLES) {
     if (datos[campo]) {
       datos[campo] = descifrarSeguro(datos[campo]);
     }
@@ -22,23 +21,45 @@ const descifrarCampos = (registro) => {
 };
 
 const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) => {
-  if (!resultado || !resultado.success || !resultado.rutina_sugerida) return null;
+  if (!resultado || !resultado.success || !resultado.plantillas_recomendadas) return null;
 
-  const rutina = resultado.rutina_sugerida;
+  const recomendaciones = resultado.plantillas_recomendadas;
+  if (!Array.isArray(recomendaciones) || recomendaciones.length === 0) return null;
+
+  const mejor = recomendaciones[0];
 
   await RutinaAsignada.update(
     { activa: false },
     { where: { instruidoId: clienteId, activa: true } },
   );
 
+  const datosGuardados = {
+    plantillas_recomendadas: recomendaciones.map(p => ({
+      plantilla_id: p.plantilla_id,
+      nombre: p.nombre,
+      score: p.score,
+      tipo: p.tipo,
+      nivel_dificultad: p.nivel_dificultad,
+      objetivo: p.objetivo,
+      dias_semana: p.dias_semana,
+      frecuencia_semanal: p.frecuencia_semanal,
+      ejercicios_totales: p.ejercicios_totales,
+      ejercicios_seguros: p.ejercicios_seguros,
+      ejercicios_bloqueados_count: p.ejercicios_bloqueados_count,
+      explicacion: p.explicacion,
+    })),
+    explicacion: resultado.explicacion || null,
+  };
+
   return RutinaAsignada.create({
     instruidoId: clienteId,
     entrenadorId,
-    nombre: rutina.nombre || 'Rutina IA - Auto-generada',
-    tipo: rutina.tipo || 'fuerza',
-    ejercicios: rutina,
-    diasSemana: rutina.distribucion_dias || null,
-    frecuenciaSemanal: rutina.dias_semana || null,
+    plantillaOrigenId: mejor.plantilla_id || null,
+    nombre: `IA - ${mejor.nombre || 'Recomendación'}`,
+    tipo: mejor.tipo || 'fuerza',
+    ejercicios: datosGuardados,
+    diasSemana: mejor.dias_semana || null,
+    frecuenciaSemanal: mejor.frecuencia_semanal || null,
     observaciones: resultado.explicacion || null,
     personalizadaPorEntrenador: false,
     activa: false,
@@ -75,6 +96,7 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
 
   const payload = {
     cliente_id: clienteId,
+    entrenador_id: entrenadorId,
     edad: instruido.edad,
     peso: Number(instruido.peso),
     altura: Number(instruido.altura),
