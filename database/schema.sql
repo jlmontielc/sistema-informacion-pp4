@@ -373,6 +373,7 @@ CREATE TABLE pagos (
   fecha_pago DATE NOT NULL,
   comprobante LONGTEXT NOT NULL COMMENT 'Capture del pago en base64',
   comprobante_mime VARCHAR(100) NOT NULL DEFAULT 'image/jpeg',
+  error_prediccion_ia TEXT DEFAULT NULL COMMENT 'Error de la prediccion IA automatica al verificar pago (rutina/dieta)',
   estado ENUM('pendiente','verificado','rechazado') NOT NULL DEFAULT 'pendiente',
   comentario_rechazo VARCHAR(255),
   verificado_por INT,
