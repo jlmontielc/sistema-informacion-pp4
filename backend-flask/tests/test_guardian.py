@@ -485,6 +485,166 @@ def test_normalizar_proposito():
     print("[PASS] test_normalizar_proposito")
 
 
+def test_recommender_parsear_contraindicaciones():
+    from services.recommender import RecommenderEngine
+
+    assert RecommenderEngine._parsear_contraindicaciones(None) == []
+    assert RecommenderEngine._parsear_contraindicaciones('') == []
+    assert RecommenderEngine._parsear_contraindicaciones('hombro') == ['hombro']
+    assert RecommenderEngine._parsear_contraindicaciones('hombro, rodilla') == ['hombro', 'rodilla']
+    assert RecommenderEngine._parsear_contraindicaciones(' hombro , rodilla ') == ['hombro', 'rodilla']
+    assert RecommenderEngine._parsear_contraindicaciones(['hombro', 'rodilla']) == ['hombro', 'rodilla']
+    assert RecommenderEngine._parsear_contraindicaciones('["hombro", "rodilla"]') == ['hombro', 'rodilla']
+    print("[PASS] test_recommender_parsear_contraindicaciones")
+
+
+def test_recommender_coincide_con_lesiones():
+    from services.recommender import RecommenderEngine
+
+    assert RecommenderEngine._coincide_con_lesiones(
+        ['rodilla'], ['rodilla - LCA']
+    ) is True
+
+    assert RecommenderEngine._coincide_con_lesiones(
+        ['hombro'], ['rodilla - LCA']
+    ) is False
+
+    assert RecommenderEngine._coincide_con_lesiones(
+        ['espalda_baja'], ['Hernia discal lumbar']
+    ) is True
+
+    assert RecommenderEngine._coincide_con_lesiones(['hombro'], []) is False
+
+    assert RecommenderEngine._coincide_con_lesiones([], ['hombro']) is False
+
+    assert RecommenderEngine._coincide_con_lesiones(
+        ['hombro', 'codo'], ['Epicondilitis codo']
+    ) is True
+
+    print("[PASS] test_recommender_coincide_con_lesiones")
+
+
+def test_recommender_precaucion_solo_si_lesion_coincide():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {
+            'id': 1, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho',
+            'dificultad': 'principiante', 'contraindica_lesiones': 'hombro',
+        },
+        {
+            'id': 2, 'nombre': 'Plancha', 'grupo_muscular': 'Core',
+            'dificultad': 'principiante', 'contraindica_lesiones': None,
+        },
+        {
+            'id': 3, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas',
+            'dificultad': 'principiante', 'contraindica_lesiones': 'rodilla',
+        },
+    ]
+    plantillas = [
+        {
+            'id': 50, 'nombre': 'Rutina test', 'tipo': 'fuerza',
+            'objetivo': 'mantenimiento', 'nivel_dificultad': 'principiante',
+            'frecuencia_semanal': 3,
+            'ejercicios': [
+                {'ejercicio_id': 1, 'series': 3, 'repeticiones': 10},
+                {'ejercicio_id': 2, 'series': 3, 'repeticiones': 10},
+            ],
+        },
+    ]
+    datos_cliente = {
+        'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
+        'nivel_actividad': 'moderado', 'nivel_experiencia': 'principiante',
+        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+    }
+    perfil_medico_rodilla = {
+        'lesiones': ['rodilla - LCA'],
+        'condiciones_preexistentes': [],
+    }
+
+    resultado = engine.recomendar_plantillas(
+        plantillas, pool, datos_cliente, historial=[],
+        perfil_medico=perfil_medico_rodilla,
+    )
+    rec = resultado['plantillas_recomendadas'][0]
+    assert rec['ejercicios_seguros'] == 2
+    assert rec['ejercicios_con_precaucion'] == 0
+
+    perfil_medico_hombro = {
+        'lesiones': ['Manguito rotador hombro izquierdo'],
+        'condiciones_preexistentes': [],
+    }
+    resultado2 = engine.recomendar_plantillas(
+        plantillas, pool, datos_cliente, historial=[],
+        perfil_medico=perfil_medico_hombro,
+    )
+    rec2 = resultado2['plantillas_recomendadas'][0]
+    assert rec2['ejercicios_seguros'] == 1
+    assert rec2['ejercicios_con_precaucion'] == 1
+    print("[PASS] test_recommender_precaucion_solo_si_lesion_coincide")
+
+
+def test_recommender_compatibilidad_sin_perfil_medico():
+    from services.recommender import RecommenderEngine
+
+    engine = RecommenderEngine()
+    pool = [
+        {
+            'id': 1, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho',
+            'dificultad': 'principiante', 'contraindica_lesiones': 'hombro',
+        },
+        {
+            'id': 2, 'nombre': 'Plancha', 'grupo_muscular': 'Core',
+            'dificultad': 'principiante',
+        },
+    ]
+    plantillas = [{
+        'id': 60, 'nombre': 'Rutina sin perfil', 'tipo': 'fuerza',
+        'objetivo': 'mantenimiento', 'nivel_dificultad': 'principiante',
+        'frecuencia_semanal': 3,
+        'ejercicios': [
+            {'ejercicio_id': 1, 'series': 3, 'repeticiones': 10},
+            {'ejercicio_id': 2, 'series': 3, 'repeticiones': 10},
+        ],
+    }]
+    datos = {
+        'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
+        'nivel_actividad': 'activo', 'nivel_experiencia': 'principiante',
+        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+    }
+
+    resultado = engine.recomendar_plantillas(plantillas, pool, datos, historial=[])
+    rec = resultado['plantillas_recomendadas'][0]
+    assert rec['ejercicios_seguros'] == 2
+    assert rec['ejercicios_con_precaucion'] == 0
+    print("[PASS] test_recommender_compatibilidad_sin_perfil_medico")
+
+
+def test_pool_seguro_vacio_raises_error():
+    from services.hitl_engine import HitlEngine
+
+    engine = HitlEngine()
+
+    respuesta = engine._error_response(
+        'No hay ejercicios seguros disponibles para este perfil '
+        '(lesiones: rodilla). Pool completo filtrado por restricciones médicas.',
+        422,
+        {
+            'alertas_seguridad': [{'tipo': 'lesion', 'nivel_riesgo': 'HIGH'}],
+            'ejercicios_bloqueados': 10,
+            'ejercicios_precaucion': 0,
+            'pool_seguro_count': 0,
+        },
+    )
+    assert respuesta['success'] is False
+    assert respuesta['status'] == 422
+    assert 'pool_seguro_count' in respuesta
+    assert respuesta['pool_seguro_count'] == 0
+    assert len(respuesta['alertas_seguridad']) == 1
+    print("[PASS] test_pool_seguro_vacio_raises_error")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -511,4 +671,9 @@ if __name__ == '__main__':
     test_guardian_dieta_alerta_diabetes()
     test_guardian_dieta_alertas_alergias()
     test_normalizar_proposito()
+    test_recommender_parsear_contraindicaciones()
+    test_recommender_coincide_con_lesiones()
+    test_recommender_precaucion_solo_si_lesion_coincide()
+    test_recommender_compatibilidad_sin_perfil_medico()
+    test_pool_seguro_vacio_raises_error()
     print("\n=== TODOS LOS TESTS PASARON ===")

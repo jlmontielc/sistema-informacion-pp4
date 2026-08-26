@@ -42,6 +42,7 @@ class RecommenderEngine:
         pool_seguro: list,
         datos_cliente: dict,
         historial: list = None,
+        perfil_medico: dict = None,
     ) -> dict:
         if not plantillas_disponibles:
             return {
@@ -65,6 +66,7 @@ class RecommenderEngine:
             2,
         )
         dias_disponibles = max(2, min(datos_cliente.get('dias_disponibles', 3), 6))
+        lesiones_cliente = (perfil_medico or {}).get('lesiones', [])
 
         plantillas_con_score = []
 
@@ -72,7 +74,7 @@ class RecommenderEngine:
             resultado = self._evaluar_plantilla(
                 plantilla, ids_pool_seguro, ejercicios_por_id,
                 objetivo_cliente, nivel_cliente, dias_disponibles,
-                historial_map, datos_cliente,
+                historial_map, datos_cliente, lesiones_cliente,
             )
             if resultado is not None:
                 plantillas_con_score.append(resultado)
@@ -104,11 +106,39 @@ class RecommenderEngine:
             },
         }
 
+    @staticmethod
+    def _parsear_contraindicaciones(valor_campo) -> list:
+        if not valor_campo:
+            return []
+        if isinstance(valor_campo, list):
+            return [str(v).strip().lower() for v in valor_campo if v]
+        if isinstance(valor_campo, str):
+            try:
+                data = json.loads(valor_campo)
+                if isinstance(data, list):
+                    return [str(v).strip().lower() for v in data if v]
+            except (json.JSONDecodeError, TypeError):
+                pass
+            return [z.strip().lower() for z in valor_campo.split(',') if z.strip()]
+        return []
+
+    @staticmethod
+    def _coincide_con_lesiones(contraindicaciones_zonas: list, lesiones_cliente: list) -> bool:
+        from models.rules.injury_rules import detectar_grupo_lesion
+
+        for texto_lesion in lesiones_cliente:
+            grupos_cliente = detectar_grupo_lesion(texto_lesion)
+            for grupo in grupos_cliente:
+                if grupo in contraindicaciones_zonas:
+                    return True
+        return False
+
     def _evaluar_plantilla(
         self, plantilla: dict, ids_pool_seguro: set,
         ejercicios_por_id: dict, objetivo_cliente: str,
         nivel_cliente: int, dias_disponibles: int,
         historial_map: dict, datos_cliente: dict,
+        lesiones_cliente: list = None,
     ) -> dict:
         ejercicios_raw = plantilla.get('ejercicios')
         if not ejercicios_raw:
@@ -138,8 +168,15 @@ class RecommenderEngine:
 
             if ej_id in ids_pool_seguro:
                 ej_info = ejercicios_por_id.get(ej_id, {})
-                tiene_restriccion = bool(ej_info.get('contraindica_lesiones'))
-                if tiene_restriccion:
+                contraindicaciones = self._parsear_contraindicaciones(
+                    ej_info.get('contraindica_lesiones')
+                )
+                tiene_restriccion_relevante = (
+                    contraindicaciones
+                    and lesiones_cliente
+                    and self._coincide_con_lesiones(contraindicaciones, lesiones_cliente)
+                )
+                if tiene_restriccion_relevante:
                     ejercicios_precaucion.append(ej_id)
                 else:
                     ejercicios_seguros.append(ej_id)
