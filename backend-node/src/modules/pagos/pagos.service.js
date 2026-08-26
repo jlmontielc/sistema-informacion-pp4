@@ -252,27 +252,45 @@ const verificarPago = async (pagoId, usuario) => {
     return pago;
   });
 
-  // Disparar predicciones IA segun ofrecimiento del plan (fire-and-forget)
+  // Disparar predicciones IA segun ofrecimiento del plan
   try {
     const plan = await PlanPago.findByPk(resultado.planId);
     if (plan && plan.ofrecimiento) {
       const clienteId = resultado.instruidoId;
       const entrenadorId = resultado.entrenadorId;
+      const errores = [];
 
       if (plan.ofrecimiento === 'entrenamiento' || plan.ofrecimiento === 'ambos') {
-        hitlService.sugerirRutina(clienteId, entrenadorId, {}, { persistir: true }).catch((err) => {
+        try {
+          await hitlService.sugerirRutina(clienteId, entrenadorId, {}, { persistir: true });
+        } catch (err) {
           console.error('[Pago] Error prediccion rutina automatica:', err.message);
-        });
+          errores.push(`Rutina: ${err.message}`);
+        }
       }
 
       if (plan.ofrecimiento === 'dietas' || plan.ofrecimiento === 'ambos') {
-        hitlService.sugerirDieta(clienteId, entrenadorId, {}, { persistir: true }).catch((err) => {
+        try {
+          await hitlService.sugerirDieta(clienteId, entrenadorId, {}, { persistir: true });
+        } catch (err) {
           console.error('[Pago] Error prediccion dieta automatica:', err.message);
-        });
+          errores.push(`Dieta: ${err.message}`);
+        }
+      }
+
+      if (errores.length > 0) {
+        await Pago.update(
+          { errorPrediccionIa: errores.join(' | ') },
+          { where: { id: resultado.id } },
+        );
       }
     }
   } catch (err) {
     console.error('[Pago] Error disparando predicciones IA:', err.message);
+    await Pago.update(
+      { errorPrediccionIa: `Error general: ${err.message}` },
+      { where: { id: resultado.id } },
+    );
   }
 
   return limpiar(resultado);

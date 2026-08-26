@@ -45,6 +45,7 @@ const sugerirDieta = async (req, res, next) => {
       Number(clienteId),
       req.usuario.id,
       preferencias,
+      { persistir: true },
     );
     res.json(resultado);
   } catch (err) {

@@ -91,7 +91,7 @@ def fetch_plantillas_disponibles(entrenador_id: int) -> list:
         SELECT
             pe.id, pe.nombre, pe.descripcion, pe.tipo,
             pe.ejercicios, pe.frecuencia_semanal,
-            pe.duracion_semanas, pe.objetivo, pe.nivel_dificultad
+            pe.duracion_semanas, pe.objetivo, pe.nivel_dificultad, pe.dias_semana
         FROM plantillas_entrenamiento pe
         WHERE pe.entrenador_id = %s AND pe.activa = TRUE
         ORDER BY pe.nombre

@@ -1,6 +1,6 @@
 const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
-const { RegistroEntrenamiento, RutinaAsignada } = require('./entrenamiento.model');
+const { RegistroEntrenamiento, RutinaAsignada, PlantillaEntrenamiento } = require('./entrenamiento.model');
 const { CalculoMetabolico } = require('../metabolismo/metabolismo.model');
 const {
   httpRequest,
@@ -33,7 +33,10 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     { where: { instruidoId: clienteId, activa: true } },
   );
 
-  const datosGuardados = {
+  const plantilla = await PlantillaEntrenamiento.findByPk(mejor.plantilla_id);
+  if (!plantilla) return null;
+
+  const metadataRecomendacion = {
     plantillas_recomendadas: recomendaciones.map(p => ({
       plantilla_id: p.plantilla_id,
       nombre: p.nombre,
@@ -41,8 +44,6 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
       tipo: p.tipo,
       nivel_dificultad: p.nivel_dificultad,
       objetivo: p.objetivo,
-      dias_semana: p.dias_semana,
-      frecuencia_semanal: p.frecuencia_semanal,
       ejercicios_totales: p.ejercicios_totales,
       ejercicios_seguros: p.ejercicios_seguros,
       ejercicios_bloqueados_count: p.ejercicios_bloqueados_count,
@@ -56,11 +57,12 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     entrenadorId,
     plantillaOrigenId: mejor.plantilla_id || null,
     nombre: `IA - ${mejor.nombre || 'Recomendación'}`,
-    tipo: mejor.tipo || 'fuerza',
-    ejercicios: datosGuardados,
-    diasSemana: mejor.dias_semana || null,
-    frecuenciaSemanal: mejor.frecuencia_semanal || null,
-    observaciones: resultado.explicacion || null,
+    tipo: mejor.tipo || plantilla.tipo,
+    ejercicios: plantilla.ejercicios,
+    diasSemana: plantilla.diasSemana,
+    frecuenciaSemanal: plantilla.frecuenciaSemanal || mejor.frecuencia_semanal || null,
+    duracionSemanas: plantilla.duracionSemanas,
+    observaciones: JSON.stringify(metadataRecomendacion),
     personalizadaPorEntrenador: false,
     activa: false,
   });
@@ -167,6 +169,10 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
     { where: { instruidoId: clienteId, activo: true } },
   );
 
+  const hoy = new Date();
+  const fechaFin = new Date(hoy);
+  fechaFin.setDate(fechaFin.getDate() + 30);
+
   return Dieta.create({
     instruidoId: clienteId,
     entrenadorId,
@@ -177,6 +183,8 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
     observaciones: resultado.justificacion || 'Generada por IA tras activacion de plan',
     activo: false,
     decision: 'pendiente',
+    fechaInicio: hoy.toISOString().split('T')[0],
+    fechaFin: fechaFin.toISOString().split('T')[0],
   });
 };
 
@@ -209,7 +217,7 @@ const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {
   const payload = {
     tmb: Number(calculoMetabolico.tmb),
     gct: Number(calculoMetabolico.gct),
-    nivelActividad: instruido.nivelActividad,
+    nivel_actividad: instruido.nivelActividad,
     proposito: preferencias.proposito || 'mantener',
     peso: Number(instruido.peso),
     altura: Number(instruido.altura),

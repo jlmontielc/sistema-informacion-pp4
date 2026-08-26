@@ -61,6 +61,7 @@ const Pago = sequelize.define('Pago', {
   fechaVerificacion: { type: DataTypes.DATE, allowNull: true, field: 'fecha_verificacion' },
   fechaInicio: { type: DataTypes.DATEONLY, allowNull: true, field: 'fecha_inicio' },
   fechaFin: { type: DataTypes.DATEONLY, allowNull: true, field: 'fecha_fin' },
+  errorPrediccionIa: { type: DataTypes.TEXT, allowNull: true, field: 'error_prediccion_ia' },
 }, {
   underscored: true,
   tableName: 'pagos',
