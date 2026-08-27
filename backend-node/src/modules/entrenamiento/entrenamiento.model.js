@@ -56,6 +56,7 @@ const RutinaAsignada = sequelize.define('RutinaAsignada', {
   fechaInicio: { type: DataTypes.DATEONLY, field: 'fecha_inicio' },
   fechaFin: { type: DataTypes.DATEONLY, field: 'fecha_fin' },
   activa: { type: DataTypes.BOOLEAN, defaultValue: true },
+  eliminado: { type: DataTypes.BOOLEAN, defaultValue: false, field: 'eliminado' },
 }, {
   underscored: true,
   tableName: 'rutinas_asignadas',

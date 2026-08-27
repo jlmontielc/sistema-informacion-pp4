@@ -21,46 +21,37 @@ const descifrarCampos = (registro) => {
 };
 
 const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) => {
-  if (!resultado || !resultado.success || !resultado.plantillas_recomendadas) return null;
+  if (!resultado || !resultado.success) return null;
+  const plantillaId = resultado.plantilla_id;
+  if (plantillaId == null) return null;
 
-  const recomendaciones = resultado.plantillas_recomendadas;
-  if (!Array.isArray(recomendaciones) || recomendaciones.length === 0) return null;
-
-  const mejor = recomendaciones[0];
+  const plantilla = await PlantillaEntrenamiento.findByPk(plantillaId);
+  if (!plantilla) return null;
 
   await RutinaAsignada.update(
     { activa: false },
     { where: { instruidoId: clienteId, activa: true } },
   );
 
-  const plantilla = await PlantillaEntrenamiento.findByPk(mejor.plantilla_id);
-  if (!plantilla) return null;
-
   const metadataRecomendacion = {
-    plantillas_recomendadas: recomendaciones.map(p => ({
-      plantilla_id: p.plantilla_id,
-      nombre: p.nombre,
-      score: p.score,
-      tipo: p.tipo,
-      nivel_dificultad: p.nivel_dificultad,
-      objetivo: p.objetivo,
-      ejercicios_totales: p.ejercicios_totales,
-      ejercicios_seguros: p.ejercicios_seguros,
-      ejercicios_bloqueados_count: p.ejercicios_bloqueados_count,
-      explicacion: p.explicacion,
-    })),
+    plantilla_id: plantillaId,
+    confianza: resultado.confianza,
     explicacion: resultado.explicacion || null,
+    advertencia: resultado.advertencia || null,
+    hasLesiones: resultado.hasLesiones || false,
+    lesionesDetalle: resultado.lesionesDetalle || [],
+    metadata: resultado.metadata || {},
   };
 
   return RutinaAsignada.create({
     instruidoId: clienteId,
     entrenadorId,
-    plantillaOrigenId: mejor.plantilla_id || null,
-    nombre: `IA - ${mejor.nombre || 'Recomendación'}`,
-    tipo: mejor.tipo || plantilla.tipo,
+    plantillaOrigenId: plantillaId,
+    nombre: `IA - ${plantilla.nombre}`,
+    tipo: plantilla.tipo,
     ejercicios: plantilla.ejercicios,
     diasSemana: plantilla.diasSemana,
-    frecuenciaSemanal: plantilla.frecuenciaSemanal || mejor.frecuencia_semanal || null,
+    frecuenciaSemanal: plantilla.frecuenciaSemanal,
     duracionSemanas: plantilla.duracionSemanas,
     observaciones: JSON.stringify(metadataRecomendacion),
     personalizadaPorEntrenador: false,
@@ -68,7 +59,7 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
   });
 };
 
-const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = {}) => {
+const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = { persistir: true }) => {
   const instruido = await Instruido.findOne({
     where: { id: clienteId, entrenadorId },
   });
@@ -96,6 +87,16 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     duracion_minutos: reg.duracionMinutos,
   }));
 
+  const plantillas = await PlantillaEntrenamiento.findAll({
+    where: { entrenadorId, activa: true },
+    attributes: ['id', 'nombre', 'tipo', 'objetivo', 'nivelDificultad', 'frecuenciaSemanal', 'duracionSemanas', 'diasSemana'],
+    order: [['nombre', 'ASC']],
+  });
+
+  const plantillasMetadata = plantillas.map(p => p.toJSON());
+
+  const lesionesFiltradas = perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [];
+
   const payload = {
     cliente_id: clienteId,
     entrenador_id: entrenadorId,
@@ -108,7 +109,7 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     proposito: instruido.propositoEntrenamiento || 'mantenimiento',
     dias_disponibles: instruido.diasDisponibles || 3,
     perfil_medico: {
-      lesiones: perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [],
+      lesiones: lesionesFiltradas,
       condiciones_preexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
       alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
       medicacion: perfilDescifrado ? parsearCampoJson(perfilDescifrado.medicacionActual) : [],
@@ -120,6 +121,7 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
       ejercicios_excluir: preferencias.excluir || [],
       equipamiento_disponible: preferencias.equipamiento || [],
     },
+    plantillas_disponibles: plantillasMetadata,
   };
 
   const response = await httpRequest('/api/predict/routine', 'POST', payload, 10000);
@@ -132,10 +134,19 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
   }
 
   if (opts.persistir) {
-    await persistRoutineFromPrediction(clienteId, entrenadorId, response.data);
+    const resultadoPersistir = {
+      ...response.data,
+      hasLesiones: lesionesFiltradas.length > 0,
+      lesionesDetalle: lesionesFiltradas,
+    };
+    await persistRoutineFromPrediction(clienteId, entrenadorId, resultadoPersistir);
   }
 
-  return response.data;
+  return {
+    ...response.data,
+    hasLesiones: lesionesFiltradas.length > 0,
+    lesionesDetalle: lesionesFiltradas,
+  };
 };
 
 const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {

@@ -53,7 +53,7 @@ const actualizar = async (req, res, next) => {
 
 const eliminar = async (req, res, next) => {
   try {
-    await rutinasAsignadasService.eliminar(req.params.id, req.usuario.id);
+    await rutinasAsignadasService.eliminar(req.params.id, req.usuario);
     res.status(204).end();
   } catch (err) {
     next(err);

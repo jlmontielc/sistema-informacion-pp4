@@ -138,6 +138,8 @@ CREATE TABLE rutinas_asignadas (
   fecha_inicio DATE,
   fecha_fin DATE,
   activa BOOLEAN DEFAULT TRUE,
+  eliminado BOOLEAN DEFAULT FALSE COMMENT 'Borrado lógico: TRUE = oculta la rutina de todas las listas',
+  INDEX idx_rutinas_asignadas_eliminado (entrenador_id, eliminado),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_rutina_cliente
