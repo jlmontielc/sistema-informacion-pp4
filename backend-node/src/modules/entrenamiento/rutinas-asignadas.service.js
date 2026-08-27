@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
+  where.eliminado = false;
   if (!filtros.admin) {
     where.entrenadorId = entrenadorId;
   }
@@ -69,10 +70,15 @@ const actualizar = async (id, datos, entrenadorId) => {
   return rutina.update(datosActualizar);
 };
 
-const eliminar = async (id, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
-  if (!rutina) return null;
-  return rutina.update({ activa: false });
+const eliminar = async (id, usuario) => {
+  const where = usuario.rol === 'administrador' ? { id } : { id, entrenadorId: usuario.id };
+  const rutina = await RutinaAsignada.findOne({ where });
+  if (!rutina) {
+    const err = new Error('Rutina no encontrada');
+    err.status = 404;
+    throw err;
+  }
+  return rutina.update({ eliminado: true });
 };
 
 const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {

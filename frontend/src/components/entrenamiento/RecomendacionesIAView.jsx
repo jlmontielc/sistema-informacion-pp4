@@ -77,6 +77,21 @@ export function RecomendacionesIAView({ onRecargar }) {
     }
   };
 
+  const handleEliminar = async (rutinaId) => {
+    if (!window.confirm('Eliminar esta recomendacion? Esta accion no se puede deshacer.')) return;
+    setProcesando(true);
+    try {
+      await rutinasAsignadasApi.eliminar(rutinaId);
+      setVerRutina(null);
+      await cargarRutinas();
+      onRecargar?.();
+    } catch (err) {
+      alert(err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la recomendacion');
+    } finally {
+      setProcesando(false);
+    }
+  };
+
   if (loading) return <Loading text="Cargando recomendaciones IA..." />;
 
   if (error) {
@@ -103,7 +118,7 @@ export function RecomendacionesIAView({ onRecargar }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button onClick={() => setGenerarOpen(true)}>
-          + Recomendar Plantillas IA
+          Obtener recomendación de plantilla
         </Button>
       </div>
 
@@ -112,8 +127,8 @@ export function RecomendacionesIAView({ onRecargar }) {
           <EmptyState
             icon="🤖"
             title="Sin recomendaciones pendientes"
-            description="Recomienda plantillas del entrenador para un cliente. La recomendación aparecerá aqui para que la revises antes de activarla."
-            action={<Button onClick={() => setGenerarOpen(true)}>Recomendar Plantillas</Button>}
+            description="Obtén una recomendación de plantilla del entrenador para un cliente. La recomendación aparecerá aqui para que la revises antes de activarla."
+            action={<Button onClick={() => setGenerarOpen(true)}>Obtener recomendación de plantilla</Button>}
           />
         </Card>
       ) : (
@@ -173,6 +188,14 @@ export function RecomendacionesIAView({ onRecargar }) {
                     onClick={() => setVerRutina(verRutina === r.id ? null : r.id)}
                   >
                     {verRutina === r.id ? 'Ocultar' : 'Ver y Revisar'}
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: 'var(--color-error)' }}
+                    onClick={() => handleEliminar(r.id)}
+                    disabled={procesando}
+                  >
+                    Eliminar
                   </button>
                 </div>
 

@@ -3,9 +3,8 @@ import logging
 from services.data_fetcher import (
     fetch_cliente_completo,
     fetch_perfil_medico,
-    fetch_todos_ejercicios,
     fetch_historial_entrenamiento,
-    fetch_plantillas_disponibles,
+    fetch_plantillas_por_ids,
     parsear_lesiones,
     parsear_condiciones,
     parsear_alergias,
@@ -39,111 +38,65 @@ class HitlEngine:
 
         perfil_medico = self._construir_perfil_medico(request_data, cliente_id)
 
-        plantillas = fetch_plantillas_disponibles(entrenador_id)
-        if not plantillas:
+        plantillas_meta = request_data.get('plantillas_disponibles', [])
+        if not plantillas_meta:
             return self._error_response(
-                'No hay plantillas activas disponibles para este entrenador', 404
+                'No hay plantillas activas disponibles para este entrenador', 422
             )
 
-        pool_ejercicios = fetch_todos_ejercicios()
-        if not pool_ejercicios:
-            return self._error_response('No hay ejercicios disponibles en el catálogo', 500)
+        plantilla_ids = [p['id'] for p in plantillas_meta]
+        plantillas_completas = fetch_plantillas_por_ids(entrenador_id, plantilla_ids)
 
-        resultado_guardian = self.guardian.evaluar_cliente_completo(datos_cliente, perfil_medico)
-
-        pool_filtrado = self.guardian.filtrar_pool_ejercicios(
-            pool_ejercicios, datos_cliente, perfil_medico
-        )
-
-        pool_seguro = self._filtrar_excluidos(
-            pool_filtrado['pool_seguro'],
-            (datos_cliente.get('preferencias') or {}).get('ejercicios_excluir'),
-        )
-
-        if not pool_seguro:
-            alertas_vacias = pool_filtrado['alertas_globales']
-            info_lesiones = perfil_medico.get('lesiones', [])
-            info_condiciones = perfil_medico.get('condiciones_preexistentes', [])
-            if info_lesiones or info_condiciones:
-                detalle = []
-                if info_lesiones:
-                    detalle.append(f"lesiones: {', '.join(str(l) for l in info_lesiones)}")
-                if info_condiciones:
-                    detalle.append(f"condiciones: {', '.join(str(c) for c in info_condiciones)}")
-                mensaje = (
-                    f"No hay ejercicios seguros disponibles para este perfil "
-                    f"({'; '.join(detalle)}). Pool completo filtrado por restricciones médicas."
-                )
-            else:
-                mensaje = (
-                    "No hay ejercicios seguros disponibles. "
-                    "El pool completo fue excluido por preferencias del cliente."
-                )
-            return self._error_response(mensaje, 422, {
-                'alertas_seguridad': alertas_vacias,
-                'ejercicios_bloqueados': len(pool_filtrado['ejercicios_bloqueados']),
-                'ejercicios_precaucion': len(pool_filtrado['ejercicios_precaucion']),
-                'pool_seguro_count': 0,
-            })
+        if not plantillas_completas:
+            return self._error_response(
+                'No se encontraron plantillas completas para los IDs proporcionados', 422
+            )
 
         historial = self._obtener_historial(request_data, cliente_id)
 
-        resultado_recommender = self.recommender.recomendar_plantillas(
-            plantillas_disponibles=plantillas,
-            pool_seguro=pool_seguro,
+        resultado_clasificador = self.recommender.clasificar_mejor_plantilla(
+            plantillas_con_ejercicios=plantillas_completas,
             datos_cliente=datos_cliente,
-            historial=historial,
             perfil_medico=perfil_medico,
+            historial=historial,
+            guardian=self.guardian,
         )
 
         tiempo_total = round((time.time() - inicio) * 1000, 1)
 
+        if resultado_clasificador['plantilla_id'] is None:
+            return self._error_response(
+                resultado_clasificador['explicacion'], 422,
+                {
+                    'plantillas_evaluadas': resultado_clasificador['metadata']['plantillas_evaluadas'],
+                    'plantillas_descartadas_por_lesiones': resultado_clasificador['metadata']['plantillas_descartadas_por_lesiones'],
+                    'plantillas_viables': 0,
+                    'scores_detalle': resultado_clasificador['metadata']['scores_detalle'],
+                }
+            )
+
         respuesta = {
             'success': True,
-            'plantillas_recomendadas': resultado_recommender['plantillas_recomendadas'],
-            'alertas_seguridad': pool_filtrado['alertas_globales'],
-            'ejercicios_filtrados': [
-                {
-                    'nombre': b['ejercicio']['nombre'],
-                    'nivel_riesgo': b['razon']['nivel_riesgo'],
-                    'razon': b['razon']['alertas'][0]['mensaje'] if b['razon']['alertas'] else 'Restricción médica',
-                }
-                for b in pool_filtrado['ejercicios_bloqueados']
-            ],
-            'ejercicios_con_precaucion': [
-                {
-                    'nombre': p['ejercicio']['nombre'],
-                    'nivel_riesgo': p['razon']['nivel_riesgo'],
-                    'modificacion': p['razon'].get('modificacion_sugerida'),
-                }
-                for p in pool_filtrado['ejercicios_precaucion']
-            ],
-            'precauciones_condicion': resultado_guardian.get('precauciones', []),
-            'nivel_riesgo_global': resultado_guardian.get('nivel_riesgo_global', 'SAFE'),
-            'total_evaluadas': resultado_recommender['total_evaluadas'],
-            'total_seguras': resultado_recommender['total_seguras'],
-            'confianza': resultado_recommender['confianza'],
-            'explicacion': resultado_recommender['explicacion'],
-            'resumen_pool': {
-                'total_evaluados': pool_filtrado['total_evaluados'],
-                'total_seguros': pool_filtrado['total_seguros'],
-                'total_bloqueados': pool_filtrado['total_bloqueados'],
-                'total_precaucion': pool_filtrado['total_precaucion'],
-                'excluidos_preferencia': len(pool_filtrado['pool_seguro']) - len(pool_seguro),
-            },
+            'plantilla_id': resultado_clasificador['plantilla_id'],
+            'confianza': resultado_clasificador['confianza'],
+            'explicacion': resultado_clasificador['explicacion'],
+            'advertencia': resultado_clasificador.get('advertencia'),
             'metadata': {
                 'tiempo_ms': tiempo_total,
-                'version_modelo': '2.0.0',
-                'motor': 'recomendacion_plantillas',
+                'version_modelo': '3.0.0',
+                'motor': 'clasificador_plantillas',
                 'pesos_scoring': dict(self.recommender.weights),
+                'detalle_evaluacion': resultado_clasificador['metadata'],
             },
         }
 
         logger.info(
-            f"HITL recomendacion cliente={cliente_id} entrenador={entrenador_id} "
-            f"plantillas_evaluadas={resultado_recommender['total_evaluadas']} "
-            f"recomendadas={len(resultado_recommender['plantillas_recomendadas'])} "
-            f"ejercicios_pool={pool_filtrado['total_evaluados']} "
+            f"HITL clasificador cliente={cliente_id} entrenador={entrenador_id} "
+            f"plantillas_evaluadas={resultado_clasificador['metadata']['plantillas_evaluadas']} "
+            f"descartadas_lesiones={resultado_clasificador['metadata']['plantillas_descartadas_por_lesiones']} "
+            f"viables={resultado_clasificador['metadata']['plantillas_viables']} "
+            f"mejor={resultado_clasificador['plantilla_id']} "
+            f"confianza={resultado_clasificador['confianza']}% "
             f"tiempo={tiempo_total}ms"
         )
 
@@ -202,26 +155,6 @@ class HitlEngine:
         elif isinstance(historial_payload, list):
             return historial_payload
         return fetch_historial_entrenamiento(cliente_id, semanas=4)
-
-    @staticmethod
-    def _filtrar_excluidos(pool_seguro: list, excluidos) -> list:
-        if not excluidos:
-            return pool_seguro
-        ids_excluir = set()
-        nombres_excluir = set()
-        for item in excluidos:
-            texto = str(item).strip()
-            if not texto:
-                continue
-            if texto.isdigit():
-                ids_excluir.add(int(texto))
-            else:
-                nombres_excluir.add(texto.lower())
-        return [
-            ej for ej in pool_seguro
-            if ej.get('id') not in ids_excluir
-            and (ej.get('nombre') or '').strip().lower() not in nombres_excluir
-        ]
 
     def _construir_datos_cliente(self, request_data: dict, cliente_id: int) -> dict:
         if 'edad' in request_data and 'peso' in request_data:

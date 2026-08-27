@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
 import { EmptyState } from '../common/EmptyState';
-import { hitlApi, instruidosApi } from '../../services/rutinasApi';
+import { hitlApi, instruidosApi, plantillasApi } from '../../services/rutinasApi';
 
 export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
   const [clientes, setClientes] = useState([]);
@@ -13,6 +13,7 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState(null);
   const [resultado, setResultado] = useState(null);
+  const [plantillasMap, setPlantillasMap] = useState({});
 
   useEffect(() => {
     if (!isOpen) return;
@@ -24,6 +25,18 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
       })
       .catch(() => setClientes([]))
       .finally(() => setLoadingClientes(false));
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    plantillasApi.listar({ activa: true })
+      .then((res) => {
+        const arr = res.data?.plantillas || res.data || [];
+        const m = {};
+        (Array.isArray(arr) ? arr : []).forEach((p) => { m[p.id] = p; });
+        setPlantillasMap(m);
+      })
+      .catch(() => setPlantillasMap({}));
   }, [isOpen]);
 
   useEffect(() => {
@@ -59,7 +72,7 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
   const clienteSeleccionado = clientes.find((c) => c.id === Number(clienteId));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Recomendar Plantillas IA" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Obtener recomendación de plantilla" size="lg">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {error && (
           <div style={{
@@ -134,7 +147,7 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
                     Cancelar
                   </button>
                   <Button onClick={handleGenerar} loading={generando}>
-                    {generando ? 'Recomendando...' : 'Recomendar'}
+                    {generando ? 'Recomendando...' : 'Obtener recomendación de plantilla'}
                   </Button>
                 </div>
               </>
@@ -162,6 +175,11 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
               <h4 style={{ margin: 0, color: '#166534', fontSize: 'var(--text-base)' }}>
                 Recomendación generada exitosamente
               </h4>
+              {resultado.plantilla_id == null && (
+                <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#991b1b' }}>
+                  No se encontró una plantilla viable: todas fueron descartadas por lesiones o restricciones de seguridad.
+                </p>
+              )}
               {resultado.explicacion && (
                 <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#166534' }}>
                   {resultado.explicacion}
@@ -175,52 +193,63 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
                 <div style={{
                   padding: 'var(--space-1) var(--space-3)',
                   borderRadius: 'var(--radius-full)',
-                  background: resultado.confianza >= 0.7 ? '#dcfce7' : '#fef9c3',
-                  color: resultado.confianza >= 0.7 ? '#166534' : '#854d0e',
+                  background: resultado.confianza >= 70 ? '#dcfce7' : '#fef9c3',
+                  color: resultado.confianza >= 70 ? '#166534' : '#854d0e',
                   fontSize: 'var(--text-sm)',
                   fontWeight: 'var(--font-medium)',
                 }}>
-                  {Math.round(resultado.confianza * 100)}%
+                  {Math.round(resultado.confianza)}%
                 </div>
               </div>
             )}
 
-            {resultado.plantillas_recomendadas && resultado.plantillas_recomendadas.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--color-text-primary)' }}>
-                  Plantillas recomendadas ({resultado.plantillas_recomendadas.length}):
-                </span>
-                {resultado.plantillas_recomendadas.map((p, i) => (
-                  <div key={p.plantilla_id || i} style={{
+            {resultado.plantilla_id != null && (() => {
+              const p = plantillasMap[resultado.plantilla_id];
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--color-text-primary)' }}>
+                    Plantilla recomendada:
+                  </span>
+                  <div style={{
                     padding: 'var(--space-3)',
-                    background: i === 0 ? '#f0f9ff' : 'var(--color-neutral-50)',
-                    border: i === 0 ? '1px solid #bae6fd' : '1px solid var(--color-border-light)',
+                    background: '#f0f9ff',
+                    border: '1px solid #bae6fd',
                     borderRadius: 'var(--radius-md)',
                     fontSize: 'var(--text-sm)',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <p style={{ margin: 0, fontWeight: 'var(--font-medium)' }}>
-                        {p.nombre}
+                        {p?.nombre || `Plantilla #${resultado.plantilla_id}`}
                       </p>
                       <span style={{
                         padding: 'var(--space-1) var(--space-2)',
                         borderRadius: 'var(--radius-full)',
-                        background: i === 0 ? '#dcfce7' : '#f3f4f6',
-                        color: i === 0 ? '#166534' : '#6b7280',
+                        background: '#dcfce7',
+                        color: '#166534',
                         fontSize: 'var(--text-xs)',
                         fontWeight: 'var(--font-medium)',
                       }}>
-                        {Math.round(p.score * 100)}%
+                        {Math.round(resultado.confianza)}%
                       </span>
                     </div>
                     <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-                      {p.tipo} · {p.nivel_dificultad} · {p.dias_semana || p.frecuencia_semanal} días/semana
-                      {p.ejercicios_bloqueados_count > 0 && (
-                        <span style={{ color: '#991b1b' }}> · {p.ejercicios_bloqueados_count} ejercicio(s) bloqueado(s)</span>
-                      )}
+                      {p?.tipo || '—'} · {p?.nivelDificultad || p?.nivel_dificultad || '—'} · {p?.frecuenciaSemanal || p?.dias_semana || '?'} días/semana
                     </p>
                   </div>
-                ))}
+                </div>
+              );
+            })()}
+
+            {resultado.advertencia && (
+              <div style={{
+                padding: 'var(--space-3)',
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--text-sm)',
+                color: '#92400e',
+              }}>
+                <strong>Advertencia:</strong> {resultado.advertencia}
               </div>
             )}
 
@@ -239,6 +268,29 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
                     <li key={i}>{typeof a === 'string' ? a : a.mensaje || JSON.stringify(a)}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {resultado.hasLesiones && resultado.lesionesDetalle?.length > 0 && (
+              <div style={{
+                padding: 'var(--space-4)',
+                background: '#fff7ed',
+                border: '1px solid #fb923c',
+                borderRadius: 'var(--radius-md)',
+                display: 'flex',
+                gap: 'var(--space-3)',
+                alignItems: 'flex-start',
+              }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>⚠️</span>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 'var(--font-semibold)', color: '#9a3412', fontSize: 'var(--text-base)' }}>
+                    Atención: el instruido tiene antecedentes de lesión
+                  </p>
+                  <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#9a3412' }}>
+                    Condición(es) registrada(s): {resultado.lesionesDetalle.join(', ')}.
+                    Tómalas en cuenta al personalizar la plantilla antes de asignarla.
+                  </p>
+                </div>
               </div>
             )}
 

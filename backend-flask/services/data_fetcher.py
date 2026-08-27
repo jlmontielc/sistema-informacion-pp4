@@ -99,6 +99,23 @@ def fetch_plantillas_disponibles(entrenador_id: int) -> list:
     return execute_query(query, (entrenador_id,))
 
 
+def fetch_plantillas_por_ids(entrenador_id: int, plantilla_ids: list) -> list:
+    if not plantilla_ids:
+        return []
+    placeholders = ','.join(['%s'] * len(plantilla_ids))
+    query = f"""
+        SELECT
+            pe.id, pe.nombre, pe.descripcion, pe.tipo,
+            pe.ejercicios, pe.frecuencia_semanal,
+            pe.duracion_semanas, pe.objetivo, pe.nivel_dificultad, pe.dias_semana
+        FROM plantillas_entrenamiento pe
+        WHERE pe.entrenador_id = %s AND pe.activa = TRUE AND pe.id IN ({placeholders})
+        ORDER BY pe.nombre
+    """
+    params = [entrenador_id] + plantilla_ids
+    return execute_query(query, tuple(params))
+
+
 def fetch_rendimiento_reciente(cliente_id: int, registros: int = 10) -> list:
     query = """
         SELECT

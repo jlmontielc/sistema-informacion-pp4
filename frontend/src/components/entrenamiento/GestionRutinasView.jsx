@@ -66,12 +66,12 @@ export function GestionRutinasView() {
   };
 
   const handleEliminarRutina = async (id) => {
-    if (!window.confirm('Desactivar esta rutina asignada?')) return;
+    if (!window.confirm('Eliminar esta rutina asignada? Esta accion no se puede deshacer.')) return;
     try {
       await rutinasAsignadasApi.eliminar(id);
       cargarDatos();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error al desactivar la rutina');
+      alert(err.response?.data?.message || 'Error al eliminar la rutina');
     }
   };
 
@@ -294,7 +294,7 @@ export function GestionRutinasView() {
                         style={{ color: 'var(--color-error)' }}
                         onClick={() => handleEliminarRutina(r.id)}
                       >
-                        Desactivar
+                        Eliminar
                       </button>
                     </div>
 
