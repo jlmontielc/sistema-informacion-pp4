@@ -1,7 +1,12 @@
 const { Op } = require('sequelize');
 const { sequelize } = require('../../shared/database/connection');
-const { PlanPago, MetodoPago, ConfiguracionPago, Pago } = require('./pagos.model');
-const { Instruido } = require('../instruidos/instruido.model');
+const {
+  PlanPago,
+  MetodoPago,
+  ConfiguracionPago,
+  Pago,
+  Instruido,
+} = require('../../shared/database/associations');
 const hitlService = require('../entrenamiento/hitl.service');
 
 const TASA_POR_DEFECTO = 40.0000;
