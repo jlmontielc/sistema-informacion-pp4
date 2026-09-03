@@ -66,10 +66,23 @@ const RegistroEntrenamiento = sequelize.define('RegistroEntrenamiento', {
   rutinaAsignadaId: { type: DataTypes.INTEGER, allowNull: false, field: 'rutina_asignada_id' },
   instruidoId: { type: DataTypes.INTEGER, allowNull: false, field: 'cliente_id' },
   fecha: { type: DataTypes.DATEONLY, allowNull: false },
-  ejerciciosRealizados: { type: DataTypes.JSON, allowNull: false, field: 'ejercicios_realizados' },
+  ejerciciosRealizados: { type: DataTypes.JSON, allowNull: true, field: 'ejercicios_realizados' },
   duracionMinutos: { type: DataTypes.INTEGER, field: 'duracion_minutos' },
   percepcionEsfuerzo: { type: DataTypes.TINYINT, field: 'percepcion_esfuerzo' },
   observaciones: DataTypes.TEXT,
+  estado: {
+    type: DataTypes.ENUM('en_progreso', 'completado', 'cancelado'),
+    defaultValue: 'en_progreso',
+  },
+  fechaInicio: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'fecha_inicio',
+  },
+  fechaFin: {
+    type: DataTypes.DATE,
+    field: 'fecha_fin',
+  },
 }, {
   underscored: true,
   tableName: 'registro_entrenamiento',

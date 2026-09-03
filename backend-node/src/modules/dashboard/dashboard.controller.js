@@ -91,11 +91,7 @@ async function statsEntrenador(entrenadorId) {
 }
 
 async function statsInstruido(instruidoId) {
-  const [ultimoMetabolismo, ultimaMedicion, rutinaActiva, dietaActiva, registrosRecientes] = await Promise.all([
-    sequelize.query(
-      'SELECT tmb, gct, nivel_actividad_usado, peso_usado, fecha_calculo FROM calculos_metabolicos WHERE cliente_id = ? ORDER BY fecha_calculo DESC LIMIT 1',
-      { replacements: [instruidoId], type: 'SELECT' }
-    ),
+  const [ultimaMedicion, rutinaActiva, dietaActiva, registrosRecientes] = await Promise.all([
     sequelize.query(
       'SELECT peso, imc, fecha FROM rendimiento WHERE cliente_id = ? ORDER BY fecha DESC LIMIT 1',
       { replacements: [instruidoId], type: 'SELECT' }
@@ -115,20 +111,52 @@ async function statsInstruido(instruidoId) {
       { replacements: [instruidoId], type: 'SELECT' }
     ),
     sequelize.query(
-      `SELECT fecha, percepcion_esfuerzo, duracion_minutos, observaciones
-       FROM registro_entrenamiento
-       WHERE cliente_id = ?
-       ORDER BY fecha DESC LIMIT 10`,
+      `SELECT re.id, re.fecha, re.percepcion_esfuerzo, re.duracion_minutos,
+              re.observaciones, re.ejercicios_realizados, re.rutina_asignada_id,
+              ra.nombre AS rutina_nombre
+       FROM registro_entrenamiento re
+       LEFT JOIN rutinas_asignadas ra ON ra.id = re.rutina_asignada_id
+       WHERE re.cliente_id = ?
+       ORDER BY re.fecha DESC`,
       { replacements: [instruidoId], type: 'SELECT' }
     ),
   ]);
 
+  const registros = registrosRecientes || [];
+  const ejercicioIds = new Set();
+  registros.forEach(r => {
+    if (r.ejercicios_realizados && Array.isArray(r.ejercicios_realizados)) {
+      r.ejercicios_realizados.forEach(e => {
+        if (e.ejercicio_id) ejercicioIds.add(e.ejercicio_id);
+      });
+    }
+  });
+
+  let ejerciciosCatalogo = [];
+  if (ejercicioIds.size > 0) {
+    const ids = Array.from(ejercicioIds);
+    ejerciciosCatalogo = await sequelize.query(
+      `SELECT id, nombre FROM ejercicios WHERE id IN (${ids.map(() => '?').join(',')})`,
+      { replacements: ids, type: 'SELECT' }
+    );
+  }
+  const ejerciciosMap = Object.fromEntries(ejerciciosCatalogo.map(e => [e.id, e.nombre]));
+
+  const registrosConNombres = registros.map(r => {
+    if (r.ejercicios_realizados && Array.isArray(r.ejercicios_realizados)) {
+      r.ejercicios_realizados = r.ejercicios_realizados.map(e => ({
+        ...e,
+        nombre: ejerciciosMap[e.ejercicio_id] || `Ejercicio #${e.ejercicio_id}`,
+      }));
+    }
+    return r;
+  });
+
   return {
-    metabolismo: ultimoMetabolismo[0] || null,
     medicion: ultimaMedicion[0] || null,
     rutinaActiva: rutinaActiva[0] || null,
     dietaActiva: dietaActiva[0] || null,
-    registrosRecientes: registrosRecientes.reverse(),
+    registrosRecientes: registrosConNombres,
   };
 }
 

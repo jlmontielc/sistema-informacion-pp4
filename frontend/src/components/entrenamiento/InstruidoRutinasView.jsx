@@ -6,6 +6,7 @@ import { EmptyState } from '../common/EmptyState';
 import { rutinasAsignadasApi, registroEntrenamientoApi } from '../../services/rutinasApi';
 import { obtenerNombreDia, obtenerAbbrDia, obtenerDiaActual } from './DiaSelector';
 import { EjercicioCard } from './EjercicioCard';
+import { RegistroEntrenamientoModal } from './RegistroEntrenamientoModal';
 
 const DIAS_NUM = [1, 2, 3, 4, 5, 6, 7];
 
@@ -16,6 +17,9 @@ export function InstruidoRutinasView() {
   const [diaActual, setDiaActual] = useState(obtenerDiaActual());
   const [registrando, setRegistrando] = useState(false);
   const [resumen, setResumen] = useState(null);
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [historial, setHistorial] = useState([]);
+  const [cargandoHistorial, setCargandoHistorial] = useState(false);
 
   const cargarRutina = useCallback(async () => {
     setLoading(true);
@@ -43,29 +47,43 @@ export function InstruidoRutinasView() {
 
   const ejerciciosDelDia = (rutina?.ejercicios || []).filter((e) => e.dia === diaActual);
 
-  const handleRegistrarEntrenamiento = async () => {
+  const handleRegistrarEntrenamiento = () => {
     if (!rutina || ejerciciosDelDia.length === 0) return;
-    setRegistrando(true);
+    setModalAbierto(true);
+  };
+
+  const cargarHistorial = useCallback(async () => {
+    setCargandoHistorial(true);
     try {
-      await registroEntrenamientoApi.crear({
-        rutina_asignada_id: rutina.id,
-        fecha: new Date().toISOString().split('T')[0],
-        ejercicios_realizados: ejerciciosDelDia.map((ej) => ({
-          ejercicio_id: ej.ejercicio_id,
-          series_completadas: ej.series,
-          repeticiones_completadas: ej.repeticiones,
-          carga_kg: ej.carga_kg,
-        })),
-        duracion_minutos: Math.round(ejerciciosDelDia.length * 8),
-        percepcion_esfuerzo: 7,
-        observaciones: `Entrenamiento del ${obtenerNombreDia(diaActual)}`,
-      });
-      alert('Entrenamiento registrado correctamente');
+      const res = await registroEntrenamientoApi.listar();
+      const registros = res.data?.registros || res.data || [];
+      setHistorial(registros);
     } catch {
-      alert('Error al registrar el entrenamiento');
+      setHistorial([]);
     } finally {
-      setRegistrando(false);
+      setCargandoHistorial(false);
     }
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'historial') {
+      cargarHistorial();
+    }
+  }, [tab, cargarHistorial]);
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) return '-';
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const extraerVolumen = (observaciones) => {
+    if (!observaciones) return null;
+    const match = observaciones.match(/"volumenTotal":([0-9.]+)/);
+    return match ? parseFloat(match[1]) : null;
   };
 
   if (loading) return <Loading text="Cargando tu rutina..." />;
@@ -113,6 +131,13 @@ export function InstruidoRutinasView() {
           onClick={() => setTab('semana')}
         >
           Vista Semanal
+        </button>
+        <button
+          type="button"
+          className={`tab-button ${tab === 'historial' ? 'active' : ''}`}
+          onClick={() => setTab('historial')}
+        >
+          Historial
         </button>
       </div>
 
@@ -209,6 +234,77 @@ export function InstruidoRutinasView() {
           })}
         </div>
       )}
+
+      {tab === 'historial' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {cargandoHistorial ? (
+            <Loading text="Cargando historial..." />
+          ) : historial.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon="📋"
+                title="Sin registros"
+                description="Aun no has registrado ningun entrenamiento."
+              />
+            </Card>
+          ) : (
+            historial.map((reg) => {
+              const volumen = extraerVolumen(reg.observaciones);
+              return (
+                <Card key={reg.id}>
+                  <div style={{ padding: 'var(--space-5)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
+                      <div>
+                        <h4 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
+                          {formatearFecha(reg.fecha)}
+                        </h4>
+                        <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                          {reg.estado === 'completado' ? 'Entrenamiento completado' : 'Sesion cancelada'}
+                        </p>
+                      </div>
+                      <span className={`rutina-estado-badge ${reg.estado === 'completado' ? 'activa' : 'inactiva'}`}>
+                        {reg.estado}
+                      </span>
+                    </div>
+                    <div className="rutina-resumen-stats">
+                      {reg.duracionMinutos !== null && reg.duracionMinutos !== undefined && (
+                        <div className="rutina-resumen-stat">
+                          <div className="rutina-resumen-stat-value">{reg.duracionMinutos}</div>
+                          <div className="rutina-resumen-stat-label">min</div>
+                        </div>
+                      )}
+                      {volumen !== null && (
+                        <div className="rutina-resumen-stat">
+                          <div className="rutina-resumen-stat-value">{volumen.toFixed(0)}</div>
+                          <div className="rutina-resumen-stat-label">volumen (kg)</div>
+                        </div>
+                      )}
+                      {reg.percepcionEsfuerzo && (
+                        <div className="rutina-resumen-stat">
+                          <div className="rutina-resumen-stat-value">{reg.percepcionEsfuerzo}</div>
+                          <div className="rutina-resumen-stat-label">RPE</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      <RegistroEntrenamientoModal
+        isOpen={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+        rutina={rutina}
+        dia={diaActual}
+        ejercicios={ejerciciosDelDia.sort((a, b) => a.orden - b.orden)}
+        onFinalizado={() => {
+          cargarHistorial();
+          setTab('historial');
+        }}
+      />
     </div>
   );
 }

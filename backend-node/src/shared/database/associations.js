@@ -5,6 +5,7 @@ const { Certificacion } = require('../../modules/auth/certificacion.model');
 const { HitlFeedback } = require('../../modules/entrenamiento/hitl-feedback.model');
 const { CalculoMetabolico } = require('../../modules/metabolismo/metabolismo.model');
 const { Ejercicio, PlantillaEntrenamiento, RutinaAsignada, RegistroEntrenamiento } = require('../../modules/entrenamiento/entrenamiento.model');
+const { SerieEjecutada } = require('../../modules/entrenamiento/series-ejecutadas.model');
 const { Dieta } = require('../../modules/dietas/dietas.model');
 const { PlanPago, MetodoPago, ConfiguracionPago, Pago } = require('../../modules/pagos/pagos.model');
 
@@ -34,6 +35,11 @@ RutinaAsignada.belongsTo(PlantillaEntrenamiento, { foreignKey: 'plantillaOrigenI
 
 RegistroEntrenamiento.belongsTo(RutinaAsignada, { foreignKey: 'rutinaAsignadaId' });
 RegistroEntrenamiento.belongsTo(Instruido, { foreignKey: 'instruidoId' });
+RegistroEntrenamiento.hasMany(SerieEjecutada, { foreignKey: 'registroEntrenamientoId', as: 'series' });
+
+SerieEjecutada.belongsTo(RegistroEntrenamiento, { foreignKey: 'registroEntrenamientoId' });
+SerieEjecutada.belongsTo(Ejercicio, { foreignKey: 'ejercicioId', as: 'ejercicio' });
+Ejercicio.hasMany(SerieEjecutada, { foreignKey: 'ejercicioId' });
 
 Instruido.hasMany(CalculoMetabolico, { foreignKey: 'clienteId', as: 'calculosMetabolicos' });
 CalculoMetabolico.belongsTo(Instruido, { as: 'instruido', foreignKey: 'clienteId' });
@@ -60,7 +66,7 @@ Dieta.belongsTo(Entrenador, { foreignKey: 'entrenadorId', as: 'entrenador' });
 
 module.exports = {
   Entrenador, Instruido, PerfilMedico, Certificacion,
-  Ejercicio, PlantillaEntrenamiento, RutinaAsignada, RegistroEntrenamiento,
+  Ejercicio, PlantillaEntrenamiento, RutinaAsignada, RegistroEntrenamiento, SerieEjecutada,
   HitlFeedback, CalculoMetabolico, Dieta,
   PlanPago, MetodoPago, ConfiguracionPago, Pago,
 };

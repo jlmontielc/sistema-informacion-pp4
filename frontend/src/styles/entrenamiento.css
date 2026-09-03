@@ -550,3 +550,236 @@
     justify-content: space-between;
   }
 }
+
+/* =============================================================
+   REGISTRO DE ENTRENAMIENTO - ESTILO HEVY LIMPIO
+   ============================================================= */
+
+.registro-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.registro-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg-card);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.registro-modal-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--space-4);
+}
+
+.registro-modal-stat {
+  text-align: center;
+  min-width: 80px;
+}
+
+.registro-modal-stat-value {
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-primary-600);
+  line-height: 1;
+}
+
+.registro-modal-stat-label {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.registro-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.registro-modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.registro-modal-error {
+  text-align: center;
+  color: var(--color-error);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.ejercicio-registro-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ejercicio-registro-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.ejercicio-registro-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+.ejercicio-registro-meta {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.ejercicio-registro-resumen {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ejercicio-registro-volumen {
+  display: block;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-primary-600);
+}
+
+.ejercicio-registro-series {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.ejercicio-registro-footer {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: var(--space-2);
+}
+
+.serie-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 1fr 1fr 60px 76px;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-alt);
+}
+
+.serie-row-header {
+  background: transparent;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.serie-row-header .serie-field,
+.serie-row-header .serie-numero {
+  color: var(--color-text-secondary);
+}
+
+.serie-row-guardada {
+  background: var(--color-neutral-50);
+}
+
+.serie-numero {
+  font-weight: var(--font-bold);
+  color: var(--color-primary-600);
+  text-align: center;
+  font-size: var(--text-sm);
+}
+
+.serie-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.serie-field label {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.serie-field input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  background: var(--color-bg-card);
+  text-align: center;
+}
+
+.serie-field input:focus {
+  border-color: var(--color-primary-500);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-100);
+}
+
+.serie-field-rpe {
+  max-width: 60px;
+}
+
+.serie-acciones {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: flex-end;
+}
+
+.serie-empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .serie-row {
+    grid-template-columns: 28px 1fr 1fr 1fr 52px 68px;
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+
+  .serie-field input {
+    padding: var(--space-1);
+    font-size: var(--text-xs);
+  }
+
+  .registro-modal-stat-value {
+    font-size: var(--text-xl);
+  }
+
+  .registro-modal-footer {
+    flex-direction: column;
+  }
+}
