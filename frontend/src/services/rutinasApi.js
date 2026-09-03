@@ -52,6 +52,13 @@ export const registroEntrenamientoApi = {
   obtenerPorId: (id) => api.get(`${BASE}/registro/${id}`),
   crear: (data) => api.post(`${BASE}/registro`, data),
   eliminar: (id) => api.delete(`${BASE}/registro/${id}`),
+  iniciar: (data) => api.post(`${BASE}/registro/iniciar`, data),
+  listarSeries: (id) => api.get(`${BASE}/registro/${id}/series`),
+  crearSerie: (id, data) => api.post(`${BASE}/registro/${id}/series`, data),
+  editarSerie: (id, serieId, data) => api.put(`${BASE}/registro/${id}/series/${serieId}`, data),
+  eliminarSerie: (id, serieId) => api.delete(`${BASE}/registro/${id}/series/${serieId}`),
+  finalizar: (id, data) => api.patch(`${BASE}/registro/${id}/finalizar`, data),
+  cancelar: (id, data) => api.patch(`${BASE}/registro/${id}/cancelar`, data),
 };
 
 export const instruidosApi = {

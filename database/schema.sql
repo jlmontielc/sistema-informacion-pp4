@@ -163,10 +163,13 @@ CREATE TABLE registro_entrenamiento (
   rutina_asignada_id INT NOT NULL,
   cliente_id INT NOT NULL,
   fecha DATE NOT NULL,
-  ejercicios_realizados JSON NOT NULL COMMENT '[{"ejercicio_id":1,"series_realizadas":3,"repeticiones":12,"carga_kg":20,"notas":"..."}]',
-  duracion_minutos INT,
+  ejercicios_realizados JSON NULL COMMENT 'JSON libre; reemplazado por tabla series_ejecutadas',
+  duracion_minutos INT CHECK (duracion_minutos BETWEEN 0 AND 600),
   percepcion_esfuerzo TINYINT COMMENT 'Escala 1-10',
   observaciones TEXT,
+  estado ENUM('en_progreso', 'completado', 'cancelado') NOT NULL DEFAULT 'en_progreso',
+  fecha_inicio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  fecha_fin DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_registro_rutina
     FOREIGN KEY (rutina_asignada_id) REFERENCES rutinas_asignadas(id)
@@ -175,7 +178,34 @@ CREATE TABLE registro_entrenamiento (
     FOREIGN KEY (cliente_id) REFERENCES instruidos(id)
     ON DELETE CASCADE,
   INDEX idx_registro_cliente_fecha (cliente_id, fecha),
-  INDEX idx_registro_rutina_fecha (rutina_asignada_id, fecha)
+  INDEX idx_registro_rutina_fecha (rutina_asignada_id, fecha),
+  INDEX idx_registro_estado (estado)
+) ENGINE=InnoDB;
+
+-- =============================================================
+-- 7.1. SERIES_EJECUTADAS (registro normalizado serie por serie)
+-- =============================================================
+CREATE TABLE series_ejecutadas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  registro_entrenamiento_id INT NOT NULL,
+  ejercicio_id INT NOT NULL,
+  numero_serie TINYINT NOT NULL,
+  repeticiones_realizadas INT NOT NULL,
+  peso_kg DECIMAL(6,2) NOT NULL,
+  descanso_segundos INT NOT NULL,
+  rpe TINYINT NULL CHECK (rpe BETWEEN 1 AND 10),
+  notas TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_serie_registro
+    FOREIGN KEY (registro_entrenamiento_id) REFERENCES registro_entrenamiento(id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_serie_ejercicio
+    FOREIGN KEY (ejercicio_id) REFERENCES ejercicios(id)
+    ON DELETE RESTRICT,
+  INDEX idx_serie_registro (registro_entrenamiento_id),
+  INDEX idx_serie_ejercicio (ejercicio_id),
+  INDEX idx_serie_numero (registro_entrenamiento_id, ejercicio_id, numero_serie)
 ) ENGINE=InnoDB;
 
 -- =============================================================
