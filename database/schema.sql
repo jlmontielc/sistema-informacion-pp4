@@ -319,25 +319,6 @@ CREATE TABLE planes_dieta (
 ) ENGINE=InnoDB;
 
 -- =============================================================
--- 11. RENDIMIENTO (métricas periódicas - modelo existente)
--- =============================================================
-CREATE TABLE rendimiento (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  cliente_id INT NOT NULL,
-  fecha DATE NOT NULL,
-  peso DECIMAL(5,2),
-  repeticiones_totales INT,
-  carga_total_kg DECIMAL(7,2),
-  imc DECIMAL(5,2),
-  observaciones TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_rendimiento_cliente
-    FOREIGN KEY (cliente_id) REFERENCES instruidos(id)
-    ON DELETE CASCADE,
-  INDEX idx_rendimiento_cliente_fecha (cliente_id, fecha)
-) ENGINE=InnoDB;
-
--- =============================================================
 -- 12. PLANES DE PAGO (mensualidades creadas por el entrenador)
 -- =============================================================
 CREATE TABLE planes_pago (
@@ -440,16 +421,16 @@ SELECT
   i.id AS instruido_id,
   i.nombre AS instruido_nombre,
   e.nombre AS entrenador_nombre,
-  r.fecha,
-  r.peso,
-  r.repeticiones_totales,
-  r.carga_total_kg,
-  r.imc,
+  re.fecha,
+  NULL AS peso,
+  NULL AS repeticiones_totales,
+  NULL AS carga_total_kg,
+  NULL AS imc,
   ra.nombre AS rutina_activa,
   ra.tipo AS tipo_rutina
 FROM instruidos i
 JOIN entrenadores e ON e.id = i.entrenador_id
-LEFT JOIN rendimiento r ON r.cliente_id = i.id
+LEFT JOIN registro_entrenamiento re ON re.cliente_id = i.id
 LEFT JOIN rutinas_asignadas ra ON ra.cliente_id = i.id AND ra.activa = TRUE;
 
 -- =============================================================

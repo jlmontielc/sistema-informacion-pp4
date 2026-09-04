@@ -1,9 +1,14 @@
 const validar = (esquema, fuente = 'body') => (req, res, next) => {
-  const datos = fuente === 'params' ? req.params : req.body;
-  const { error } = esquema.validate(datos);
+  const datos = fuente === 'params'
+    ? req.params
+    : fuente === 'query'
+      ? req.query
+      : req.body;
+  const { value, error } = esquema.validate(datos);
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
+  req[fuente] = value;
   next();
 };
 
