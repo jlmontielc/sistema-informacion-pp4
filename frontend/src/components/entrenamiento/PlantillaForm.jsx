@@ -202,14 +202,14 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
     setEjerciciosPorDia((prev) => {
       const existentes = prev[diaActivo] || [];
       const nuevos = seleccionados.map((s, idx) => {
-        const existente = existentes.find((e) => e.ejercicio_id === s.ejercicio_id);
+        const existente = existentes.find((e) => e.ejercicioId === s.ejercicioId);
         return {
           ...s,
           orden: existente?.orden || idx + 1,
           series: existente?.series || s.series,
           repeticiones: existente?.repeticiones || s.repeticiones,
-          carga_kg: existente?.carga_kg || s.carga_kg,
-          descanso_segundos: existente?.descanso_segundos || s.descanso_segundos,
+          cargaKg: existente?.cargaKg || s.cargaKg,
+          descansoSegundos: existente?.descansoSegundos || s.descansoSegundos,
           notas: existente?.notas || s.notas,
         };
       });
@@ -250,13 +250,13 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
     form.diasSemana.forEach((dia) => {
       (ejerciciosPorDia[dia] || []).forEach((ej, idx) => {
         ejerciciosFlat.push({
-          ejercicio_id: ej.ejercicio_id,
+          ejercicioId: ej.ejercicioId,
           dia,
           orden: idx + 1,
           series: ej.series,
           repeticiones: ej.repeticiones,
-          carga_kg: ej.carga_kg || 0,
-          descanso_segundos: ej.descanso_segundos || 60,
+          cargaKg: ej.cargaKg || 0,
+          descansoSegundos: ej.descansoSegundos || 60,
           notas: ej.notas || '',
         });
       });
@@ -264,7 +264,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
 
     const diasSemanaMap = {};
     form.diasSemana.forEach((d) => {
-      diasSemanaMap[String(d)] = { dia_semana: d, nombre: obtenerNombreDia(d) };
+      diasSemanaMap[String(d)] = { diaSemana: d, nombre: obtenerNombreDia(d) };
     });
 
     const payload = {
@@ -272,11 +272,11 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
       descripcion: form.descripcion.trim(),
       tipo: form.tipo,
       ejercicios: ejerciciosFlat,
-      dias_semana: diasSemanaMap,
-      frecuencia_semanal: form.frecuenciaSemanal,
-      duracion_semanas: form.duracionSemanas || undefined,
+      diasSemana: diasSemanaMap,
+      frecuenciaSemanal: form.frecuenciaSemanal,
+      duracionSemanas: form.duracionSemanas || undefined,
       objetivo: form.objetivo || undefined,
-      nivel_dificultad: form.nivelDificultad || undefined,
+      nivelDificultad: form.nivelDificultad || undefined,
     };
 
     try {
@@ -288,7 +288,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
       onSaved?.();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al guardar la plantilla');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Error al guardar la plantilla');
     } finally {
       setSaving(false);
     }
@@ -494,7 +494,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                     {ejerciciosPorDia[diaActivo].map((ej, idx) => (
                       <EjercicioCard
-                        key={`${ej.ejercicio_id}-${idx}`}
+                        key={`${ej.ejercicioId}-${idx}`}
                         ejercicio={ej}
                         nombreEjercicio={traducirNombre(ej.nombre)}
                         editable

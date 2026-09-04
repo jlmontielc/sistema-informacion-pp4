@@ -64,8 +64,8 @@ export function EjercicioCard({
                 min={0}
                 max={999}
                 step={0.5}
-                value={ejercicio?.carga_kg || 0}
-                onChange={(e) => handleChange('carga_kg', parseFloat(e.target.value) || 0)}
+                value={ejercicio?.cargaKg || 0}
+                onChange={(e) => handleChange('cargaKg', parseFloat(e.target.value) || 0)}
                 className="ejercicio-inline-input"
               />
               <span> kg</span>
@@ -76,8 +76,8 @@ export function EjercicioCard({
                 min={0}
                 max={600}
                 step={5}
-                value={ejercicio?.descanso_segundos || 0}
-                onChange={(e) => handleChange('descanso_segundos', parseInt(e.target.value) || 0)}
+                value={ejercicio?.descansoSegundos || 0}
+                onChange={(e) => handleChange('descansoSegundos', parseInt(e.target.value) || 0)}
                 className="ejercicio-inline-input"
               />
               <span>s descanso</span>
@@ -91,14 +91,14 @@ export function EjercicioCard({
             <span className="ejercicio-meta-item">
               × <span className="ejercicio-meta-value">{ejercicio?.repeticiones || 0}</span> reps
             </span>
-            {ejercicio?.carga_kg > 0 && (
+            {ejercicio?.cargaKg > 0 && (
               <span className="ejercicio-meta-item">
-                <span className="ejercicio-meta-value">{ejercicio.carga_kg}</span> kg
+                <span className="ejercicio-meta-value">{ejercicio.cargaKg}</span> kg
               </span>
             )}
-            {ejercicio?.descanso_segundos > 0 && (
+            {ejercicio?.descansoSegundos > 0 && (
               <span className="ejercicio-meta-item">
-                <span className="ejercicio-meta-value">{ejercicio.descanso_segundos}s</span> descanso
+                <span className="ejercicio-meta-value">{ejercicio.descansoSegundos}s</span> descanso
               </span>
             )}
           </>

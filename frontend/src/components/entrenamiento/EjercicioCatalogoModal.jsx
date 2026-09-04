@@ -207,7 +207,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
 
   const seleccionIds = useMemo(() => {
     const set = new Set();
-    seleccionLocal.forEach((e) => set.add(e.ejercicio_id));
+    seleccionLocal.forEach((e) => set.add(e.ejercicioId));
     return set;
   }, [seleccionLocal]);
 
@@ -243,17 +243,17 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
 
   const toggleSeleccion = useCallback((ejercicio) => {
     setSeleccionLocal((prev) => {
-      const idx = prev.findIndex((e) => e.ejercicio_id === ejercicio.id);
+      const idx = prev.findIndex((e) => e.ejercicioId === ejercicio.id);
       if (idx >= 0) {
         return prev.filter((_, i) => i !== idx);
       }
       return [...prev, {
-        ejercicio_id: ejercicio.id,
+        ejercicioId: ejercicio.id,
         nombre: ejercicio.nombre,
         series: 3,
         repeticiones: 12,
-        carga_kg: 0,
-        descanso_segundos: 60,
+        cargaKg: 0,
+        descansoSegundos: 60,
         notas: '',
       }];
     });
@@ -426,7 +426,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: 200, overflowY: 'auto' }}>
               {seleccionLocal.map((ej, idx) => (
-                <div key={ej.ejercicio_id} className="ejercicio-edit-row">
+                <div key={ej.ejercicioId} className="ejercicio-edit-row">
                   <span className="ejercicio-edit-nombre">{traducirNombre(ej.nombre)}</span>
                   <div className="ejercicio-edit-fields">
                     <label>
@@ -456,8 +456,8 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                         min={0}
                         max={600}
                         step={5}
-                        value={ej.descanso_segundos}
-                        onChange={(e) => handleEditarSeleccion(idx, 'descanso_segundos', parseInt(e.target.value) || 0)}
+                        value={ej.descansoSegundos}
+                        onChange={(e) => handleEditarSeleccion(idx, 'descansoSegundos', parseInt(e.target.value) || 0)}
                       />
                       <span className="ejercicio-edit-unit">s</span>
                     </label>

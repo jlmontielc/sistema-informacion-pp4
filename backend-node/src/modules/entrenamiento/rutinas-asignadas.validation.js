@@ -26,9 +26,9 @@ const esquemaCrear = Joi.object({
   tipo: Joi.string()
     .valid('fuerza', 'hipertrofia', 'resistencia', 'cardio', 'funcional', 'flexibilidad')
     .required(),
-  ejercicios: Joi.array().items(ejercicioRutina).min(1).required(),
-  diasSemana: diasSemanaMap.required(),
-  frecuenciaSemanal: Joi.number().integer().min(1).max(7).required(),
+  ejercicios: Joi.array().items(ejercicioRutina).min(0).optional().default([]),
+  diasSemana: diasSemanaMap.optional().default({}),
+  frecuenciaSemanal: Joi.number().integer().min(1).max(7).optional().default(3),
   duracionSemanas: Joi.number().integer().min(1).max(52).optional(),
   observaciones: Joi.string().optional().allow(''),
   fechaInicio: Joi.date().optional(),
