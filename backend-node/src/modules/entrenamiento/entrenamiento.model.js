@@ -53,6 +53,12 @@ const RutinaAsignada = sequelize.define('RutinaAsignada', {
   duracionSemanas: { type: DataTypes.INTEGER, field: 'duracion_semanas' },
   observaciones: DataTypes.TEXT,
   personalizadaPorEntrenador: { type: DataTypes.BOOLEAN, defaultValue: true, field: 'personalizada_por_entrenador' },
+  decision: {
+    type: DataTypes.ENUM('pendiente', 'aprobada', 'rechazada', 'modificada'),
+    allowNull: false,
+    defaultValue: 'pendiente',
+    field: 'decision',
+  },
   fechaInicio: { type: DataTypes.DATEONLY, field: 'fecha_inicio' },
   fechaFin: { type: DataTypes.DATEONLY, field: 'fecha_fin' },
   activa: { type: DataTypes.BOOLEAN, defaultValue: true },

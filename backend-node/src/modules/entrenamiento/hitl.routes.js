@@ -4,7 +4,7 @@ const feedbackCtrl = require('./hitl-feedback.controller');
 const { autenticar } = require('../../shared/middleware/authenticate');
 const { autorizar } = require('../../shared/middleware/autorizar');
 const { validar } = require('../../shared/middleware/validate');
-const { esquemaClienteIdParam } = require('./hitl.validation');
+const { esquemaClienteIdParam, esquemaIdParam, esquemaDecisionRutina } = require('./hitl.validation');
 const { esquemaFeedbackHitl } = require('./hitl-feedback.validation');
 
 const router = Router();
@@ -68,6 +68,63 @@ router.post(
   autorizar('administrador', 'entrenador'),
   validar(esquemaClienteIdParam, 'params'),
   ctrl.sugerirRutina,
+);
+
+/**
+ * @openapi
+ * /api/entrenamiento/ia/rutinas/{id}/decision:
+ *   post:
+ *     tags: [HITL]
+ *     summary: Tomar decisión sobre una rutina generada por IA
+ *     description: >
+ *       El entrenador acepta, modifica o rechaza una rutina sugerida por IA.
+ *       - Aceptada: activa la rutina con los campos actuales.
+ *       - Modificada: aplica cambios y activa la rutina.
+ *       - Rechazada: desactiva y elimina la rutina de forma lógica.
+ *       Al aceptar o modificar, se desactivan otras rutinas activas del mismo instruido.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *         description: ID de la rutina sugerida
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/HITLDecisionRutinaRequest'
+ *     responses:
+ *       200:
+ *         description: Decisión registrada y rutina actualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RutinaAsignadaResponse'
+ *       400:
+ *         $ref: '#/components/responses/Error'
+ *       401:
+ *         $ref: '#/components/responses/Error'
+ *       403:
+ *         $ref: '#/components/responses/Error'
+ *       404:
+ *         description: Rutina no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Rutina no encontrada' }
+ *       500:
+ *         $ref: '#/components/responses/Error'
+ */
+router.post(
+  '/ia/rutinas/:id/decision',
+  autenticar,
+  autorizar('administrador', 'entrenador'),
+  validar(esquemaIdParam, 'params'),
+  validar(esquemaDecisionRutina),
+  ctrl.decidirRutina,
 );
 
 /**

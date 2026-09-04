@@ -1,6 +1,8 @@
+const { Op } = require('sequelize');
 const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const { RegistroEntrenamiento, RutinaAsignada, PlantillaEntrenamiento } = require('./entrenamiento.model');
+const { HitlFeedback } = require('./hitl-feedback.model');
 const { CalculoMetabolico } = require('../metabolismo/metabolismo.model');
 const {
   httpRequest,
@@ -55,6 +57,7 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     duracionSemanas: plantilla.duracionSemanas,
     observaciones: JSON.stringify(metadataRecomendacion),
     personalizadaPorEntrenador: false,
+    decision: 'pendiente',
     activa: false,
   });
 };
@@ -257,10 +260,102 @@ const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {
   return response.data;
 };
 
+const CAMPOS_EDITABLES_RUTINA = [
+  'nombre', 'tipo', 'ejercicios', 'diasSemana', 'frecuenciaSemanal',
+  'duracionSemanas', 'observaciones', 'fechaInicio', 'fechaFin',
+];
+
+const decidirRutina = async (usuario, id, datos) => {
+  if (usuario.rol !== 'entrenador' && usuario.rol !== 'administrador') {
+    const err = new Error('Solo entrenadores y administradores pueden decidir sobre rutinas');
+    err.status = 403;
+    throw err;
+  }
+
+  const where = usuario.rol === 'administrador' ? { id } : { id, entrenadorId: usuario.id };
+  const rutina = await RutinaAsignada.findOne({ where });
+  if (!rutina) {
+    const err = new Error('Rutina no encontrada');
+    err.status = 404;
+    throw err;
+  }
+
+  const { accion, comentario, ejerciciosAgregados, ejerciciosEliminados, modificacionCargas, ...resto } = datos;
+  const rutinaOriginal = rutina.toJSON();
+
+  let datosActualizar = {};
+
+  if (accion === 'aceptada') {
+    for (const campo of CAMPOS_EDITABLES_RUTINA) {
+      if (resto[campo] !== undefined) datosActualizar[campo] = resto[campo];
+    }
+    datosActualizar.activa = true;
+    datosActualizar.decision = 'aprobada';
+    datosActualizar.personalizadaPorEntrenador = false;
+  } else if (accion === 'modificada') {
+    for (const campo of CAMPOS_EDITABLES_RUTINA) {
+      if (resto[campo] !== undefined) datosActualizar[campo] = resto[campo];
+    }
+    datosActualizar.activa = true;
+    datosActualizar.decision = 'modificada';
+    datosActualizar.personalizadaPorEntrenador = true;
+  } else if (accion === 'rechazada') {
+    datosActualizar.activa = false;
+    datosActualizar.decision = 'rechazada';
+    datosActualizar.eliminado = true;
+  }
+
+  if (datosActualizar.activa) {
+    await RutinaAsignada.update(
+      { activa: false },
+      { where: { instruidoId: rutina.instruidoId, activa: true, id: { [Op.ne]: id } } },
+    );
+  }
+
+  await rutina.update(datosActualizar);
+  const rutinaFinal = rutina.toJSON();
+  Object.assign(rutinaFinal, datosActualizar);
+
+  await HitlFeedback.create({
+    entrenadorId: usuario.id,
+    clienteId: rutina.instruidoId,
+    rutinaSugeridaId: rutina.id,
+    accion: datosActualizar.decision,
+    rutinaOriginal: {
+      nombre: rutinaOriginal.nombre,
+      tipo: rutinaOriginal.tipo,
+      ejercicios: rutinaOriginal.ejercicios,
+      diasSemana: rutinaOriginal.diasSemana,
+      frecuenciaSemanal: rutinaOriginal.frecuenciaSemanal,
+      duracionSemanas: rutinaOriginal.duracionSemanas,
+      observaciones: rutinaOriginal.observaciones,
+    },
+    rutinaFinal: {
+      nombre: rutinaFinal.nombre,
+      tipo: rutinaFinal.tipo,
+      ejercicios: rutinaFinal.ejercicios,
+      diasSemana: rutinaFinal.diasSemana,
+      frecuenciaSemanal: rutinaFinal.frecuenciaSemanal,
+      duracionSemanas: rutinaFinal.duracionSemanas,
+      observaciones: rutinaFinal.observaciones,
+    },
+    ejerciciosAgregados: ejerciciosAgregados || null,
+    ejerciciosEliminados: ejerciciosEliminados || null,
+    modificacionCargas: modificacionCargas || null,
+    confianzaIa: null,
+    tiempoRevisionSeg: null,
+    observaciones: comentario || null,
+    tipo: 'rutina',
+  });
+
+  return rutinaFinal;
+};
+
 module.exports = {
   sugerirRutina,
   validarEjercicio,
   sugerirDieta,
   persistRoutineFromPrediction,
   persistDietaFromPrediction,
+  decidirRutina,
 };
