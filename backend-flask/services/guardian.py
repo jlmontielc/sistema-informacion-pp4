@@ -20,13 +20,13 @@ class GuardianSeguridad:
         self.ejercicios_con_precaucion = []
 
         lesiones = perfil_medico.get('lesiones', []) if perfil_medico else []
-        condiciones = perfil_medico.get('condiciones_preexistentes', []) if perfil_medico else []
+        condiciones = perfil_medico.get('condicionesPreexistentes', []) if perfil_medico else []
 
         return {
-            'lesiones_detectadas': lesiones,
-            'condiciones_detectadas': condiciones,
+            'lesionesDetectadas': lesiones,
+            'condicionesDetectadas': condiciones,
             'precauciones': obtener_precauciones_cliente(condiciones),
-            'nivel_riesgo_global': self._calcular_nivel_global(lesiones, condiciones),
+            'nivelRiesgoGlobal': self._calcular_nivel_global(lesiones, condiciones),
         }
 
     def validar_ejercicio(
@@ -37,14 +37,14 @@ class GuardianSeguridad:
         carga_kg: float = None,
     ) -> dict:
         lesiones = perfil_medico.get('lesiones', []) if perfil_medico else []
-        condiciones = perfil_medico.get('condiciones_preexistentes', []) if perfil_medico else []
+        condiciones = perfil_medico.get('condicionesPreexistentes', []) if perfil_medico else []
 
         resultado_lesiones = evaluar_ejercicio_por_lesiones(
             ejercicio['nombre'], lesiones
         )
 
         resultado_condiciones = evaluar_ejercicio_por_condiciones(
-            ejercicio['nombre'], condiciones, datos_cliente.get('nivel_actividad')
+            ejercicio['nombre'], condiciones, datos_cliente.get('nivelActividad')
         )
 
         resultado_carga = None
@@ -54,42 +54,42 @@ class GuardianSeguridad:
                 datos_cliente['peso'],
                 datos_cliente['altura'],
                 datos_cliente['edad'],
-                datos_cliente.get('nivel_actividad', 'moderado'),
+                datos_cliente.get('nivelActividad', 'moderado'),
             )
 
         nivel_maximo = self._determinar_nivel_maximo(
-            resultado_lesiones['nivel_maximo'],
-            resultado_condiciones['nivel_maximo'],
-            resultado_carga['nivel_riesgo'] if resultado_carga else NivelRiesgo.SAFE,
+            resultado_lesiones['nivelMaximo'],
+            resultado_condiciones['nivelMaximo'],
+            resultado_carga['nivelRiesgo'] if resultado_carga else NivelRiesgo.SAFE,
         )
 
         bloqueado = (
             resultado_lesiones['bloqueado']
             or resultado_condiciones['bloqueado']
-            or (resultado_carga and resultado_carga['nivel_riesgo'] == NivelRiesgo.CRITICAL)
+            or (resultado_carga and resultado_carga['nivelRiesgo'] == NivelRiesgo.CRITICAL)
         )
 
         todas_alertas = (
             resultado_lesiones['alertas']
             + resultado_condiciones['alertas']
         )
-        if resultado_carga and resultado_carga['nivel_riesgo'] != NivelRiesgo.SAFE:
+        if resultado_carga and resultado_carga['nivelRiesgo'] != NivelRiesgo.SAFE:
             todas_alertas.append({
                 'tipo': 'carga',
-                'nivel_riesgo': resultado_carga['nivel_riesgo'].value,
+                'nivelRiesgo': resultado_carga['nivelRiesgo'].value,
                 'mensaje': resultado_carga['mensaje'],
             })
 
-        modificacion = resultado_lesiones.get('modificacion_sugerida')
+        modificacion = resultado_lesiones.get('modificacionSugerida')
 
         resultado = {
-            'ejercicio_id': ejercicio.get('id'),
-            'ejercicio_nombre': ejercicio['nombre'],
-            'nivel_riesgo': nivel_maximo.value,
+            'ejercicioId': ejercicio.get('id'),
+            'ejercicioNombre': ejercicio['nombre'],
+            'nivelRiesgo': nivel_maximo.value,
             'bloqueado': bloqueado,
             'alertas': todas_alertas,
-            'modificacion_sugerida': modificacion,
-            'intensidad_permitida': resultado_condiciones.get('intensidad_permitida', 1.0),
+            'modificacionSugerida': modificacion,
+            'intensidadPermitida': resultado_condiciones.get('intensidadPermitida', 1.0),
         }
 
         if bloqueado:
@@ -120,7 +120,7 @@ class GuardianSeguridad:
                     'ejercicio': ejercicio,
                     'razon': resultado,
                 })
-            elif resultado['nivel_riesgo'] != NivelRiesgo.SAFE.value:
+            elif resultado['nivelRiesgo'] != NivelRiesgo.SAFE.value:
                 precaucion.append({
                     'ejercicio': ejercicio,
                     'razon': resultado,
@@ -130,14 +130,14 @@ class GuardianSeguridad:
                 seguros.append(ejercicio)
 
         return {
-            'pool_seguro': seguros,
-            'ejercicios_bloqueados': bloqueados,
-            'ejercicios_precaucion': precaucion,
-            'total_evaluados': len(ejercicios),
-            'total_seguros': len(seguros),
-            'total_bloqueados': len(bloqueados),
-            'total_precaucion': len(precaucion),
-            'alertas_globales': self.alertas_global,
+            'poolSeguro': seguros,
+            'ejerciciosBloqueados': bloqueados,
+            'ejerciciosPrecaucion': precaucion,
+            'totalEvaluados': len(ejercicios),
+            'totalSeguros': len(seguros),
+            'totalBloqueados': len(bloqueados),
+            'totalPrecaucion': len(precaucion),
+            'alertasGlobales': self.alertas_global,
         }
 
     def _determinar_nivel_maximo(self, *niveles) -> NivelRiesgo:

@@ -40,7 +40,7 @@ def test_detectar_grupo_lesion():
 def test_evaluar_ejercicio_por_lesiones_rodilla():
     resultado = evaluar_ejercicio_por_lesiones('Sentadilla', ['rodilla - LCA'])
     assert resultado['bloqueado'] is True
-    assert resultado['nivel_maximo'] in (NivelRiesgo.CRITICAL, NivelRiesgo.HIGH)
+    assert resultado['nivelMaximo'] in (NivelRiesgo.CRITICAL, NivelRiesgo.HIGH)
 
     resultado2 = evaluar_ejercicio_por_lesiones('Plancha', ['rodilla - LCA'])
     assert resultado2['bloqueado'] is False
@@ -60,7 +60,7 @@ def test_evaluar_ejercicio_por_condiciones():
     resultado = evaluar_ejercicio_por_condiciones(
         'Press de banca', ['Cardiopatia']
     )
-    assert resultado['intensidad_permitida'] <= 0.65
+    assert resultado['intensidadPermitida'] <= 0.65
     print("[PASS] test_evaluar_ejercicio_por_condiciones")
 
 
@@ -82,12 +82,12 @@ def test_calcular_imc():
 
 def test_carga_maxima_recomendada():
     limites = calcular_carga_maxima_recomendada(75, 1.75, 30, 'activo', 'compuesto')
-    assert limites['carga_max_kg'] > 0
+    assert limites['cargaMaxKg'] > 0
     assert limites['imc'] > 0
 
     limites_joven = calcular_carga_maxima_recomendada(75, 1.75, 25, 'activo', 'compuesto')
     limites_viejo = calcular_carga_maxima_recomendada(75, 1.75, 65, 'activo', 'compuesto')
-    assert limites_joven['carga_max_kg'] > limites_viejo['carga_max_kg']
+    assert limites_joven['cargaMaxKg'] > limites_viejo['cargaMaxKg']
     print("[PASS] test_carga_maxima_recomendada")
 
 
@@ -111,32 +111,32 @@ def test_guardian_filtrar_pool():
     guardian = GuardianSeguridad()
 
     ejercicios = [
-        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas'},
-        {'id': 2, 'nombre': 'Plancha', 'grupo_muscular': 'Core'},
-        {'id': 3, 'nombre': 'Peso muerto', 'grupo_muscular': 'Espalda baja'},
-        {'id': 4, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho'},
-        {'id': 5, 'nombre': 'Curl de bíceps', 'grupo_muscular': 'Brazos'},
+        {'id': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas'},
+        {'id': 2, 'nombre': 'Plancha', 'grupoMuscular': 'Core'},
+        {'id': 3, 'nombre': 'Peso muerto', 'grupoMuscular': 'Espalda baja'},
+        {'id': 4, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho'},
+        {'id': 5, 'nombre': 'Curl de bíceps', 'grupoMuscular': 'Brazos'},
     ]
 
     datos_cliente = {
         'edad': 30,
         'peso': 75,
         'altura': 1.75,
-        'nivel_actividad': 'moderado',
+        'nivelActividad': 'moderado',
     }
 
     perfil_medico = {
         'lesiones': ['Hernia discal lumbar'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = guardian.filtrar_pool_ejercicios(ejercicios, datos_cliente, perfil_medico)
 
-    assert resultado['total_evaluados'] == 5
-    assert resultado['total_bloqueados'] >= 1
-    assert resultado['total_seguros'] >= 2
+    assert resultado['totalEvaluados'] == 5
+    assert resultado['totalBloqueados'] >= 1
+    assert resultado['totalSeguros'] >= 2
 
-    nombres_bloqueados = [b['ejercicio']['nombre'] for b in resultado['ejercicios_bloqueados']]
+    nombres_bloqueados = [b['ejercicio']['nombre'] for b in resultado['ejerciciosBloqueados']]
     assert 'Peso muerto' in nombres_bloqueados
     print("[PASS] test_guardian_filtrar_pool")
 
@@ -145,27 +145,27 @@ def test_guardian_multi_lesion():
     guardian = GuardianSeguridad()
 
     ejercicios = [
-        {'id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas'},
-        {'id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho'},
-        {'id': 3, 'nombre': 'Plancha', 'grupo_muscular': 'Core'},
+        {'id': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas'},
+        {'id': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho'},
+        {'id': 3, 'nombre': 'Plancha', 'grupoMuscular': 'Core'},
     ]
 
     datos_cliente = {
         'edad': 45,
         'peso': 80,
         'altura': 1.70,
-        'nivel_actividad': 'ligero',
+        'nivelActividad': 'ligero',
     }
 
     perfil_medico = {
         'lesiones': ['rodilla', 'hombro'],
-        'condiciones_preexistentes': ['hipertension'],
+        'condicionesPreexistentes': ['hipertension'],
     }
 
     resultado = guardian.filtrar_pool_ejercicios(ejercicios, datos_cliente, perfil_medico)
 
-    assert resultado['total_evaluados'] == 3
-    assert resultado['total_bloqueados'] >= 2
+    assert resultado['totalEvaluados'] == 3
+    assert resultado['totalBloqueados'] >= 2
     print("[PASS] test_guardian_multi_lesion")
 
 
@@ -194,13 +194,13 @@ def test_clasificador_normaliza_proposito():
             'nombre': 'Rutina Ganancia Muscular 4 dias',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'intermedio',
-            'frecuencia_semanal': 4,
+            'nivelDificultad': 'intermedio',
+            'frecuenciaSemanal': 4,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': None},
-                {'ejercicio_id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
-                {'ejercicio_id': 3, 'nombre': 'Dominadas', 'grupo_muscular': 'Espalda', 'contraindica_lesiones': None},
-                {'ejercicio_id': 5, 'nombre': 'Peso muerto', 'grupo_muscular': 'Espalda baja', 'contraindica_lesiones': None},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': None},
+                {'ejercicioId': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+                {'ejercicioId': 3, 'nombre': 'Dominadas', 'grupoMuscular': 'Espalda', 'contraindicaLesiones': None},
+                {'ejercicioId': 5, 'nombre': 'Peso muerto', 'grupoMuscular': 'Espalda baja', 'contraindicaLesiones': None},
             ],
         },
         {
@@ -208,11 +208,11 @@ def test_clasificador_normaliza_proposito():
             'nombre': 'Rutina Perdida de Peso',
             'tipo': 'resistencia',
             'objetivo': 'perdida_peso',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
-                {'ejercicio_id': 6, 'nombre': 'Curl de bíceps', 'grupo_muscular': 'Brazos', 'contraindica_lesiones': None},
+                {'ejercicioId': 4, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
+                {'ejercicioId': 6, 'nombre': 'Curl de bíceps', 'grupoMuscular': 'Brazos', 'contraindicaLesiones': None},
             ],
         },
     ]
@@ -221,14 +221,14 @@ def test_clasificador_normaliza_proposito():
         'peso': 75,
         'altura': 1.75,
         'sexo': 'masculino',
-        'nivel_actividad': 'moderado',
-        'nivel_experiencia': 'principiante',
+        'nivelActividad': 'moderado',
+        'nivelExperiencia': 'principiante',
         'proposito': 'Ganar masa muscular',
-        'dias_disponibles': 3,
+        'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': [],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -238,13 +238,13 @@ def test_clasificador_normaliza_proposito():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 10
+    assert resultado['plantillaId'] == 10
     assert resultado['confianza'] > 50
     assert 'ganancia muscular' in resultado['explicacion'].lower() or 'Ganancia Muscular' in resultado['explicacion']
     print("[PASS] test_clasificador_normaliza_proposito")
 
 
-def test_clasificador_descarta_plantilla_con_ejercicios_bloqueados():
+def test_clasificador_descarta_plantilla_con_ejerciciosBloqueados():
     from services.recommender import RecommenderEngine
     from services.guardian import GuardianSeguridad
 
@@ -257,13 +257,13 @@ def test_clasificador_descarta_plantilla_con_ejercicios_bloqueados():
             'nombre': 'Rutina con bloqueados',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
-                {'ejercicio_id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
-                {'ejercicio_id': 99, 'nombre': 'Ejercicio inexistente 1', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
-                {'ejercicio_id': 100, 'nombre': 'Ejercicio inexistente 2', 'grupo_muscular': 'Brazos', 'contraindica_lesiones': None},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
+                {'ejercicioId': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+                {'ejercicioId': 99, 'nombre': 'Ejercicio inexistente 1', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
+                {'ejercicioId': 100, 'nombre': 'Ejercicio inexistente 2', 'grupoMuscular': 'Brazos', 'contraindicaLesiones': None},
             ],
         },
         {
@@ -271,22 +271,22 @@ def test_clasificador_descarta_plantilla_con_ejercicios_bloqueados():
             'nombre': 'Rutina segura',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
-                {'ejercicio_id': 4, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
+                {'ejercicioId': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+                {'ejercicioId': 4, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
             ],
         },
     ]
     datos = {
         'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'activo', 'nivel_experiencia': 'principiante',
-        'proposito': 'ganar masa muscular', 'dias_disponibles': 3,
+        'nivelActividad': 'activo', 'nivelExperiencia': 'principiante',
+        'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -296,12 +296,12 @@ def test_clasificador_descarta_plantilla_con_ejercicios_bloqueados():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 21
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
-    assert resultado['metadata']['plantillas_viables'] == 1
-    assert resultado['metadata']['scores_detalle'][20] == 0
-    assert resultado['metadata']['scores_detalle'][21] > 0
-    print("[PASS] test_clasificador_descarta_plantilla_con_ejercicios_bloqueados")
+    assert resultado['plantillaId'] == 21
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
+    assert resultado['metadata']['plantillasViables'] == 1
+    assert resultado['metadata']['scoresDetalle'][20] == 0
+    assert resultado['metadata']['scoresDetalle'][21] > 0
+    print("[PASS] test_clasificador_descarta_plantilla_con_ejerciciosBloqueados")
 
 
 def test_clasificador_todas_descartadas():
@@ -317,24 +317,24 @@ def test_clasificador_todas_descartadas():
             'nombre': 'Rutina mayoritariamente bloqueada',
             'tipo': 'fuerza',
             'objetivo': 'mantenimiento',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
-                {'ejercicio_id': 80, 'nombre': 'Ejercicio 80', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
-                {'ejercicio_id': 81, 'nombre': 'Ejercicio 81', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
-                {'ejercicio_id': 82, 'nombre': 'Ejercicio 82', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
+                {'ejercicioId': 80, 'nombre': 'Ejercicio 80', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
+                {'ejercicioId': 81, 'nombre': 'Ejercicio 81', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
+                {'ejercicioId': 82, 'nombre': 'Ejercicio 82', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
             ],
         },
     ]
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
-        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': ['rodilla - LCA'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -344,11 +344,11 @@ def test_clasificador_todas_descartadas():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] is None
+    assert resultado['plantillaId'] is None
     assert resultado['confianza'] == 0.0
-    assert resultado['metadata']['plantillas_evaluadas'] == 1
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
-    assert resultado['metadata']['plantillas_viables'] == 0
+    assert resultado['metadata']['plantillasEvaluadas'] == 1
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
+    assert resultado['metadata']['plantillasViables'] == 0
     print("[PASS] test_clasificador_todas_descartadas")
 
 
@@ -365,22 +365,22 @@ def test_clasificador_sin_historial():
             'nombre': 'Rutina basica',
             'tipo': 'fuerza',
             'objetivo': 'mantenimiento',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': None},
-                {'ejercicio_id': 2, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': None},
+                {'ejercicioId': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
             ],
         },
     ]
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'principiante',
-        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': [],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -391,9 +391,9 @@ def test_clasificador_sin_historial():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 40
+    assert resultado['plantillaId'] == 40
     assert resultado['confianza'] > 0
-    assert resultado['metadata']['plantillas_evaluadas'] == 1
+    assert resultado['metadata']['plantillasEvaluadas'] == 1
     print("[PASS] test_clasificador_sin_historial")
 
 
@@ -411,9 +411,9 @@ def test_clasificador_plantillas_vacia():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] is None
+    assert resultado['plantillaId'] is None
     assert resultado['confianza'] == 0.0
-    assert resultado['metadata']['plantillas_evaluadas'] == 0
+    assert resultado['metadata']['plantillasEvaluadas'] == 0
     print("[PASS] test_clasificador_plantillas_vacia")
 
 
@@ -421,15 +421,15 @@ def test_motor_nutricional_deficit():
     from services.nutricion_engine import calcular_macros
 
     macros = calcular_macros(gct=2500, peso=75, proposito='perder_peso')
-    assert macros['objetivo_calorico'] == 2000
-    assert macros['proteinas_gramos'] == 165
-    assert macros['grasas_gramos'] > 0
-    assert macros['carbohidratos_gramos'] > 0
+    assert macros['objetivoCalorico'] == 2000
+    assert macros['proteinasGramos'] == 165
+    assert macros['grasasGramos'] > 0
+    assert macros['carbohidratosGramos'] > 0
 
-    total_kcal = (macros['proteinas_gramos'] * 4 +
-                  macros['carbohidratos_gramos'] * 4 +
-                  macros['grasas_gramos'] * 9)
-    diff = abs(total_kcal - macros['objetivo_calorico'])
+    total_kcal = (macros['proteinasGramos'] * 4 +
+                  macros['carbohidratosGramos'] * 4 +
+                  macros['grasasGramos'] * 9)
+    diff = abs(total_kcal - macros['objetivoCalorico'])
     assert diff < 20, f'Diferencia kcal {diff} demasiado alta'
     print("[PASS] test_motor_nutricional_deficit")
 
@@ -438,10 +438,10 @@ def test_motor_nutricional_superavit():
     from services.nutricion_engine import calcular_macros
 
     macros = calcular_macros(gct=2500, peso=80, proposito='ganar_musculo')
-    assert macros['objetivo_calorico'] == 2875
-    assert macros['proteinas_gramos'] == 128
-    assert macros['grasas_gramos'] > 0
-    assert macros['carbohidratos_gramos'] > 0
+    assert macros['objetivoCalorico'] == 2875
+    assert macros['proteinasGramos'] == 128
+    assert macros['grasasGramos'] > 0
+    assert macros['carbohidratosGramos'] > 0
     print("[PASS] test_motor_nutricional_superavit")
 
 
@@ -449,10 +449,10 @@ def test_motor_nutricional_mantenimiento():
     from services.nutricion_engine import calcular_macros
 
     macros = calcular_macros(gct=2200, peso=70, proposito='mantener')
-    assert macros['objetivo_calorico'] == 2200
-    assert macros['proteinas_gramos'] == 126
-    assert macros['grasas_gramos'] > 0
-    assert macros['carbohidratos_gramos'] > 0
+    assert macros['objetivoCalorico'] == 2200
+    assert macros['proteinasGramos'] == 126
+    assert macros['grasasGramos'] > 0
+    assert macros['carbohidratosGramos'] > 0
     print("[PASS] test_motor_nutricional_mantenimiento")
 
 
@@ -461,7 +461,7 @@ def test_guardian_dieta_bloqueo_tmb():
 
     tmb = 1600
     gct = 1920
-    macros = {'objetivo_calorico': 1500, 'proteinas_gramos': 120, 'carbohidratos_gramos': 100, 'grasas_gramos': 50}
+    macros = {'objetivoCalorico': 1500, 'proteinasGramos': 120, 'carbohidratosGramos': 100, 'grasasGramos': 50}
 
     resultado = guardian_dieta(macros, tmb, gct)
     assert resultado['aprobado'] is False
@@ -475,7 +475,7 @@ def test_guardian_dieta_aprobado():
 
     tmb = 1600
     gct = 2000
-    macros = {'objetivo_calorico': 2000, 'proteinas_gramos': 130, 'carbohidratos_gramos': 200, 'grasas_gramos': 60}
+    macros = {'objetivoCalorico': 2000, 'proteinasGramos': 130, 'carbohidratosGramos': 200, 'grasasGramos': 60}
 
     resultado = guardian_dieta(macros, tmb, gct)
     assert resultado['aprobado'] is True
@@ -488,7 +488,7 @@ def test_guardian_dieta_alerta_diabetes():
 
     tmb = 1800
     gct = 2200
-    macros = {'objetivo_calorico': 2200, 'proteinas_gramos': 140, 'carbohidratos_gramos': 230, 'grasas_gramos': 65}
+    macros = {'objetivoCalorico': 2200, 'proteinasGramos': 140, 'carbohidratosGramos': 230, 'grasasGramos': 65}
     datos_medicos = {'condiciones': ['Diabetes tipo 2']}
 
     resultado = guardian_dieta(macros, tmb, gct, datos_medicos)
@@ -504,7 +504,7 @@ def test_guardian_dieta_alertas_alergias():
 
     tmb = 1600
     gct = 2000
-    macros = {'objetivo_calorico': 2000, 'proteinas_gramos': 130, 'carbohidratos_gramos': 200, 'grasas_gramos': 60}
+    macros = {'objetivoCalorico': 2000, 'proteinasGramos': 130, 'carbohidratosGramos': 200, 'grasasGramos': 60}
     datos_medicos = {'alergias': ['Gluten', 'Lactosa'], 'intolerancias': ['Fructosa']}
 
     resultado = guardian_dieta(macros, tmb, gct, datos_medicos)
@@ -579,24 +579,24 @@ def test_clasificador_precaucion_solo_si_lesion_coincide():
     plantillas = [
         {
             'id': 50, 'nombre': 'Rutina test', 'tipo': 'fuerza',
-            'objetivo': 'mantenimiento', 'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'objetivo': 'mantenimiento', 'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': 'hombro'},
-                {'ejercicio_id': 2, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
-                {'ejercicio_id': 4, 'nombre': 'Elevacion lateral', 'grupo_muscular': 'Hombro', 'contraindica_lesiones': 'hombro'},
+                {'ejercicioId': 1, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': 'hombro'},
+                {'ejercicioId': 2, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
+                {'ejercicioId': 4, 'nombre': 'Elevacion lateral', 'grupoMuscular': 'Hombro', 'contraindicaLesiones': 'hombro'},
             ],
         },
     ]
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'principiante',
-        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
     }
     # Lesión de rodilla - no debe afectar a ejercicios de hombro (precaución media)
     perfil_medico_rodilla = {
         'lesiones': ['rodilla - LCA'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -606,10 +606,10 @@ def test_clasificador_precaucion_solo_si_lesion_coincide():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 50
+    assert resultado['plantillaId'] == 50
     assert resultado['confianza'] > 0
     # La plantilla NO se descarta porque la lesión de rodilla no afecta a ejercicios de hombro/pecho/core
-    # Press banca y elevacion lateral tienen contraindica_lesiones='hombro' -> no coincide con rodilla
+    # Press banca y elevacion lateral tienen contraindicaLesiones='hombro' -> no coincide con rodilla
     print("[PASS] test_clasificador_precaucion_solo_si_lesion_coincide")
 
 
@@ -624,22 +624,22 @@ def test_clasificador_descarta_por_ejercicio_critical_en_plantilla():
     plantillas = [
         {
             'id': 51, 'nombre': 'Rutina con sentadilla', 'tipo': 'fuerza',
-            'objetivo': 'mantenimiento', 'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'objetivo': 'mantenimiento', 'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
-                {'ejercicio_id': 3, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
+                {'ejercicioId': 1, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+                {'ejercicioId': 3, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
             ],
         },
     ]
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'principiante',
-        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
     }
     perfil_medico_rodilla = {
         'lesiones': ['rodilla - LCA'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -650,9 +650,9 @@ def test_clasificador_descarta_por_ejercicio_critical_en_plantilla():
     )
 
     # La plantilla debe descartarse completamente por tener Sentadilla (CRITICAL para rodilla)
-    assert resultado['plantilla_id'] is None
+    assert resultado['plantillaId'] is None
     assert resultado['confianza'] == 0.0
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
     print("[PASS] test_clasificador_descarta_por_ejercicio_critical_en_plantilla")
 
 
@@ -665,21 +665,21 @@ def test_clasificador_compatibilidad_sin_perfil_medico():
 
     plantillas = [{
         'id': 60, 'nombre': 'Rutina sin perfil', 'tipo': 'fuerza',
-        'objetivo': 'mantenimiento', 'nivel_dificultad': 'principiante',
-        'frecuencia_semanal': 3,
+        'objetivo': 'mantenimiento', 'nivelDificultad': 'principiante',
+        'frecuenciaSemanal': 3,
         'ejercicios': [
-            {'ejercicio_id': 1, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': 'hombro'},
-            {'ejercicio_id': 2, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
+            {'ejercicioId': 1, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': 'hombro'},
+            {'ejercicioId': 2, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
         ],
     }]
     datos = {
         'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'activo', 'nivel_experiencia': 'principiante',
-        'proposito': 'mantenimiento', 'dias_disponibles': 3,
+        'nivelActividad': 'activo', 'nivelExperiencia': 'principiante',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': [],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -689,13 +689,13 @@ def test_clasificador_compatibilidad_sin_perfil_medico():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 60
+    assert resultado['plantillaId'] == 60
     assert resultado['confianza'] > 0
     # Sin perfil médico, todos los ejercicios son seguros
     print("[PASS] test_clasificador_compatibilidad_sin_perfil_medico")
 
 
-def test_pool_seguro_vacio_raises_error():
+def test_poolSeguro_vacio_raises_error():
     from services.hitl_engine import HitlEngine
 
     engine = HitlEngine()
@@ -705,18 +705,18 @@ def test_pool_seguro_vacio_raises_error():
         '(lesiones: rodilla). Pool completo filtrado por restricciones médicas.',
         422,
         {
-            'alertas_seguridad': [{'tipo': 'lesion', 'nivel_riesgo': 'HIGH'}],
-            'ejercicios_bloqueados': 10,
-            'ejercicios_precaucion': 0,
-            'pool_seguro_count': 0,
+            'alertasSeguridad': [{'tipo': 'lesion', 'nivelRiesgo': 'HIGH'}],
+            'ejerciciosBloqueados': 10,
+            'ejerciciosPrecaucion': 0,
+            'poolSeguroCount': 0,
         },
     )
     assert respuesta['success'] is False
     assert respuesta['status'] == 422
-    assert 'pool_seguro_count' in respuesta
-    assert respuesta['pool_seguro_count'] == 0
-    assert len(respuesta['alertas_seguridad']) == 1
-    print("[PASS] test_pool_seguro_vacio_raises_error")
+    assert 'poolSeguroCount' in respuesta
+    assert respuesta['poolSeguroCount'] == 0
+    assert len(respuesta['alertasSeguridad']) == 1
+    print("[PASS] test_poolSeguro_vacio_raises_error")
 
 
 def test_clasificador_descarta_por_lesion_critical():
@@ -732,23 +732,23 @@ def test_clasificador_descarta_por_lesion_critical():
             'nombre': 'Rutina Piernas Fuerte',
             'tipo': 'fuerza',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'intermedio',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'intermedio',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
-                {'ejercicio_id': 2, 'nombre': 'Prensa piernas', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
+                {'ejercicioId': 2, 'nombre': 'Prensa piernas', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
             ],
         },
     ]
 
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
-        'proposito': 'ganar masa muscular', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
+        'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -758,10 +758,10 @@ def test_clasificador_descarta_por_lesion_critical():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] is None
+    assert resultado['plantillaId'] is None
     assert resultado['confianza'] == 0.0
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
-    assert resultado['metadata']['plantillas_viables'] == 0
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
+    assert resultado['metadata']['plantillasViables'] == 0
     print("[PASS] test_clasificador_descarta_por_lesion_critical")
 
 
@@ -778,23 +778,23 @@ def test_clasificador_descarta_por_lesion_high():
             'nombre': 'Rutina Empuje',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'intermedio',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'intermedio',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 3, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': 'hombro'},
-                {'ejercicio_id': 4, 'nombre': 'Press militar', 'grupo_muscular': 'Hombro', 'contraindica_lesiones': 'hombro'},
+                {'ejercicioId': 3, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': 'hombro'},
+                {'ejercicioId': 4, 'nombre': 'Press militar', 'grupoMuscular': 'Hombro', 'contraindicaLesiones': 'hombro'},
             ],
         },
     ]
 
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
-        'proposito': 'ganar masa muscular', 'dias_disponibles': 3,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
+        'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
     }
     perfil_medico = {
         'lesiones': ['Manguito rotador hombro izquierdo'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -804,9 +804,9 @@ def test_clasificador_descarta_por_lesion_high():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] is None
+    assert resultado['plantillaId'] is None
     assert resultado['confianza'] == 0.0
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
     print("[PASS] test_clasificador_descarta_por_lesion_high")
 
 
@@ -823,10 +823,10 @@ def test_clasificador_retorna_mejor_viable():
             'nombre': 'Rutina Ganancia 4d (con sentadilla)',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'intermedio',
-            'frecuencia_semanal': 4,
+            'nivelDificultad': 'intermedio',
+            'frecuenciaSemanal': 4,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas', 'contraindica_lesiones': 'rodilla'},
+                {'ejercicioId': 1, 'nombre': 'Sentadilla', 'grupoMuscular': 'Piernas', 'contraindicaLesiones': 'rodilla'},
             ],
         },
         {
@@ -834,11 +834,11 @@ def test_clasificador_retorna_mejor_viable():
             'nombre': 'Rutina Push/Pull Segura',
             'tipo': 'hipertrofia',
             'objetivo': 'ganancia_muscular',
-            'nivel_dificultad': 'intermedio',
-            'frecuencia_semanal': 4,
+            'nivelDificultad': 'intermedio',
+            'frecuenciaSemanal': 4,
             'ejercicios': [
-                {'ejercicio_id': 5, 'nombre': 'Press de banca', 'grupo_muscular': 'Pecho', 'contraindica_lesiones': None},
-                {'ejercicio_id': 6, 'nombre': 'Remo mancuerna', 'grupo_muscular': 'Espalda', 'contraindica_lesiones': None},
+                {'ejercicioId': 5, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+                {'ejercicioId': 6, 'nombre': 'Remo mancuerna', 'grupoMuscular': 'Espalda', 'contraindicaLesiones': None},
             ],
         },
         {
@@ -846,22 +846,22 @@ def test_clasificador_retorna_mejor_viable():
             'nombre': 'Rutina Full Body 3d',
             'tipo': 'fuerza',
             'objetivo': 'mantenimiento',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 3,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
             'ejercicios': [
-                {'ejercicio_id': 7, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
+                {'ejercicioId': 7, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
             ],
         },
     ]
 
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
-        'proposito': 'ganar masa muscular', 'dias_disponibles': 4,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
+        'proposito': 'ganar masa muscular', 'diasDisponibles': 4,
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -871,14 +871,14 @@ def test_clasificador_retorna_mejor_viable():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 11
+    assert resultado['plantillaId'] == 11
     assert resultado['confianza'] > 50
-    assert resultado['metadata']['plantillas_evaluadas'] == 3
-    assert resultado['metadata']['plantillas_descartadas_por_lesiones'] == 1
-    assert resultado['metadata']['plantillas_viables'] == 2
-    assert 11 in resultado['metadata']['scores_detalle']
-    assert 10 in resultado['metadata']['scores_detalle']
-    assert resultado['metadata']['scores_detalle'][10] == 0
+    assert resultado['metadata']['plantillasEvaluadas'] == 3
+    assert resultado['metadata']['plantillasDescartadasPorLesiones'] == 1
+    assert resultado['metadata']['plantillasViables'] == 2
+    assert 11 in resultado['metadata']['scoresDetalle']
+    assert 10 in resultado['metadata']['scoresDetalle']
+    assert resultado['metadata']['scoresDetalle'][10] == 0
     print("[PASS] test_clasificador_retorna_mejor_viable")
 
 
@@ -895,22 +895,22 @@ def test_clasificador_advertencia_baja_confianza():
             'nombre': 'Rutina Mismatch Objetivo',
             'tipo': 'resistencia',
             'objetivo': 'perdida_peso',
-            'nivel_dificultad': 'principiante',
-            'frecuencia_semanal': 2,
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 2,
             'ejercicios': [
-                {'ejercicio_id': 1, 'nombre': 'Plancha', 'grupo_muscular': 'Core', 'contraindica_lesiones': None},
+                {'ejercicioId': 1, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
             ],
         },
     ]
 
     datos_cliente = {
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
-        'nivel_actividad': 'moderado', 'nivel_experiencia': 'intermedio',
-        'proposito': 'ganar masa muscular', 'dias_disponibles': 5,
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
+        'proposito': 'ganar masa muscular', 'diasDisponibles': 5,
     }
     perfil_medico = {
         'lesiones': [],
-        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
     }
 
     resultado = engine.clasificar_mejor_plantilla(
@@ -920,7 +920,7 @@ def test_clasificador_advertencia_baja_confianza():
         guardian=guardian,
     )
 
-    assert resultado['plantilla_id'] == 20
+    assert resultado['plantillaId'] == 20
     assert resultado['confianza'] < 50
     assert resultado['advertencia'] is not None
     assert 'sujeta a modificaciones' in resultado['advertencia'].lower()
@@ -941,7 +941,7 @@ if __name__ == '__main__':
     test_guardian_multi_lesion()
     test_mapeo_proposito_texto()
     test_clasificador_normaliza_proposito()
-    test_clasificador_descarta_plantilla_con_ejercicios_bloqueados()
+    test_clasificador_descarta_plantilla_con_ejerciciosBloqueados()
     test_clasificador_todas_descartadas()
     test_clasificador_sin_historial()
     test_clasificador_plantillas_vacia()
@@ -957,7 +957,7 @@ if __name__ == '__main__':
     test_recommender_coincide_con_lesiones()
     test_clasificador_precaucion_solo_si_lesion_coincide()
     test_clasificador_compatibilidad_sin_perfil_medico()
-    test_pool_seguro_vacio_raises_error()
+    test_poolSeguro_vacio_raises_error()
     test_clasificador_descarta_por_lesion_critical()
     test_clasificador_descarta_por_lesion_high()
     test_clasificador_retorna_mejor_viable()

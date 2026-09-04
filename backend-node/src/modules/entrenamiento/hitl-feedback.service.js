@@ -51,7 +51,7 @@ const listarFeedbackPorEntrenador = async (entrenadorId, filtros = {}) => {
 
   return HitlFeedback.findAll({
     where,
-    order: [['created_at', 'DESC']],
+    order: [['createdAt', 'DESC']],
     limit: filtros.limite || 50,
   });
 };

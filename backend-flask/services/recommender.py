@@ -6,6 +6,7 @@ from config.constants import (
     PESOS_BASE_SCORING,
 )
 from services.guardian import GuardianSeguridad
+from services.case_utils import keys_to_camel_case
 from models.rules.injury_rules import detectar_grupo_lesion
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class RecommenderEngine:
         guardian: GuardianSeguridad = None,
     ) -> dict:
         if not plantillas_con_ejercicios:
-            return {
+            return keys_to_camel_case({
                 'plantilla_id': None,
                 'confianza': 0.0,
                 'explicacion': 'No hay plantillas disponibles del entrenador.',
@@ -54,15 +55,15 @@ class RecommenderEngine:
                     'plantillas_viables': 0,
                     'scores_detalle': {},
                 },
-            }
+            })
 
         objetivo_cliente = self._normalizar_objetivo(datos_cliente)
         nivel_cliente = DIFICULTAD_ORDEN.get(
-            datos_cliente.get('nivel_experiencia')
-            or datos_cliente.get('nivel_actividad', 'moderado'),
+            datos_cliente.get('nivelExperiencia')
+            or datos_cliente.get('nivelActividad', 'moderado'),
             2,
         )
-        dias_disponibles = max(2, min(datos_cliente.get('dias_disponibles', 3), 6))
+        dias_disponibles = max(2, min(datos_cliente.get('diasDisponibles', 3), 6))
         lesiones_cliente = (perfil_medico or {}).get('lesiones', [])
 
         if guardian is None:
@@ -101,15 +102,15 @@ class RecommenderEngine:
             ejercicios_precaucion = []
 
             for ej in ejercicios_lista:
-                ej_id = ej.get('ejercicio_id') or ej.get('id')
+                ej_id = ej.get('ejercicioId') or ej.get('ejercicio_id') or ej.get('id')
                 if ej_id is None:
                     continue
 
                 ejercicio_para_guardian = {
                     'id': ej_id,
                     'nombre': ej.get('nombre', f'Ejercicio {ej_id}'),
-                    'grupo_muscular': ej.get('grupo_muscular', ''),
-                    'contraindica_lesiones': ej.get('contraindica_lesiones', ''),
+                    'grupo_muscular': ej.get('grupoMuscular') or ej.get('grupo_muscular', ''),
+                    'contraindica_lesiones': ej.get('contraindicaLesiones') or ej.get('contraindica_lesiones', ''),
                 }
 
                 resultado_guardian = guardian.validar_ejercicio(
@@ -118,20 +119,20 @@ class RecommenderEngine:
                     perfil_medico=perfil_medico,
                 )
 
-                if resultado_guardian['bloqueado'] and resultado_guardian['nivel_riesgo'] in ('HIGH', 'CRITICAL'):
+                if resultado_guardian['bloqueado'] and resultado_guardian['nivelRiesgo'] in ('HIGH', 'CRITICAL'):
                     plantilla_bloqueada = True
                     ejercicios_bloqueados.append({
                         'ejercicio_id': ej_id,
                         'nombre': ejercicio_para_guardian['nombre'],
-                        'nivel_riesgo': resultado_guardian['nivel_riesgo'],
+                        'nivel_riesgo': resultado_guardian['nivelRiesgo'],
                         'razon': resultado_guardian['alertas'][0]['mensaje'] if resultado_guardian['alertas'] else 'Contraindicado por lesión',
                     })
-                elif resultado_guardian['nivel_riesgo'] != 'SAFE':
+                elif resultado_guardian['nivelRiesgo'] != 'SAFE':
                     ejercicios_precaucion.append({
                         'ejercicio_id': ej_id,
                         'nombre': ejercicio_para_guardian['nombre'],
-                        'nivel_riesgo': resultado_guardian['nivel_riesgo'],
-                        'modificacion': resultado_guardian.get('modificacion_sugerida'),
+                        'nivel_riesgo': resultado_guardian['nivelRiesgo'],
+                        'modificacion': resultado_guardian.get('modificacionSugerida'),
                     })
 
             if plantilla_bloqueada:
@@ -171,7 +172,7 @@ class RecommenderEngine:
             })
 
         if not plantillas_viables:
-            return {
+            return keys_to_camel_case({
                 'plantilla_id': None,
                 'confianza': 0.0,
                 'explicacion': 'Todas las plantillas fueron descartadas por incompatibilidad con lesiones/condiciones del cliente.',
@@ -181,7 +182,7 @@ class RecommenderEngine:
                     'plantillas_viables': 0,
                     'scores_detalle': scores_detalle,
                 },
-            }
+            })
 
         plantillas_viables.sort(key=lambda p: p['confianza'], reverse=True)
         mejor = plantillas_viables[0]
@@ -195,7 +196,7 @@ class RecommenderEngine:
         if mejor['confianza'] < 50:
             advertencia = 'Confianza baja: la rutina recomendada está sujeta a modificaciones por el entrenador'
 
-        return {
+        return keys_to_camel_case({
             'plantilla_id': mejor['plantilla_id'],
             'confianza': mejor['confianza'],
             'explicacion': explicacion,
@@ -206,7 +207,7 @@ class RecommenderEngine:
                 'plantillas_viables': len(plantillas_viables),
                 'scores_detalle': scores_detalle,
             },
-        }
+        })
 
     def _normalizar_pesos(self) -> dict:
         total = sum(self.weights.get(k, 0) for k in ('objetivo', 'nivel', 'dias'))
@@ -246,8 +247,13 @@ class RecommenderEngine:
                matriz.get((objetivo_b, objetivo_a), 0.2))
 
     def _score_nivel_plantilla(self, plantilla: dict, nivel_cliente: int) -> float:
+        nivel_raw = (
+            plantilla.get('nivelDificultad')
+            or plantilla.get('nivel_dificultad')
+            or 'intermedio'
+        )
         nivel_plantilla = DIFICULTAD_ORDEN.get(
-            (plantilla.get('nivel_dificultad') or 'intermedio').strip().lower(), 2
+            nivel_raw.strip().lower(), 2
         )
         diferencia = abs(nivel_cliente - nivel_plantilla)
         if diferencia == 0:
@@ -259,7 +265,7 @@ class RecommenderEngine:
         return 0.0
 
     def _score_dias_plantilla(self, plantilla: dict, dias_disponibles: int) -> float:
-        frecuencia = plantilla.get('frecuencia_semanal')
+        frecuencia = plantilla.get('frecuenciaSemanal') or plantilla.get('frecuencia_semanal')
         if not frecuencia:
             return 30.0
         try:

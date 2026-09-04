@@ -12,6 +12,8 @@ def fetch_cliente_completo(cliente_id: int) -> dict:
         WHERE i.id = %s AND i.activo = TRUE
     """
     cliente = execute_one(query, (cliente_id,))
+    if cliente and 'proposito_entrenamiento' in cliente:
+        cliente['proposito'] = cliente.pop('proposito_entrenamiento')
     return cliente
 
 

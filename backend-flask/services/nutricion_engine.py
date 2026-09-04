@@ -40,10 +40,10 @@ def calcular_macros(gct: float, peso: float, proposito: str = 'mantener') -> dic
     carbohidratos_gramos = round(kcal_carbos / 4)
 
     return {
-        'objetivo_calorico': objetivo_calorico,
-        'proteinas_gramos': proteinas_gramos,
-        'carbohidratos_gramos': carbohidratos_gramos,
-        'grasas_gramos': grasas_gramos,
+        'objetivoCalorico': objetivo_calorico,
+        'proteinasGramos': proteinas_gramos,
+        'carbohidratosGramos': carbohidratos_gramos,
+        'grasasGramos': grasas_gramos,
     }
 
 
@@ -51,14 +51,14 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
     alertas = []
     aprobado = True
 
-    objetivo_calorico = datos.get('objetivo_calorico', gct)
+    objetivo_calorico = datos.get('objetivoCalorico', gct)
 
     umbral_deficit = tmb * 1.05
     if objetivo_calorico < umbral_deficit:
         aprobado = False
         alertas.append({
             'tipo': 'deficit_peligroso',
-            'nivel_riesgo': 'HIGH',
+            'nivelRiesgo': 'HIGH',
             'mensaje': (
                 f'El objetivo calórico ({objetivo_calorico} kcal) está por debajo del '
                 f'umbral mínimo seguro ({round(umbral_deficit)} kcal = TMB × 1.05). '
@@ -74,7 +74,7 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
         for alergia in alergias:
             alertas.append({
                 'tipo': 'alergia_informativa',
-                'nivel_riesgo': 'LOW',
+                'nivelRiesgo': 'LOW',
                 'mensaje': (
                     f'Alergia detectada: "{alergia}". '
                     'Nota: como la dieta son macros puros, esto es informativo. '
@@ -85,7 +85,7 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
         for intolerancia in intolerancias:
             alertas.append({
                 'tipo': 'intolerancia_informativa',
-                'nivel_riesgo': 'LOW',
+                'nivelRiesgo': 'LOW',
                 'mensaje': (
                     f'Intolerancia detectada: "{intolerancia}". '
                     'Nota informativa para la fase de diseño de menú.'
@@ -97,7 +97,7 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
             if 'diabetes' in condicion_lower:
                 alertas.append({
                     'tipo': 'diabetes_alerta',
-                    'nivel_riesgo': 'MEDIUM',
+                    'nivelRiesgo': 'MEDIUM',
                     'mensaje': (
                         'Condición diabetes detectada: se recomienda distribuir '
                         'carbohidratos en 5-6 comidas para estabilizar glucosa. '
@@ -107,7 +107,7 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
             elif 'cardiopat' in condicion_lower or 'corazon' in condicion_lower:
                 alertas.append({
                     'tipo': 'cardiopatia_alerta',
-                    'nivel_riesgo': 'MEDIUM',
+                    'nivelRiesgo': 'MEDIUM',
                     'mensaje': (
                         'Condición cardiopatía detectada: se recomienda limitar '
                         'ingesta de sodio y mantener distribución equilibrada de macros.'
@@ -116,7 +116,7 @@ def guardian_dieta(datos: dict, tmb: float, gct: float, datos_medicos: dict = No
             elif 'hipertension' in condicion_lower or 'presion alta' in condicion_lower:
                 alertas.append({
                     'tipo': 'hipertension_alerta',
-                    'nivel_riesgo': 'LOW',
+                    'nivelRiesgo': 'LOW',
                     'mensaje': (
                         'Condición hipertensión detectada: se recomienda '
                         'moderar ingesta de sodio en la distribución de alimentos.'

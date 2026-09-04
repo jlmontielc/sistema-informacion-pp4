@@ -205,9 +205,9 @@ def evaluar_ejercicio_por_lesiones(nombre_ejercicio: str, lesiones_cliente: list
                         nivel_maximo = nivel
                     alertas.append({
                         'tipo': 'lesion',
-                        'zona_afectada': grupo,
-                        'lesion_detectada': texto_lesion,
-                        'nivel_riesgo': nivel.value,
+                        'zonaAfectada': grupo,
+                        'lesionDetectada': texto_lesion,
+                        'nivelRiesgo': nivel.value,
                         'mensaje': f'Ejercicio contraindicado por lesión en {grupo}',
                     })
 
@@ -218,9 +218,9 @@ def evaluar_ejercicio_por_lesiones(nombre_ejercicio: str, lesiones_cliente: list
                         nivel_maximo = nivel
                     alertas.append({
                         'tipo': 'lesion_precaucion',
-                        'zona_afectada': grupo,
-                        'lesion_detectada': texto_lesion,
-                        'nivel_riesgo': nivel.value,
+                        'zonaAfectada': grupo,
+                        'lesionDetectada': texto_lesion,
+                        'nivelRiesgo': nivel.value,
                         'mensaje': f'Ejercicio permitido con precaución por lesión en {grupo}',
                     })
 
@@ -231,8 +231,8 @@ def evaluar_ejercicio_por_lesiones(nombre_ejercicio: str, lesiones_cliente: list
 
     return {
         'alertas': alertas,
-        'nivel_maximo': nivel_maximo,
-        'modificacion_sugerida': modificacion_sugerida,
+        'nivelMaximo': nivel_maximo,
+        'modificacionSugerida': modificacion_sugerida,
         'bloqueado': nivel_maximo in (NivelRiesgo.CRITICAL, NivelRiesgo.HIGH),
     }
 

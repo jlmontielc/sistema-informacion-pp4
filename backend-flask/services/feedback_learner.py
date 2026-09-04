@@ -2,6 +2,7 @@ import json
 import logging
 
 from services.db_connector import execute_one, execute_query, execute_insert
+from services.case_utils import keys_to_camel_case
 from config.constants import PESOS_BASE_SCORING
 
 logger = logging.getLogger(__name__)
@@ -49,9 +50,9 @@ def obtener_tasas_feedback(tipo: str = None) -> dict:
         return None
     return {
         'total': total,
-        'tasa_aprobada': totales.get('aprobada', 0) / total,
-        'tasa_modificada': totales.get('modificada', 0) / total,
-        'tasa_rechazada': totales.get('rechazada', 0) / total,
+        'tasaAprobada': totales.get('aprobada', 0) / total,
+        'tasaModificada': totales.get('modificada', 0) / total,
+        'tasaRechazada': totales.get('rechazada', 0) / total,
     }
 
 
@@ -59,22 +60,22 @@ def calcular_nuevos_pesos(pesos_actuales: dict, tasas: dict) -> dict:
     nuevos = dict(pesos_actuales)
 
     ajuste_global = FACTOR_APRENDIZAJE * (
-        tasas['tasa_aprobada'] - tasas['tasa_rechazada']
+        tasas['tasaAprobada'] - tasas['tasaRechazada']
     )
 
     nuevos['objetivo'] *= (1 + ajuste_global)
     nuevos['progresion'] *= (1 + ajuste_global * 0.5)
 
-    if tasas['tasa_modificada'] >= UMBRAL_MODIFICADAS:
+    if tasas['tasaModificada'] >= UMBRAL_MODIFICADAS:
         factor = 1 + FACTOR_APRENDIZAJE * min(
-            (tasas['tasa_modificada'] - UMBRAL_MODIFICADAS) / UMBRAL_MODIFICADAS, 1
+            (tasas['tasaModificada'] - UMBRAL_MODIFICADAS) / UMBRAL_MODIFICADAS, 1
         )
         nuevos['nivel'] *= factor
         nuevos['progresion'] *= factor
 
-    if tasas['tasa_rechazada'] >= UMBRAL_RECHAZADAS:
+    if tasas['tasaRechazada'] >= UMBRAL_RECHAZADAS:
         factor_rechazo = 1 + FACTOR_APRENDIZAJE * min(
-            (tasas['tasa_rechazada'] - UMBRAL_RECHAZADAS) / UMBRAL_RECHAZADAS, 1
+            (tasas['tasaRechazada'] - UMBRAL_RECHAZADAS) / UMBRAL_RECHAZADAS, 1
         )
         nuevos['dias'] *= factor_rechazo
         nuevos['seguridad'] *= factor_rechazo
@@ -93,13 +94,13 @@ def recalcular_y_persistir_pesos(tipo: str = 'rutina') -> dict:
 
     tasas = obtener_tasas_feedback(tipo=tipo)
     if not tasas or tasas['total'] < MINIMO_FEEDBACK:
-        return {
+        return keys_to_camel_case({
             'success': False,
             'status': 409,
             'error': 'Feedback insuficiente para recalibrar',
             'detalle': f'Se requieren al menos {MINIMO_FEEDBACK} registros de feedback_hitl',
             'feedback_disponible': tasas['total'] if tasas else 0,
-        }
+        })
 
     pesos_previos = dict(cargar_pesos_persistidos() or PESOS_BASE_SCORING)
     pesos_nuevos = calcular_nuevos_pesos(pesos_previos, tasas)
@@ -112,27 +113,27 @@ def recalcular_y_persistir_pesos(tipo: str = 'rutina') -> dict:
         json.dumps(pesos_nuevos),
         tasas['total'],
         json.dumps({
-            'tasa_aprobada': round(tasas['tasa_aprobada'], 4),
-            'tasa_modificada': round(tasas['tasa_modificada'], 4),
-            'tasa_rechazada': round(tasas['tasa_rechazada'], 4),
+            'tasaAprobada': round(tasas['tasaAprobada'], 4),
+            'tasaModificada': round(tasas['tasaModificada'], 4),
+            'tasaRechazada': round(tasas['tasaRechazada'], 4),
         }),
     ))
 
     logger.info(
         "Pesos recalibrados con feedback=%s aprob=%.2f mod=%.2f rech=%.2f",
         tasas['total'],
-        tasas['tasa_aprobada'],
-        tasas['tasa_modificada'],
-        tasas['tasa_rechazada'],
+        tasas['tasaAprobada'],
+        tasas['tasaModificada'],
+        tasas['tasaRechazada'],
     )
 
-    return {
+    return keys_to_camel_case({
         'success': True,
         'pesos_anteriores': pesos_previos,
         'pesos_nuevos': pesos_nuevos,
         'tasas': tasas,
         'mensaje': 'Pesos recalibrados desde feedback_hitl',
-    }
+    })
 
 
 def cargar_pesos_persistidos() -> dict:
