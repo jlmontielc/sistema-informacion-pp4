@@ -91,11 +91,10 @@ async function statsEntrenador(entrenadorId) {
 }
 
 async function statsInstruido(instruidoId) {
-  const [ultimaMedicion, rutinaActiva, dietaActiva, registrosRecientes] = await Promise.all([
-    sequelize.query(
-      'SELECT peso, imc, fecha FROM rendimiento WHERE cliente_id = ? ORDER BY fecha DESC LIMIT 1',
-      { replacements: [instruidoId], type: 'SELECT' }
-    ),
+  const [instruido, rutinaActiva, dietaActiva, registrosRecientes] = await Promise.all([
+    Instruido.findByPk(instruidoId, {
+      attributes: ['id', 'nombre', 'peso', 'altura', 'updatedAt'],
+    }),
     sequelize.query(
       `SELECT id, nombre, tipo, fecha_inicio, fecha_fin, frecuencia_semanal, observaciones
        FROM rutinas_asignadas
@@ -152,8 +151,20 @@ async function statsInstruido(instruidoId) {
     return r;
   });
 
+  let medicion = null;
+  if (instruido) {
+    const imc = instruido.altura > 0
+      ? Number((instruido.peso / (instruido.altura * instruido.altura)).toFixed(2))
+      : null;
+    medicion = {
+      peso: instruido.peso,
+      imc,
+      fecha: instruido.updatedAt,
+    };
+  }
+
   return {
-    medicion: ultimaMedicion[0] || null,
+    medicion,
     rutinaActiva: rutinaActiva[0] || null,
     dietaActiva: dietaActiva[0] || null,
     registrosRecientes: registrosConNombres,

@@ -1,0 +1,290 @@
+/* =============================================================
+   REPORTES DE RENDIMIENTO - ESTILO HEVY LIMPIO
+   ============================================================= */
+
+.reportes-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.reportes-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reportes-encabezado-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.reportes-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.reportes-subtitulo-instruido {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+/* Filtro de tiempo */
+.reportes-filtro-tiempo {
+  display: inline-flex;
+  gap: var(--space-1);
+  background: var(--color-neutral-100);
+  padding: var(--space-1);
+  border-radius: var(--radius-lg);
+}
+
+.reportes-filtro-boton {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.reportes-filtro-boton:hover:not(.active) {
+  color: var(--color-text);
+  background: var(--color-neutral-200);
+}
+
+.reportes-filtro-boton.active {
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Layout con sidebar de instruidos */
+.reportes-layout {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.reportes-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-6));
+}
+
+.reportes-contenido {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Lista de instruidos */
+.reportes-lista-instruidos {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+
+.reportes-lista-titulo {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+}
+
+.reportes-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.reportes-instruido-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.reportes-instruido-item:hover {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-50);
+}
+
+.reportes-instruido-item.seleccionado {
+  background: var(--color-primary-500);
+  color: white;
+  border-color: var(--color-primary-500);
+}
+
+.reportes-instruido-item.seleccionado .reportes-instruido-email {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.reportes-instruido-nombre {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+.reportes-instruido-email {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.reportes-lista-error {
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* Gráficas */
+.reportes-ayuda-grafica {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+.reportes-grafica-contenedor {
+  width: 100%;
+}
+
+.reportes-barra-seleccionable {
+  cursor: pointer;
+}
+
+.reportes-card-header-con-accion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+/* Comparativa */
+.reportes-comparativa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.reportes-comparativa-card {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reportes-comparativa-nombre {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.reportes-comparativa-valor {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.reportes-comparativa-deltas {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.reportes-delta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.reportes-delta-valor {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
+.reportes-delta-valor.positivo {
+  color: var(--color-success);
+}
+
+.reportes-delta-valor.negativo {
+  color: var(--color-error);
+}
+
+.reportes-delta-etiqueta {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .reportes-layout {
+    flex-direction: column;
+  }
+
+  .reportes-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .reportes-lista {
+    max-height: 240px;
+  }
+}
+
+@media (max-width: 640px) {
+  .reportes-encabezado-fila {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reportes-filtro-tiempo {
+    width: 100%;
+  }
+
+  .reportes-filtro-boton {
+    flex: 1;
+  }
+
+  .reportes-comparativa-deltas {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
