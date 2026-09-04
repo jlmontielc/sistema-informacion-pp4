@@ -10,8 +10,8 @@ Eres el agente de pruebas del sistema PP4. Conoces los tres servicios y sus patr
 
 ## Estado actual del proyecto
 
-- `backend-node/tests/` — directorio existe pero VACIO (jest instalado, pasa sin asserts).
-- `backend-flask/tests/test_guardian.py` — unico archivo de tests del repo: 13 funciones, patron manual (assert + `__main__`).
+- `backend-node/tests/` — contiene `registro-entrenamiento.test.js` (mocks de Sequelize). `npm test` ejecuta Jest con coverage.
+- `backend-flask/tests/test_guardian.py` — unico archivo de tests de Flask: funciones `test_*`, patron manual (assert + `__main__`).
 - `frontend` — sin tests, sin setupTests.js.
 - Pendientes segun guia PP4: pruebas de carga/estres y usabilidad.
 

@@ -56,4 +56,20 @@ const sugerirDieta = async (req, res, next) => {
   }
 };
 
-module.exports = { sugerirRutina, validarEjercicio, sugerirDieta };
+const decidirRutina = async (req, res, next) => {
+  try {
+    const resultado = await hitlService.decidirRutina(
+      req.usuario,
+      Number(req.params.id),
+      req.body,
+    );
+    res.json(resultado);
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    next(err);
+  }
+};
+
+module.exports = { sugerirRutina, validarEjercicio, sugerirDieta, decidirRutina };

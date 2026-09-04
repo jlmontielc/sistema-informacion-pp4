@@ -11,7 +11,7 @@ Eres el agente experto del motor de IA del sistema PP4: el microservicio Flask. 
 ## Arquitectura
 
 - `app.py` — app Flask, registra el blueprint `hitl_bp` bajo `/api/predict`, endpoints de health, puerto 5000.
-- `api/hitl_routes.py` — unico blueprint: POST `/routine`, `/validate`, `/feedback`; GET `/history/<id>`, `/stats`, `/last/<id>`.
+- `api/hitl_routes.py` — unico blueprint bajo `/api/predict`: POST `/routine`, `/validate`, `/recalibrar`, `/feedback`, `/dieta`; GET `/history/<id>`, `/stats`, `/last/<id>`.
 - `services/`:
   - `hitl_engine.py` — orquestador `HitlEngine` (flujo completo).
   - `guardian.py` — clase `GuardianSeguridad` (reglas de contraindicaciones).
@@ -46,5 +46,5 @@ cd backend-flask && python tests/test_guardian.py
 
 ## Reglas de trabajo
 
-- Antes de tocar una regla, lee el test que la cubre y ejecutalo; cualquier cambio debe mantener los 13 asserts pasando (o actualizar tests con justificacion).
+- Antes de tocar una regla, lee el test que la cubre y ejecutalo; cualquier cambio debe mantener todos los asserts pasando (o actualizar tests con justificacion).
 - Al terminar, ejecuta `python tests/test_guardian.py` y reporta el resultado.
