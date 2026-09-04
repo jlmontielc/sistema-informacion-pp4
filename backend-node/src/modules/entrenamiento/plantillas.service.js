@@ -1,5 +1,6 @@
 const { PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
 const { Op } = require('sequelize');
+const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
 
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
@@ -18,13 +19,16 @@ const obtenerTodos = async (entrenadorId, filtros = {}) => {
 const obtenerPorId = async (id, entrenadorId) =>
   PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
 
-const crear = async (datos, entrenadorId) =>
-  PlantillaEntrenamiento.create({ ...datos, entrenadorId });
+const crear = async (datos, entrenadorId) => {
+  const normalizados = await normalizarPayloadRutina(datos);
+  return PlantillaEntrenamiento.create({ ...normalizados, entrenadorId });
+};
 
 const actualizar = async (id, datos, entrenadorId) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
   if (!plantilla) return null;
-  return plantilla.update(datos);
+  const normalizados = await normalizarPayloadRutina(datos);
+  return plantilla.update(normalizados);
 };
 
 const eliminar = async (id, entrenadorId) => {
@@ -37,7 +41,10 @@ const obtenerPorDia = async (id, dia, entrenadorId) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
   if (!plantilla) return null;
 
-  const ejerciciosDelDia = (plantilla.ejercicios || [])
+  const ejerciciosNormalizados = await normalizarEjercicios(plantilla.ejercicios || []);
+  const diasSemanaNormalizados = normalizarDiasSemana(plantilla.diasSemana || {});
+
+  const ejerciciosDelDia = ejerciciosNormalizados
     .filter(e => e.dia === Number(dia))
     .sort((a, b) => a.orden - b.orden);
 
@@ -45,7 +52,7 @@ const obtenerPorDia = async (id, dia, entrenadorId) => {
     plantillaId: plantilla.id,
     nombre: plantilla.nombre,
     dia: Number(dia),
-    configuracionDia: plantilla.diasSemana?.[String(dia)] || null,
+    configuracionDia: diasSemanaNormalizados[String(dia)] || null,
     ejercicios: ejerciciosDelDia,
   };
 };
@@ -85,10 +92,11 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     notas: datos.notas || '',
   };
 
-  ejercicios.push(nuevoEjercicio);
+  const [normalizado] = await normalizarEjercicios([nuevoEjercicio]);
+  ejercicios.push(normalizado);
   await plantilla.update({ ejercicios });
 
-  return nuevoEjercicio;
+  return normalizado;
 };
 
 const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
@@ -125,10 +133,11 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
   };
   delete ejercicioActualizado._originalIdx;
 
-  ejercicios[ejercicioOriginal._originalIdx] = ejercicioActualizado;
+  const [normalizado] = await normalizarEjercicios([ejercicioActualizado]);
+  ejercicios[ejercicioOriginal._originalIdx] = normalizado;
   await plantilla.update({ ejercicios });
 
-  return ejercicioActualizado;
+  return normalizado;
 };
 
 const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {

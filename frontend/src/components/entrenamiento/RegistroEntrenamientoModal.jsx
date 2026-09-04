@@ -88,7 +88,7 @@ export function RegistroEntrenamientoModal({
   const seriesPorEjercicio = useMemo(() => {
     const map = {};
     ejercicios.forEach((ej) => {
-      map[ej.ejercicio_id] = [];
+      map[ej.ejercicioId] = [];
     });
     series.forEach((serie) => {
       if (!map[serie.ejercicioId]) map[serie.ejercicioId] = [];
@@ -218,9 +218,9 @@ export function RegistroEntrenamientoModal({
               ) : (
                 ejercicios.map((ejercicio) => (
                   <EjercicioRegistroCard
-                    key={ejercicio.ejercicio_id}
+                    key={ejercicio.ejercicioId}
                     ejercicio={ejercicio}
-                    series={seriesPorEjercicio[ejercicio.ejercicio_id] || []}
+                    series={seriesPorEjercicio[ejercicio.ejercicioId] || []}
                     onCrearSerie={handleCrearSerie}
                     onEditarSerie={handleEditarSerie}
                     onEliminarSerie={handleEliminarSerie}

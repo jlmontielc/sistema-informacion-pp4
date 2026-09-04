@@ -16,8 +16,8 @@ export function EjercicioRegistroCard({
     const partes = [];
     if (ejercicio.series) partes.push(`${ejercicio.series} series`);
     if (ejercicio.repeticiones) partes.push(`${ejercicio.repeticiones} reps`);
-    if (ejercicio.carga_kg) partes.push(`${ejercicio.carga_kg} kg`);
-    if (ejercicio.descanso_segundos) partes.push(`${ejercicio.descanso_segundos}s descanso`);
+    if (ejercicio.cargaKg) partes.push(`${ejercicio.cargaKg} kg`);
+    if (ejercicio.descansoSegundos) partes.push(`${ejercicio.descansoSegundos}s descanso`);
     return partes.join(' · ');
   }, [ejercicio]);
 
@@ -28,7 +28,7 @@ export function EjercicioRegistroCard({
   const handleCrearSerie = (datos) => {
     onCrearSerie({
       ...datos,
-      ejercicioId: ejercicio.ejercicio_id,
+      ejercicioId: ejercicio.ejercicioId,
       numeroSerie: series.length + 1,
     });
     setFilasNuevas(1);

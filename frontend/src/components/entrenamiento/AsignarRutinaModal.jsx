@@ -62,19 +62,19 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
     try {
       if (plantilla?.id) {
         await rutinasAsignadasApi.clonarDesdePlantilla(plantilla.id, {
-          instruido_id: parseInt(clienteId),
-          fecha_inicio: fechaInicio || undefined,
+          instruidoId: parseInt(clienteId),
+          fechaInicio: fechaInicio || undefined,
           observaciones: observaciones.trim() || undefined,
         });
       } else {
         const payload = {
-          cliente_id: parseInt(clienteId),
+          instruidoId: parseInt(clienteId),
           nombre: nombre.trim(),
           tipo: 'hipertrofia',
           ejercicios: [],
-          dias_semana: {},
-          frecuencia_semanal: 3,
-          fecha_inicio: fechaInicio || undefined,
+          diasSemana: {},
+          frecuenciaSemanal: 3,
+          fechaInicio: fechaInicio || undefined,
           observaciones: observaciones.trim() || undefined,
         };
         await rutinasAsignadasApi.crear(payload);
@@ -82,7 +82,7 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
       onSaved?.();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al asignar la rutina');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Error al asignar la rutina');
     } finally {
       setSaving(false);
     }

@@ -2,6 +2,7 @@ const { RegistroEntrenamiento, RutinaAsignada, Ejercicio } = require('./entrenam
 const { SerieEjecutada } = require('./series-ejecutadas.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
+const { normalizarEjercicios } = require('./ejercicios-normalizer');
 
 const ESTADOS = {
   EN_PROGRESO: 'en_progreso',
@@ -49,7 +50,7 @@ const _verificarAccesoRutina = async (rutina, usuario, instruidoId = null) => {
 const _ejercicioPerteneceARutina = (rutina, ejercicioId) => {
   if (!rutina || !Array.isArray(rutina.ejercicios)) return false;
   return rutina.ejercicios.some(
-    (ej) => Number(ej.ejercicio_id) === Number(ejercicioId) || Number(ej.ejercicioId) === Number(ejercicioId),
+    (ej) => Number(ej.ejercicioId) === Number(ejercicioId),
   );
 };
 
@@ -232,7 +233,9 @@ const crearSerie = async (registroId, usuario, datos) => {
     attributes: ['id', 'ejercicios'],
   });
 
-  if (!_ejercicioPerteneceARutina(rutina, datos.ejercicioId)) {
+  const ejerciciosNormalizados = await normalizarEjercicios(rutina?.ejercicios || []);
+
+  if (!_ejercicioPerteneceARutina({ ejercicios: ejerciciosNormalizados }, datos.ejercicioId)) {
     const err = new Error('El ejercicio no pertenece a la rutina asignada');
     err.status = 400;
     throw err;
@@ -278,7 +281,8 @@ const editarSerie = async (registroId, serieId, usuario, datos) => {
     const rutina = await RutinaAsignada.findByPk(registro.rutinaAsignadaId, {
       attributes: ['id', 'ejercicios'],
     });
-    if (!_ejercicioPerteneceARutina(rutina, datos.ejercicioId)) {
+    const ejerciciosNormalizados = await normalizarEjercicios(rutina?.ejercicios || []);
+    if (!_ejercicioPerteneceARutina({ ejercicios: ejerciciosNormalizados }, datos.ejercicioId)) {
       const err = new Error('El ejercicio no pertenece a la rutina asignada');
       err.status = 400;
       throw err;

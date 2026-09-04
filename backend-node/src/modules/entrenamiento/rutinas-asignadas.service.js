@@ -1,6 +1,7 @@
 const { RutinaAsignada, PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
+const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
 
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
@@ -42,7 +43,15 @@ const crear = async (datos, entrenadorId) => {
     err.status = 404;
     throw err;
   }
-  return RutinaAsignada.create({ ...datos, entrenadorId });
+  const normalizados = await normalizarPayloadRutina(datos);
+  const datosFinales = {
+    ejercicios: [],
+    diasSemana: {},
+    frecuenciaSemanal: 3,
+    ...normalizados,
+    entrenadorId,
+  };
+  return RutinaAsignada.create(datosFinales);
 };
 
 const actualizar = async (id, datos, entrenadorId) => {
@@ -56,7 +65,8 @@ const actualizar = async (id, datos, entrenadorId) => {
       throw err;
     }
   }
-  return rutina.update(datos);
+  const normalizados = await normalizarPayloadRutina(datos);
+  return rutina.update(normalizados);
 };
 
 const eliminar = async (id, usuario) => {
@@ -89,15 +99,18 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
     throw err;
   }
 
+  const ejerciciosNormalizados = await normalizarEjercicios(plantilla.ejercicios || []);
+  const diasSemanaNormalizados = normalizarDiasSemana(plantilla.diasSemana || {});
+
   const rutinaCreada = await RutinaAsignada.create({
     instruidoId: datos.instruidoId,
     plantillaOrigenId: plantillaId,
     entrenadorId,
     nombre: plantilla.nombre,
     tipo: plantilla.tipo,
-    ejercicios: plantilla.ejercicios,
-    diasSemana: plantilla.diasSemana,
-    frecuenciaSemanal: plantilla.frecuenciaSemanal,
+    ejercicios: ejerciciosNormalizados,
+    diasSemana: diasSemanaNormalizados,
+    frecuenciaSemanal: plantilla.frecuenciaSemanal || 3,
     duracionSemanas: plantilla.duracionSemanas,
     observaciones: datos.observaciones || '',
     fechaInicio: datos.fechaInicio || null,
@@ -116,7 +129,10 @@ const obtenerPorDia = async (id, dia, entrenadorId, instruidoId = null) => {
   }
   if (!rutina) return null;
 
-  const ejerciciosDelDia = (rutina.ejercicios || [])
+  const ejerciciosNormalizados = await normalizarEjercicios(rutina.ejercicios || []);
+  const diasSemanaNormalizados = normalizarDiasSemana(rutina.diasSemana || {});
+
+  const ejerciciosDelDia = ejerciciosNormalizados
     .filter(e => e.dia === Number(dia))
     .sort((a, b) => a.orden - b.orden);
 
@@ -124,7 +140,7 @@ const obtenerPorDia = async (id, dia, entrenadorId, instruidoId = null) => {
     rutinaId: rutina.id,
     nombre: rutina.nombre,
     dia: Number(dia),
-    configuracionDia: rutina.diasSemana?.[String(dia)] || null,
+    configuracionDia: diasSemanaNormalizados[String(dia)] || null,
     ejercicios: ejerciciosDelDia,
   };
 };
@@ -138,8 +154,8 @@ const obtenerResumenSemanal = async (id, entrenadorId, instruidoId = null) => {
   }
   if (!rutina) return null;
 
-  const ejercicios = rutina.ejercicios || [];
-  const diasSemana = rutina.diasSemana || {};
+  const ejercicios = await normalizarEjercicios(rutina.ejercicios || []);
+  const diasSemana = normalizarDiasSemana(rutina.diasSemana || {});
 
   const resumenDias = {};
 
@@ -202,10 +218,11 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     notas: datos.notas || '',
   };
 
-  ejercicios.push(nuevoEjercicio);
+  const [normalizado] = await normalizarEjercicios([nuevoEjercicio]);
+  ejercicios.push(normalizado);
   await rutina.update({ ejercicios });
 
-  return nuevoEjercicio;
+  return normalizado;
 };
 
 const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
@@ -242,10 +259,11 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
   };
   delete ejercicioActualizado._originalIdx;
 
-  ejercicios[ejercicioOriginal._originalIdx] = ejercicioActualizado;
+  const [normalizado] = await normalizarEjercicios([ejercicioActualizado]);
+  ejercicios[ejercicioOriginal._originalIdx] = normalizado;
   await rutina.update({ ejercicios });
 
-  return ejercicioActualizado;
+  return normalizado;
 };
 
 const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {

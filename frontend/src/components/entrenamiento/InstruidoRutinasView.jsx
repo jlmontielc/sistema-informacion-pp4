@@ -180,7 +180,7 @@ export function InstruidoRutinasView() {
                       .sort((a, b) => a.orden - b.orden)
                       .map((ej, idx) => (
                         <EjercicioCard
-                          key={`${ej.ejercicio_id}-${idx}`}
+                          key={`${ej.ejercicioId}-${idx}`}
                           ejercicio={ej}
                           nombreEjercicio={ej.nombre}
                           showActions={false}
@@ -224,7 +224,7 @@ export function InstruidoRutinasView() {
                         <div key={idx} className="semana-ejercicio-item">
                           <strong>{ej.nombre || `Ej ${idx + 1}`}</strong>
                           {ej.series}×{ej.repeticiones}
-                          {ej.carga_kg > 0 ? ` · ${ej.carga_kg}kg` : ''}
+                          {ej.cargaKg > 0 ? ` · ${ej.cargaKg}kg` : ''}
                         </div>
                       ))
                   )}
