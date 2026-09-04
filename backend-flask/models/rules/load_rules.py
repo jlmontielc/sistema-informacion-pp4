@@ -24,10 +24,10 @@ def calcular_carga_maxima_recomendada(
 
     return {
         'imc': imc,
-        'carga_max_kg': round(carga_max_teorica, 2),
-        'factor_edad': factor_edad,
-        'factor_nivel': factor_nivel,
-        'factor_tipo': factor_tipo,
+        'cargaMaxKg': round(carga_max_teorica, 2),
+        'factorEdad': factor_edad,
+        'factorNivel': factor_nivel,
+        'factorTipo': factor_tipo,
     }
 
 
@@ -71,7 +71,7 @@ def validar_carga_ejercicio(
         peso, altura, edad, nivel_actividad, ejercicio_tipo
     )
 
-    carga_max = limites['carga_max_kg']
+    carga_max = limites['cargaMaxKg']
     ratio = carga_sugerida / carga_max if carga_max > 0 else 0
 
     if ratio > 1.0:
@@ -91,10 +91,10 @@ def validar_carga_ejercicio(
         mensaje = f'Carga {carga_sugerida}kg es ligera y segura'
 
     return {
-        'carga_sugerida': carga_sugerida,
-        'carga_max_segura': carga_max,
-        'ratio_carga': round(ratio, 3),
-        'nivel_riesgo': nivel,
+        'cargaSugerida': carga_sugerida,
+        'cargaMaxSegura': carga_max,
+        'ratioCarga': round(ratio, 3),
+        'nivelRiesgo': nivel,
         'mensaje': mensaje,
         'aprobar': nivel not in (NivelRiesgo.CRITICAL,),
     }
@@ -127,9 +127,9 @@ def calcular_carga_por_objetivo(
     carga_sugerida = round((carga_min + carga_max) / 2, 1)
 
     return {
-        'estimated_1rm': estimated_1rm,
-        'rango_porcentaje': f"{rango['min']*100:.0f}%-{rango['max']*100:.0f}%",
-        'carga_min_kg': carga_min,
-        'carga_max_kg': carga_max,
-        'carga_sugerida_kg': carga_sugerida,
+        'estimated1rm': estimated_1rm,
+        'rangoPorcentaje': f"{rango['min']*100:.0f}%-{rango['max']*100:.0f}%",
+        'cargaMinKg': carga_min,
+        'cargaMaxKg': carga_max,
+        'cargaSugeridaKg': carga_sugerida,
     }

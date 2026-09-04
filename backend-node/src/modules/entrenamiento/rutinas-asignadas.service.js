@@ -36,38 +36,27 @@ const obtenerPorIdPropio = async (id, instruidoId) =>
   });
 
 const crear = async (datos, entrenadorId) => {
-  const instruido = await Instruido.findOne({ where: { id: datos.cliente_id || datos.instruidoId, entrenadorId } });
+  const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');
     err.status = 404;
     throw err;
   }
-  const datosCrear = { ...datos, entrenadorId };
-  if (datos.cliente_id) {
-    datosCrear.instruidoId = datos.cliente_id;
-    delete datosCrear.cliente_id;
-  }
-  return RutinaAsignada.create(datosCrear);
+  return RutinaAsignada.create({ ...datos, entrenadorId });
 };
 
 const actualizar = async (id, datos, entrenadorId) => {
   const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
   if (!rutina) return null;
-  if (datos.instruidoId || datos.cliente_id) {
-    const clienteId = datos.cliente_id || datos.instruidoId;
-    const instruido = await Instruido.findOne({ where: { id: clienteId, entrenadorId } });
+  if (datos.instruidoId) {
+    const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
     if (!instruido) {
       const err = new Error('Instruido no encontrado');
       err.status = 404;
       throw err;
     }
   }
-  const datosActualizar = { ...datos };
-  if (datos.cliente_id) {
-    datosActualizar.instruidoId = datos.cliente_id;
-    delete datosActualizar.cliente_id;
-  }
-  return rutina.update(datosActualizar);
+  return rutina.update(datos);
 };
 
 const eliminar = async (id, usuario) => {
@@ -92,7 +81,7 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
   }
 
   const instruido = await Instruido.findOne({
-    where: { id: datos.instruido_id, entrenadorId },
+    where: { id: datos.instruidoId, entrenadorId },
   });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');
@@ -101,7 +90,7 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
   }
 
   const rutinaCreada = await RutinaAsignada.create({
-    instruidoId: datos.instruido_id,
+    instruidoId: datos.instruidoId,
     plantillaOrigenId: plantillaId,
     entrenadorId,
     nombre: plantilla.nombre,
@@ -111,7 +100,7 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
     frecuenciaSemanal: plantilla.frecuenciaSemanal,
     duracionSemanas: plantilla.duracionSemanas,
     observaciones: datos.observaciones || '',
-    fechaInicio: datos.fecha_inicio || null,
+    fechaInicio: datos.fechaInicio || null,
     personalizadaPorEntrenador: false,
   });
 
@@ -132,10 +121,10 @@ const obtenerPorDia = async (id, dia, entrenadorId, instruidoId = null) => {
     .sort((a, b) => a.orden - b.orden);
 
   return {
-    rutina_id: rutina.id,
+    rutinaId: rutina.id,
     nombre: rutina.nombre,
     dia: Number(dia),
-    configuracion_dia: rutina.diasSemana?.[String(dia)] || null,
+    configuracionDia: rutina.diasSemana?.[String(dia)] || null,
     ejercicios: ejerciciosDelDia,
   };
 };
@@ -160,20 +149,20 @@ const obtenerResumenSemanal = async (id, entrenadorId, instruidoId = null) => {
       .sort((a, b) => a.orden - b.orden);
 
     resumenDias[slot] = {
-      dia_semana: config.dia_semana,
+      diaSemana: config.diaSemana,
       nombre: config.nombre,
-      total_ejercicios: ejerciciosDia.length,
+      totalEjercicios: ejerciciosDia.length,
       ejercicios: ejerciciosDia,
     };
   }
 
   return {
-    rutina_id: rutina.id,
+    rutinaId: rutina.id,
     nombre: rutina.nombre,
     tipo: rutina.tipo,
-    frecuencia_semanal: rutina.frecuenciaSemanal,
-    total_ejercicios: ejercicios.length,
-    configuracion_dias: diasSemana,
+    frecuenciaSemanal: rutina.frecuenciaSemanal,
+    totalEjercicios: ejercicios.length,
+    configuracionDias: diasSemana,
     dias: resumenDias,
   };
 };
@@ -188,7 +177,7 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     throw err;
   }
 
-  const ejercicio = await Ejercicio.findByPk(datos.ejercicio_id);
+  const ejercicio = await Ejercicio.findByPk(datos.ejercicioId);
   if (!ejercicio) {
     const err = new Error('Ejercicio no encontrado en el catálogo');
     err.status = 404;
@@ -203,13 +192,13 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     : 1);
 
   const nuevoEjercicio = {
-    ejercicio_id: datos.ejercicio_id,
+    ejercicioId: datos.ejercicioId,
     dia: Number(dia),
     orden,
     series: datos.series,
     repeticiones: datos.repeticiones,
-    carga_kg: datos.carga_kg || null,
-    descanso_segundos: datos.descanso_segundos || null,
+    cargaKg: datos.cargaKg || null,
+    descansoSegundos: datos.descansoSegundos || null,
     notas: datos.notas || '',
   };
 
@@ -235,8 +224,8 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
     throw err;
   }
 
-  if (datos.ejercicio_id) {
-    const ejercicio = await Ejercicio.findByPk(datos.ejercicio_id);
+  if (datos.ejercicioId) {
+    const ejercicio = await Ejercicio.findByPk(datos.ejercicioId);
     if (!ejercicio) {
       const err = new Error('Ejercicio no encontrado en el catálogo');
       err.status = 404;

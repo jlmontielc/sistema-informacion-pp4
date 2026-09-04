@@ -22,11 +22,11 @@ const sugerirRutina = async (req, res, next) => {
 const validarEjercicio = async (req, res, next) => {
   try {
     const { ejercicioId, clienteId } = req.params;
-    const { carga_kg } = req.query;
+    const { cargaKg } = req.query;
     const resultado = await hitlService.validarEjercicio(
       Number(ejercicioId),
       Number(clienteId),
-      carga_kg ? Number(carga_kg) : null,
+      cargaKg ? Number(cargaKg) : null,
     );
     res.json(resultado);
   } catch (err) {

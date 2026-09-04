@@ -22,9 +22,9 @@ def predict_routine():
     if not data:
         return jsonify({'error': 'Request body requerido'}), 400
 
-    cliente_id = data.get('cliente_id')
+    cliente_id = data.get('clienteId')
     if not cliente_id:
-        return jsonify({'error': 'cliente_id es requerido'}), 400
+        return jsonify({'error': 'clienteId es requerido'}), 400
 
     resultado = engine.procesar_solicitud(data)
 
@@ -40,13 +40,13 @@ def validate_exercise():
     if not data:
         return jsonify({'error': 'Request body requerido'}), 400
 
-    ejercicio_id = data.get('ejercicio_id')
-    cliente_id = data.get('cliente_id')
+    ejercicio_id = data.get('ejercicioId')
+    cliente_id = data.get('clienteId')
 
     if not ejercicio_id or not cliente_id:
-        return jsonify({'error': 'ejercicio_id y cliente_id son requeridos'}), 400
+        return jsonify({'error': 'ejercicioId y clienteId son requeridos'}), 400
 
-    carga_kg = data.get('carga_kg')
+    carga_kg = data.get('cargaKg')
 
     resultado = engine.validar_ejercicio_individual(ejercicio_id, cliente_id, carga_kg)
 
@@ -77,7 +77,7 @@ def registrar_feedback():
     if not data:
         return jsonify({'error': 'Request body requerido'}), 400
 
-    campos_requeridos = ['entrenador_id', 'cliente_id', 'accion']
+    campos_requeridos = ['entrenadorId', 'clienteId', 'accion']
     for campo in campos_requeridos:
         if campo not in data:
             return jsonify({'error': f'{campo} es requerido'}), 400
@@ -89,7 +89,7 @@ def registrar_feedback():
         feedback_id = registrar_feedback_hitl(data)
         return jsonify({
             'success': True,
-            'feedback_id': feedback_id,
+            'feedbackId': feedback_id,
             'mensaje': 'Feedback registrado exitosamente',
         }), 201
     except Exception as e:
@@ -103,7 +103,7 @@ def historial(cliente_id):
     limit = request.args.get('limit', 20, type=int)
     historial = obtener_historial_feedback(cliente_id, limit)
     return jsonify({
-        'cliente_id': cliente_id,
+        'clienteId': cliente_id,
         'historial': historial,
         'total': len(historial),
     })

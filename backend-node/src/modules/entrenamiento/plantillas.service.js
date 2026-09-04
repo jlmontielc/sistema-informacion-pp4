@@ -42,10 +42,10 @@ const obtenerPorDia = async (id, dia, entrenadorId) => {
     .sort((a, b) => a.orden - b.orden);
 
   return {
-    plantilla_id: plantilla.id,
+    plantillaId: plantilla.id,
     nombre: plantilla.nombre,
     dia: Number(dia),
-    configuracion_dia: plantilla.diasSemana?.[String(dia)] || null,
+    configuracionDia: plantilla.diasSemana?.[String(dia)] || null,
     ejercicios: ejerciciosDelDia,
   };
 };
@@ -60,7 +60,7 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     throw err;
   }
 
-  const ejercicio = await Ejercicio.findByPk(datos.ejercicio_id);
+  const ejercicio = await Ejercicio.findByPk(datos.ejercicioId);
   if (!ejercicio) {
     const err = new Error('Ejercicio no encontrado en el catálogo');
     err.status = 404;
@@ -75,13 +75,13 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
     : 1);
 
   const nuevoEjercicio = {
-    ejercicio_id: datos.ejercicio_id,
+    ejercicioId: datos.ejercicioId,
     dia: Number(dia),
     orden,
     series: datos.series,
     repeticiones: datos.repeticiones,
-    carga_kg: datos.carga_kg || null,
-    descanso_segundos: datos.descanso_segundos || null,
+    cargaKg: datos.cargaKg || null,
+    descansoSegundos: datos.descansoSegundos || null,
     notas: datos.notas || '',
   };
 
@@ -107,8 +107,8 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
     throw err;
   }
 
-  if (datos.ejercicio_id) {
-    const ejercicio = await Ejercicio.findByPk(datos.ejercicio_id);
+  if (datos.ejercicioId) {
+    const ejercicio = await Ejercicio.findByPk(datos.ejercicioId);
     if (!ejercicio) {
       const err = new Error('Ejercicio no encontrado en el catálogo');
       err.status = 404;

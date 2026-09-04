@@ -40,7 +40,7 @@ def evaluar_ejercicio_por_condiciones(
                     alertas.append({
                         'tipo': 'condicion',
                         'condicion': key,
-                        'nivel_riesgo': NivelRiesgo.CRITICAL.value,
+                        'nivelRiesgo': NivelRiesgo.CRITICAL.value,
                         'mensaje': f'Ejercicio prohibido por condición: {key}',
                     })
 
@@ -57,8 +57,8 @@ def evaluar_ejercicio_por_condiciones(
     if nivel_maximo == NivelRiesgo.CRITICAL:
         return {
             'alertas': alertas,
-            'nivel_maximo': nivel_maximo,
-            'intensidad_permitida': 0.0,
+            'nivelMaximo': nivel_maximo,
+            'intensidadPermitida': 0.0,
             'precauciones': precauciones,
             'bloqueado': True,
         }
@@ -68,14 +68,14 @@ def evaluar_ejercicio_por_condiciones(
     if nivel_ajustado != NivelRiesgo.SAFE:
         alertas.append({
             'tipo': 'condicion_intensidad',
-            'nivel_riesgo': nivel_ajustado.value,
+            'nivelRiesgo': nivel_ajustado.value,
             'mensaje': f'Intensidad limitada al {intensidad_permitida*100:.0f}% por condiciones médicas',
         })
 
     return {
         'alertas': alertas,
-        'nivel_maximo': nivel_maximo if nivel_maximo != NivelRiesgo.SAFE else nivel_ajustado,
-        'intensidad_permitida': intensidad_permitida,
+        'nivelMaximo': nivel_maximo if nivel_maximo != NivelRiesgo.SAFE else nivel_ajustado,
+        'intensidadPermitida': intensidad_permitida,
         'precauciones': precauciones,
         'bloqueado': False,
     }

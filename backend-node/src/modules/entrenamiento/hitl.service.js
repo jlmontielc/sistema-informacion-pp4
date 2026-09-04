@@ -22,7 +22,7 @@ const descifrarCampos = (registro) => {
 
 const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) => {
   if (!resultado || !resultado.success) return null;
-  const plantillaId = resultado.plantilla_id;
+  const plantillaId = resultado.plantillaId;
   if (plantillaId == null) return null;
 
   const plantilla = await PlantillaEntrenamiento.findByPk(plantillaId);
@@ -34,7 +34,7 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
   );
 
   const metadataRecomendacion = {
-    plantilla_id: plantillaId,
+    plantillaId,
     confianza: resultado.confianza,
     explicacion: resultado.explicacion || null,
     advertencia: resultado.advertencia || null,
@@ -82,9 +82,9 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
 
   const historialFormateado = historial.map(reg => ({
     fecha: reg.fecha,
-    ejercicios_realizados: reg.ejerciciosRealizados,
-    percepcion_esfuerzo: reg.percepcionEsfuerzo,
-    duracion_minutos: reg.duracionMinutos,
+    ejerciciosRealizados: reg.ejerciciosRealizados,
+    percepcionEsfuerzo: reg.percepcionEsfuerzo,
+    duracionMinutos: reg.duracionMinutos,
   }));
 
   const plantillas = await PlantillaEntrenamiento.findAll({
@@ -98,30 +98,30 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
   const lesionesFiltradas = perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [];
 
   const payload = {
-    cliente_id: clienteId,
-    entrenador_id: entrenadorId,
+    clienteId,
+    entrenadorId,
     edad: instruido.edad,
     peso: Number(instruido.peso),
     altura: Number(instruido.altura),
     sexo: instruido.sexo,
-    nivel_actividad: instruido.nivelActividad,
-    nivel_experiencia: instruido.nivelExperiencia || null,
+    nivelActividad: instruido.nivelActividad,
+    nivelExperiencia: instruido.nivelExperiencia || null,
     proposito: instruido.propositoEntrenamiento || 'mantenimiento',
-    dias_disponibles: instruido.diasDisponibles || 3,
-    perfil_medico: {
+    diasDisponibles: instruido.diasDisponibles || 3,
+    perfilMedico: {
       lesiones: lesionesFiltradas,
-      condiciones_preexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
+      condicionesPreexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
       alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
       medicacion: perfilDescifrado ? parsearCampoJson(perfilDescifrado.medicacionActual) : [],
     },
-    historial_reciente: {
-      ultimas_4_semanas: historialFormateado,
+    historialReciente: {
+      ultimas4Semanas: historialFormateado,
     },
     preferencias: {
-      ejercicios_excluir: preferencias.excluir || [],
-      equipamiento_disponible: preferencias.equipamiento || [],
+      ejerciciosExcluir: preferencias.excluir || [],
+      equipamientoDisponible: preferencias.equipamiento || [],
     },
-    plantillas_disponibles: plantillasMetadata,
+    plantillasDisponibles: plantillasMetadata,
   };
 
   const response = await httpRequest('/api/predict/routine', 'POST', payload, 10000);
@@ -151,11 +151,11 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
 
 const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {
   const payload = {
-    ejercicio_id: ejercicioId,
-    cliente_id: clienteId,
+    ejercicioId,
+    clienteId,
   };
   if (cargaKg !== null) {
-    payload.carga_kg = cargaKg;
+    payload.cargaKg = cargaKg;
   }
 
   const response = await httpRequest('/api/predict/validate', 'POST', payload, 5000);
@@ -171,7 +171,7 @@ const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {
 };
 
 const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) => {
-  if (!resultado || !resultado.objetivo_calorico) return null;
+  if (!resultado || !resultado.objetivoCalorico) return null;
 
   const { Dieta } = require('../dietas/dietas.model');
 
@@ -187,10 +187,10 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
   return Dieta.create({
     instruidoId: clienteId,
     entrenadorId,
-    objetivoCalorico: resultado.objetivo_calorico,
-    proteinas: resultado.proteinas_gramos,
-    carbohidratos: resultado.carbohidratos_gramos,
-    grasas: resultado.grasas_gramos,
+    objetivoCalorico: resultado.objetivoCalorico,
+    proteinas: resultado.proteinasGramos,
+    carbohidratos: resultado.carbohidratosGramos,
+    grasas: resultado.grasasGramos,
     observaciones: resultado.justificacion || 'Generada por IA tras activacion de plan',
     activo: false,
     decision: 'pendiente',
@@ -228,7 +228,7 @@ const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {
   const payload = {
     tmb: Number(calculoMetabolico.tmb),
     gct: Number(calculoMetabolico.gct),
-    nivel_actividad: instruido.nivelActividad,
+    nivelActividad: instruido.nivelActividad,
     proposito: preferencias.proposito || 'mantener',
     peso: Number(instruido.peso),
     altura: Number(instruido.altura),

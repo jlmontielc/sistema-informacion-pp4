@@ -1,4 +1,5 @@
 from services.db_connector import execute_insert, execute_query, execute_one
+from services.case_utils import keys_to_camel_case
 
 
 def registrar_feedback_hitl(feedback_data: dict) -> int:
@@ -11,17 +12,17 @@ def registrar_feedback_hitl(feedback_data: dict) -> int:
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     params = (
-        feedback_data.get('rutina_sugerida_id'),
-        feedback_data['entrenador_id'],
-        feedback_data['cliente_id'],
+        feedback_data.get('rutinaSugeridaId'),
+        feedback_data['entrenadorId'],
+        feedback_data['clienteId'],
         feedback_data['accion'],
-        _serializar_json(feedback_data.get('rutina_original')),
-        _serializar_json(feedback_data.get('rutina_final')),
-        _serializar_json(feedback_data.get('ejercicios_agregados', [])),
-        _serializar_json(feedback_data.get('ejercicios_eliminados', [])),
-        _serializar_json(feedback_data.get('modificacion_cargas', {})),
-        feedback_data.get('confianza_ia', 0),
-        feedback_data.get('tiempo_revision_seg', 0),
+        _serializar_json(feedback_data.get('rutinaOriginal')),
+        _serializar_json(feedback_data.get('rutinaFinal')),
+        _serializar_json(feedback_data.get('ejerciciosAgregados', [])),
+        _serializar_json(feedback_data.get('ejerciciosEliminados', [])),
+        _serializar_json(feedback_data.get('modificacionCargas', {})),
+        feedback_data.get('confianzaIa', 0),
+        feedback_data.get('tiempoRevisionSeg', 0),
         feedback_data.get('observaciones', ''),
         feedback_data.get('tipo', 'rutina'),
     )
@@ -44,7 +45,8 @@ def obtener_historial_feedback(cliente_id: int, limit: int = 20) -> list:
         ORDER BY fh.created_at DESC
         LIMIT %s
     """
-    return execute_query(query, (cliente_id, limit))
+    filas = execute_query(query, (cliente_id, limit))
+    return [keys_to_camel_case(fila) for fila in filas]
 
 
 def obtener_estadisticas_feedback() -> dict:
@@ -75,9 +77,9 @@ def obtener_estadisticas_feedback() -> dict:
     por_entrenador = execute_query(query_por_entrenador)
 
     return {
-        'total_registros': total['total'] if total else 0,
-        'por_accion': stats_accion,
-        'por_entrenador': por_entrenador,
+        'totalRegistros': total['total'] if total else 0,
+        'porAccion': [keys_to_camel_case(fila) for fila in stats_accion],
+        'porEntrenador': [keys_to_camel_case(fila) for fila in por_entrenador],
     }
 
 
@@ -93,7 +95,8 @@ def obtener_ultima_sugerencia(cliente_id: int) -> dict:
         ORDER BY fh.created_at DESC
         LIMIT 1
     """
-    return execute_one(query, (cliente_id,))
+    fila = execute_one(query, (cliente_id,))
+    return keys_to_camel_case(fila) if fila else None
 
 
 def _serializar_json(data) -> str:
