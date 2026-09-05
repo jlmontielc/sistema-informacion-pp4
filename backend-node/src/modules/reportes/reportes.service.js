@@ -44,6 +44,11 @@ const obtenerSemanaISO = (fechaStr) => {
 
 const redondear = (valor) => Number(Number(valor).toFixed(2));
 
+const parseNumero = (valor) => {
+  const numero = Number(valor || 0);
+  return Number.isNaN(numero) ? 0 : numero;
+};
+
 const errorAutorizacion = (mensaje, status = 403) => {
   const error = new Error(mensaje);
   error.status = status;
@@ -63,7 +68,8 @@ const verificarAcceso = async (instruidoId, usuario) => {
     throw errorAutorizacion('Instruido no encontrado', 404);
   }
 
-  // El entrenador puede ver reportes de cualquier instruido.
+  // El entrenador puede consultar reportes de cualquier instruido,
+  // pero el listado solo muestra los instruidos asignados a él.
 
   return instruido;
 };
@@ -73,6 +79,7 @@ const obtenerSeriesPeriodo = async (instruidoId, fechaInicio, fechaFin) => {
     include: [
       {
         model: RegistroEntrenamiento,
+        as: 'registroEntrenamiento',
         required: true,
         where: {
           instruidoId,
@@ -98,6 +105,7 @@ const calcularMetricasGrupo = (series) => {
   const mapa = new Map();
 
   series.forEach((serie) => {
+    if (!serie.registroEntrenamiento || !serie.ejercicio || !serie.registroEntrenamiento.fecha) return;
     const grupo = serie.ejercicio.grupoMuscular || 'Otros';
     if (!mapa.has(grupo)) {
       mapa.set(grupo, { series: [], sesiones: new Set() });
@@ -112,10 +120,12 @@ const calcularMetricasGrupo = (series) => {
     let volumenTotal = 0;
     let pesoMaximo = 0;
     entrada.series.forEach((serie) => {
-      const volumenSerie = Number(serie.repeticionesRealizadas) * Number(serie.pesoKg);
+      const repeticiones = parseNumero(serie.repeticionesRealizadas);
+      const peso = parseNumero(serie.pesoKg);
+      const volumenSerie = repeticiones * peso;
       volumenTotal += volumenSerie;
-      if (Number(serie.pesoKg) > pesoMaximo) {
-        pesoMaximo = Number(serie.pesoKg);
+      if (peso > pesoMaximo) {
+        pesoMaximo = peso;
       }
     });
 
@@ -135,6 +145,7 @@ const calcularEvolucionSemanal = (series) => {
   const mapa = new Map();
 
   series.forEach((serie) => {
+    if (!serie.registroEntrenamiento || !serie.ejercicio || !serie.registroEntrenamiento.fecha) return;
     const semana = obtenerSemanaISO(serie.registroEntrenamiento.fecha);
     const grupo = serie.ejercicio.grupoMuscular || 'Otros';
     const clave = `${semana}||${grupo}`;
@@ -158,10 +169,12 @@ const calcularEvolucionSemanal = (series) => {
     let volumenTotal = 0;
     let pesoMaximo = 0;
     entrada.series.forEach((serie) => {
-      const volumenSerie = Number(serie.repeticionesRealizadas) * Number(serie.pesoKg);
+      const repeticiones = parseNumero(serie.repeticionesRealizadas);
+      const peso = parseNumero(serie.pesoKg);
+      const volumenSerie = repeticiones * peso;
       volumenTotal += volumenSerie;
-      if (Number(serie.pesoKg) > pesoMaximo) {
-        pesoMaximo = Number(serie.pesoKg);
+      if (peso > pesoMaximo) {
+        pesoMaximo = peso;
       }
     });
 
@@ -185,6 +198,7 @@ const calcularEvolucionGrupo = (series, grupoMuscular) => {
   const mapa = new Map();
 
   series.forEach((serie) => {
+    if (!serie.registroEntrenamiento || !serie.ejercicio || !serie.registroEntrenamiento.fecha) return;
     const semana = obtenerSemanaISO(serie.registroEntrenamiento.fecha);
     if (!mapa.has(semana)) {
       mapa.set(semana, { series: [], sesiones: new Set() });
@@ -199,10 +213,12 @@ const calcularEvolucionGrupo = (series, grupoMuscular) => {
     let volumenTotal = 0;
     let pesoMaximo = 0;
     entrada.series.forEach((serie) => {
-      const volumenSerie = Number(serie.repeticionesRealizadas) * Number(serie.pesoKg);
+      const repeticiones = parseNumero(serie.repeticionesRealizadas);
+      const peso = parseNumero(serie.pesoKg);
+      const volumenSerie = repeticiones * peso;
       volumenTotal += volumenSerie;
-      if (Number(serie.pesoKg) > pesoMaximo) {
-        pesoMaximo = Number(serie.pesoKg);
+      if (peso > pesoMaximo) {
+        pesoMaximo = peso;
       }
     });
 
@@ -223,6 +239,7 @@ const calcularPromedioHistorico = async (instruidoId) => {
     include: [
       {
         model: RegistroEntrenamiento,
+        as: 'registroEntrenamiento',
         required: true,
         where: { instruidoId, estado: 'completado' },
         attributes: ['fecha'],
@@ -253,9 +270,12 @@ const calcularPromedioHistorico = async (instruidoId) => {
   const semanas = new Set();
 
   series.forEach((serie) => {
-    volumenTotal += Number(serie.repeticionesRealizadas) * Number(serie.pesoKg);
-    if (Number(serie.pesoKg) > pesoMaximo) {
-      pesoMaximo = Number(serie.pesoKg);
+    if (!serie.registroEntrenamiento || !serie.ejercicio || !serie.registroEntrenamiento.fecha) return;
+    const repeticiones = parseNumero(serie.repeticionesRealizadas);
+    const peso = parseNumero(serie.pesoKg);
+    volumenTotal += repeticiones * peso;
+    if (peso > pesoMaximo) {
+      pesoMaximo = peso;
     }
     sesiones.add(serie.registroEntrenamiento.fecha);
     semanas.add(obtenerSemanaISO(serie.registroEntrenamiento.fecha));
@@ -324,7 +344,8 @@ const evolucionPorGrupo = async (instruidoId, grupoMuscular, periodo, usuario) =
   const series = await obtenerSeriesPeriodo(instruidoId, fechaInicio, fechaFin);
 
   const seriesFiltradas = series.filter(
-    (serie) => (serie.ejercicio.grupoMuscular || 'Otros').toLowerCase() === grupoMuscular.toLowerCase(),
+    (serie) => serie.ejercicio
+      && (serie.ejercicio.grupoMuscular || 'Otros').toLowerCase() === grupoMuscular.toLowerCase(),
   );
 
   return {
@@ -346,7 +367,10 @@ const comparativa = async (instruidoId, periodo, usuario) => {
   let volumenPeriodo = 0;
   const semanasPeriodo = new Set();
   series.forEach((serie) => {
-    volumenPeriodo += Number(serie.repeticionesRealizadas) * Number(serie.pesoKg);
+    if (!serie.registroEntrenamiento || !serie.ejercicio || !serie.registroEntrenamiento.fecha) return;
+    const repeticiones = parseNumero(serie.repeticionesRealizadas);
+    const peso = parseNumero(serie.pesoKg);
+    volumenPeriodo += repeticiones * peso;
     semanasPeriodo.add(obtenerSemanaISO(serie.registroEntrenamiento.fecha));
   });
 
@@ -366,8 +390,14 @@ const comparativa = async (instruidoId, periodo, usuario) => {
   };
 };
 
-const listarInstruidos = async () => {
+const listarInstruidos = async (usuario) => {
+  const where = {};
+  if (usuario.rol === 'entrenador') {
+    where.entrenadorId = usuario.id;
+  }
+
   const instruidos = await Instruido.findAll({
+    where,
     attributes: ['id', 'nombre', 'email', 'edad', 'peso', 'altura', 'sexo', 'nivelActividad', 'fechaRegistro', 'activo', 'entrenadorId'],
     order: [['nombre', 'ASC']],
   });

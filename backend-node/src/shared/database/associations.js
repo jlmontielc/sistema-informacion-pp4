@@ -37,7 +37,7 @@ RegistroEntrenamiento.belongsTo(RutinaAsignada, { foreignKey: 'rutinaAsignadaId'
 RegistroEntrenamiento.belongsTo(Instruido, { foreignKey: 'instruidoId' });
 RegistroEntrenamiento.hasMany(SerieEjecutada, { foreignKey: 'registroEntrenamientoId', as: 'series' });
 
-SerieEjecutada.belongsTo(RegistroEntrenamiento, { foreignKey: 'registroEntrenamientoId' });
+SerieEjecutada.belongsTo(RegistroEntrenamiento, { foreignKey: 'registroEntrenamientoId', as: 'registroEntrenamiento' });
 SerieEjecutada.belongsTo(Ejercicio, { foreignKey: 'ejercicioId', as: 'ejercicio' });
 Ejercicio.hasMany(SerieEjecutada, { foreignKey: 'ejercicioId' });
 

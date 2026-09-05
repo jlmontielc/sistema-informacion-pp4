@@ -12,6 +12,7 @@ services:
       - "3000:3000"
     env_file: ./backend-node/.env
     environment:
+      - NODE_ENV=production
       - FLASK_IA_URL=http://backend-flask:5000
     restart: unless-stopped
 
