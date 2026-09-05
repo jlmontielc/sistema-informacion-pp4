@@ -117,6 +117,6 @@ Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_
 
 ## Recursos de agentes
 
-- Subagentes/especialistas locales: `.opencode/agent/` (`node-api.md`, `frontend-react.md`, `flask-ia.md`, `revisor.md`, `tester.md`).
+- Subagentes/especialistas locales: `.opencode/agent/` (`nodeApi.md`, `frontendReact.md`, `flaskIa.md`, `revisor.md`, `tester.md`).
 - Skills: `.opencode/skills/hitl/SKILL.md`, `.opencode/skills/nuevo-modulo/SKILL.md`.
 - Permisos de OpenCode: `opencode.json` permite `docker*`, `docker-compose*`, `npm*`, `python*`; `git*` pregunta.

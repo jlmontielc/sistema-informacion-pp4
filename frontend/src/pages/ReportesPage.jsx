@@ -55,7 +55,7 @@ export default function ReportesPage() {
       })
       .catch((err) => {
         if (!activo) return;
-        setErrorInstruidos(err.response?.data?.mensaje || 'No se pudieron cargar los instruidos.');
+        setErrorInstruidos(err.response?.data?.mensaje || err.response?.data?.error || 'No se pudieron cargar los instruidos.');
       })
       .finally(() => {
         if (activo) setCargandoInstruidos(false);
@@ -106,7 +106,7 @@ export default function ReportesPage() {
       const datosComparativa = resComparativa.data || null;
       setComparativa(datosComparativa);
     } catch (err) {
-      const mensaje = err.response?.data?.mensaje || 'No se pudieron cargar los reportes.';
+      const mensaje = err.response?.data?.mensaje || err.response?.data?.error || 'No se pudieron cargar los reportes.';
       setErrorGrupos(mensaje);
       setErrorComparativa(mensaje);
     } finally {
@@ -140,7 +140,7 @@ export default function ReportesPage() {
       const datos = res.data?.evolucion || [];
       setEvolucion(datos);
     } catch (err) {
-      setErrorEvolucion(err.response?.data?.mensaje || 'No se pudo cargar la evolución.');
+      setErrorEvolucion(err.response?.data?.mensaje || err.response?.data?.error || 'No se pudo cargar la evolución.');
     } finally {
       setCargandoEvolucion(false);
     }

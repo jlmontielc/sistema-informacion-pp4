@@ -48,3 +48,10 @@ cd backend-flask && python tests/test_guardian.py
 
 - Antes de tocar una regla, lee el test que la cubre y ejecutalo; cualquier cambio debe mantener todos los asserts pasando (o actualizar tests con justificacion).
 - Al terminar, ejecuta `python tests/test_guardian.py` y reporta el resultado.
+
+## Normalizacion de codigo nuevo
+
+- Codigo Python interno: **snake_case** (PEP 8).
+- Contrato JSON con Node: claves en **camelCase**.
+- Normalizar las claves en el limite de la ruta (helper o middleware) para no exponer snake_case directamente a Node.
+- Mantener la compatibilidad del contrato de entrada/salida con Node.

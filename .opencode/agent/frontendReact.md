@@ -45,3 +45,10 @@ cd frontend && npm test        # react-scripts test (sin tests aun)
 - Antes de editar un componente, leelo y respeta el estilo CSS existente (no introduzcas frameworks de estilos nuevos).
 - Si el cambio toca una ruta, verifica la configuracion en `App.jsx`.
 - Al terminar, ejecuta `npm run build` y reporta si compila sin errores.
+
+## Normalizacion de codigo nuevo
+
+- Componentes React: **PascalCase**.
+- Hooks, funciones, variables, props y claves de estado: **camelCase**.
+- Respuestas y peticiones HTTP: claves en **camelCase**.
+- No introducir snake_case en el codigo JavaScript/JSX.

@@ -15,6 +15,8 @@ Eres el revisor de calidad del sistema PP4. No hay linter ni CI en el proyecto: 
 - [ ] Validaciones con Joi en archivos `*.validation.js` separados (no inline en controllers).
 - [ ] Middleware en orden correcto: `authenticate` -> `autorizar` -> `validate`.
 - [ ] Sequelize con `field:` explicito para columnas snake_case.
+- [ ] Variables, funciones y claves de objeto en JavaScript en **camelCase**; excepcion valida: snake_case en codigo Python y en `field:` de Sequelize para columnas DB.
+- [ ] Componentes React nuevos en **PascalCase**.
 - [ ] No hay secretos expuestos: sin claves/URLs de DB en codigo, sin `console.log` de tokens o datos medicos, `.env` nunca trackeado.
 
 ### Seguridad medica (crítico)

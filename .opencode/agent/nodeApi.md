@@ -47,3 +47,10 @@ cd backend-node && npm run seed:ejercicios
 - Cuando crees un modulo nuevo, sigue el patron de uno existente (p. ej. dietas) y registra sus rutas en `src/app.js`.
 - Verifica los modelos contra `database/schema.sql` y las migraciones en `database/migrations/` si el cambio toca la base de datos.
 - Al terminar, confirma que la API compila (puedes pedir `npm run dev` o al menos revisar sintaxis) y reporta que pruebas ejecutaste.
+
+## Normalizacion de codigo nuevo
+
+- Variables, funciones, propiedades y claves de objetos en JavaScript: **camelCase**.
+- Columnas de base de datos: snake_case, pero siempre mapeadas explicitamente con `field:` en Sequelize.
+- Revisar antes de entregar que no se haya introducido snake_case en nombres de variables, funciones o claves de objetos fuera de los `field:` de Sequelize.
+- Si el cambio toca el contrato JSON con Flask, mantener **camelCase** en ambos lados.

@@ -41,3 +41,9 @@ Patron CRA: `*.test.js`/`*.test.jsx` junto a `src/` con jest + @testing-library/
 - Si un test falla por cambio de comportamiento, NO lo borres: reporta el fallo al agente principal con el motivo.
 - No crees tests triviales solo por coverage; prioriza: reglas Guardian, validaciones Joi, interceptor JWT, ramificacion por rol en dashboard.
 - Antes de escribir tests nuevos, lee el codigo que van a cubrir y respeta el idioma espanol en nombres y mensajes.
+
+## Normalizacion de codigo nuevo
+
+- Al escribir tests, validar que los contratos JSON con Node usan **camelCase**.
+- Verificar que nuevas funciones y variables en JavaScript usen camelCase, y componentes React PascalCase.
+- Reportar cualquier mezcla de convenciones encontrada.
