@@ -58,8 +58,8 @@ Pago.belongsTo(PlanPago, { as: 'plan', foreignKey: 'planId' });
 MetodoPago.hasMany(Pago, { foreignKey: 'metodoPagoId' });
 Pago.belongsTo(MetodoPago, { as: 'metodo', foreignKey: 'metodoPagoId' });
 
-Instruido.hasMany(Dieta, { foreignKey: 'clienteId', as: 'dietas' });
-Dieta.belongsTo(Instruido, { foreignKey: 'clienteId', as: 'instruido' });
+Instruido.hasMany(Dieta, { foreignKey: 'instruidoId', as: 'dietas' });
+Dieta.belongsTo(Instruido, { foreignKey: 'instruidoId', as: 'instruido' });
 
 Entrenador.hasMany(Dieta, { foreignKey: 'entrenadorId', as: 'dietas' });
 Dieta.belongsTo(Entrenador, { foreignKey: 'entrenadorId', as: 'entrenador' });

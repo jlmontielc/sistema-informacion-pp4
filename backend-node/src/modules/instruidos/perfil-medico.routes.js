@@ -1,9 +1,13 @@
 const { Router } = require('express');
 const ctrl = require('./perfil-medico.controller');
 const { validar } = require('../../shared/middleware/validate');
-const { esquemaPerfilMedico } = require('./perfil-medico.validation');
+const { autenticar } = require('../../shared/middleware/authenticate');
+const { autorizar } = require('../../shared/middleware/autorizar');
+const { esquemaInstruidoIdParam, esquemaPerfilMedico } = require('./perfil-medico.validation');
 
 const router = Router({ mergeParams: true });
+
+router.use(autenticar, autorizar('administrador', 'entrenador', 'instruido'));
 
 /**
  * @openapi
@@ -87,7 +91,7 @@ const router = Router({ mergeParams: true });
  *       500:
  *         $ref: '#/components/responses/Error'
  */
-router.get('/', ctrl.obtenerPorInstruido);
-router.put('/', validar(esquemaPerfilMedico), ctrl.crearOActualizar);
+router.get('/', validar(esquemaInstruidoIdParam, 'params'), ctrl.obtenerPorInstruido);
+router.put('/', validar(esquemaInstruidoIdParam, 'params'), validar(esquemaPerfilMedico), ctrl.crearOActualizar);
 
 module.exports = router;

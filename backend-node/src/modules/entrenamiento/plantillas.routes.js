@@ -62,7 +62,7 @@ const router = Router();
  *       500:
  *         $ref: '#/components/responses/Error'
  */
-router.get('/', ctrl.obtenerTodos);
+router.get('/', autorizar('administrador', 'entrenador'), ctrl.obtenerTodos);
 router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear), ctrl.crear);
 
 /**
@@ -158,7 +158,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *       500:
  *         $ref: '#/components/responses/Error'
  */
-router.get('/:id', ctrl.obtenerPorId);
+router.get('/:id', autorizar('administrador', 'entrenador'), ctrl.obtenerPorId);
 router.put('/:id', autorizar('administrador', 'entrenador'), validar(esquemaActualizar), ctrl.actualizar);
 router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
 

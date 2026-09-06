@@ -4,7 +4,7 @@ const feedbackCtrl = require('./hitl-feedback.controller');
 const { autenticar } = require('../../shared/middleware/authenticate');
 const { autorizar } = require('../../shared/middleware/autorizar');
 const { validar } = require('../../shared/middleware/validate');
-const { esquemaClienteIdParam, esquemaIdParam, esquemaDecisionRutina } = require('./hitl.validation');
+const { esquemaClienteIdParam, esquemaIdParam, esquemaValidateParams, esquemaDecisionRutina } = require('./hitl.validation');
 const { esquemaFeedbackHitl } = require('./hitl-feedback.validation');
 
 const router = Router();
@@ -178,6 +178,7 @@ router.get(
   '/ia/validate/:ejercicioId/:clienteId',
   autenticar,
   autorizar('administrador', 'entrenador'),
+  validar(esquemaValidateParams, 'params'),
   ctrl.validarEjercicio,
 );
 

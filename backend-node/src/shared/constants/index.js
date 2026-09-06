@@ -15,6 +15,13 @@ if (!esHexValido(process.env.ENC_IV) || process.env.ENC_IV.length !== 32) {
   throw new Error('ENC_IV invalido: debe ser hexadecimal de exactamente 32 caracteres (16 bytes para AES-256-CBC)');
 }
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || null;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || null;
+
+if (ADMIN_PASSWORD && process.env.NODE_ENV === 'production' && ADMIN_PASSWORD.length < 12) {
+  throw new Error('ADMIN_PASSWORD debe tener al menos 12 caracteres en produccion');
+}
+
 module.exports = {
   PORT: process.env.PORT || 3000,
   DB: {
@@ -30,4 +37,6 @@ module.exports = {
   ENC_KEY: process.env.ENC_KEY,
   ENC_IV: process.env.ENC_IV,
   FLASK_IA_URL: process.env.FLASK_IA_URL || 'http://localhost:5000',
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
 };

@@ -927,6 +927,135 @@ def test_clasificador_advertencia_baja_confianza():
     print("[PASS] test_clasificador_advertencia_baja_confianza")
 
 
+def test_validar_ejercicio_usa_perfil_medico_explicito():
+    from unittest.mock import patch
+    from services.hitl_engine import HitlEngine
+
+    engine = HitlEngine()
+
+    ejercicio = {
+        'id': 1,
+        'nombre': 'Sentadilla',
+        'grupo_muscular': 'Piernas',
+        'descripcion': '',
+        'instrucciones_es': '',
+        'target': '',
+        'equipo_necesario': '',
+        'dificultad': 'intermedio',
+        'musculos_secundarios': '',
+        'contraindica_lesiones': 'rodilla',
+        'imagen_url': '',
+        'gif_url': '',
+    }
+    cliente = {
+        'id': 1,
+        'nombre': 'Cliente Test',
+        'edad': 30,
+        'peso': '75',
+        'altura': '1.75',
+        'sexo': 'masculino',
+        'nivel_actividad': 'moderado',
+        'nivel_experiencia': 'intermedio',
+        'proposito': 'mantenimiento',
+        'dias_disponibles': 3,
+        'activo': True,
+    }
+    perfil_medico = {
+        'lesiones': ['rodilla - LCA'],
+        'condicionesPreexistentes': [],
+    }
+
+    with patch('services.data_fetcher.fetch_ejercicio_por_id', return_value=ejercicio), \
+         patch('services.hitl_engine.fetch_cliente_completo', return_value=cliente):
+        resultado = engine.validar_ejercicio_individual(
+            1, 1, 80, perfil_medico=perfil_medico
+        )
+
+    assert resultado['validacion']['bloqueado'] is True
+    assert any(a['tipo'] == 'lesion' for a in resultado['validacion']['alertas'])
+    print("[PASS] test_validar_ejercicio_usa_perfil_medico_explicito")
+
+
+def test_validar_ejercicio_no_consulta_db_si_perfil_medico_presente():
+    from unittest.mock import patch
+    from services.hitl_engine import HitlEngine
+
+    engine = HitlEngine()
+
+    ejercicio = {
+        'id': 2,
+        'nombre': 'Press de banca',
+        'grupo_muscular': 'Pecho',
+        'descripcion': '',
+        'instrucciones_es': '',
+        'target': '',
+        'equipo_necesario': '',
+        'dificultad': 'intermedio',
+        'musculos_secundarios': '',
+        'contraindica_lesiones': None,
+        'imagen_url': '',
+        'gif_url': '',
+    }
+    cliente = {
+        'id': 1,
+        'nombre': 'Cliente Test',
+        'edad': 30,
+        'peso': '75',
+        'altura': '1.75',
+        'sexo': 'masculino',
+        'nivel_actividad': 'moderado',
+        'nivel_experiencia': 'intermedio',
+        'proposito': 'mantenimiento',
+        'dias_disponibles': 3,
+        'activo': True,
+    }
+    perfil_medico = {
+        'lesiones': [],
+        'condicionesPreexistentes': ['Cardiopatia'],
+    }
+
+    with patch('services.data_fetcher.fetch_ejercicio_por_id', return_value=ejercicio), \
+         patch('services.hitl_engine.fetch_cliente_completo', return_value=cliente), \
+         patch('services.hitl_engine.fetch_perfil_medico') as mock_fetch_perfil:
+        resultado = engine.validar_ejercicio_individual(
+            2, 1, 60, perfil_medico=perfil_medico
+        )
+
+    assert mock_fetch_perfil.call_count == 0
+    assert resultado['validacion']['bloqueado'] is False
+    assert resultado['validacion']['intensidadPermitida'] <= 0.65
+    print("[PASS] test_validar_ejercicio_no_consulta_db_si_perfil_medico_presente")
+
+
+def test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro():
+    from unittest.mock import patch
+    from services.data_fetcher import fetch_perfil_medico
+
+    perfil_cifrado_en_db = {
+        'cliente_id': 99,
+        'alergias': 'aes256:9f3b2c...:tag',
+        'intolerancias': 'aes256:1a2b3c...:tag',
+        'lesiones': 'aes256:4d5e6f...:tag',
+        'condiciones_preexistentes': 'aes256:7a8b9c...:tag',
+        'medicacion_actual': 'aes256:0d1e2f...:tag',
+        'observaciones': 'aes256:123456...:tag',
+    }
+
+    with patch('services.data_fetcher.execute_one', return_value=perfil_cifrado_en_db):
+        resultado = fetch_perfil_medico(99)
+
+    assert resultado is not perfil_cifrado_en_db
+    assert resultado == {
+        'lesiones': [],
+        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
+        'alergias': [],
+        'medicacion': [],
+        'medicacionActual': [],
+    }
+    print("[PASS] test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -962,4 +1091,7 @@ if __name__ == '__main__':
     test_clasificador_descarta_por_lesion_high()
     test_clasificador_retorna_mejor_viable()
     test_clasificador_advertencia_baja_confianza()
+    test_validar_ejercicio_usa_perfil_medico_explicito()
+    test_validar_ejercicio_no_consulta_db_si_perfil_medico_presente()
+    test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro()
     print("\n=== TODOS LOS TESTS PASARON ===")

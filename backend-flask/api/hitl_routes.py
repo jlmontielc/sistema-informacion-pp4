@@ -42,13 +42,16 @@ def validate_exercise():
 
     ejercicio_id = data.get('ejercicioId')
     cliente_id = data.get('clienteId')
+    perfil_medico = data.get('perfilMedico')
 
     if not ejercicio_id or not cliente_id:
         return jsonify({'error': 'ejercicioId y clienteId son requeridos'}), 400
 
     carga_kg = data.get('cargaKg')
 
-    resultado = engine.validar_ejercicio_individual(ejercicio_id, cliente_id, carga_kg)
+    resultado = engine.validar_ejercicio_individual(
+        ejercicio_id, cliente_id, carga_kg, perfil_medico=perfil_medico
+    )
 
     if resultado.get('error'):
         mensaje = resultado['error']

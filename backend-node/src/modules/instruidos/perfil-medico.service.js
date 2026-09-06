@@ -37,12 +37,24 @@ const descifrarCampos = (registro) => {
   return datos;
 };
 
-const obtenerPorInstruidoId = async (instruidoId, usuario) => {
+const obtenerPerfilSeguroParaFrontend = async (instruidoId, usuario) => {
   const where = { id: instruidoId };
   if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
   if (usuario.rol === 'instruido' && Number(instruidoId) !== Number(usuario.id)) return null;
   const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
+  const perfil = await PerfilMedico.findOne({ where: { instruidoId } });
+  if (!perfil) {
+    return { instruidoId: Number(instruidoId), observaciones: null, perfilMedicoCompleto: false };
+  }
+  return {
+    instruidoId: Number(instruidoId),
+    observaciones: perfil.observaciones || null,
+    perfilMedicoCompleto: true,
+  };
+};
+
+const obtenerPerfilDescifradoParaFlask = async (instruidoId) => {
   const perfil = await PerfilMedico.findOne({ where: { instruidoId } });
   return perfil ? descifrarCampos(perfil) : null;
 };
@@ -54,8 +66,17 @@ const crearOActualizar = async (instruidoId, datos, usuario) => {
   const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
   const datosCifrados = cifrarCampos(datos);
-  const [perfil] = await PerfilMedico.upsert({ instruidoId, ...datosCifrados });
-  return descifrarCampos(perfil);
+  await PerfilMedico.upsert({ instruidoId, ...datosCifrados });
+  const perfil = await PerfilMedico.findOne({ where: { instruidoId } });
+  return {
+    instruidoId: Number(instruidoId),
+    observaciones: perfil ? perfil.observaciones || null : null,
+    perfilMedicoCompleto: !!perfil,
+  };
 };
 
-module.exports = { obtenerPorInstruidoId, crearOActualizar };
+module.exports = {
+  obtenerPerfilSeguroParaFrontend,
+  obtenerPerfilDescifradoParaFlask,
+  crearOActualizar,
+};

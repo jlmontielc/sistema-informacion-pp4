@@ -3,6 +3,7 @@ const reportesService = require('../src/modules/reportes/reportes.service');
 jest.mock('../src/modules/instruidos/instruido.model', () => ({
   Instruido: {
     findByPk: jest.fn(),
+    findOne: jest.fn(),
     findAll: jest.fn(),
   },
 }));
@@ -52,7 +53,8 @@ const crearSerie = (sobreescribir = {}) => ({
 });
 
 const resetearMocks = () => {
-  Instruido.findByPk.mockReset();
+  Instruido.findOne.mockReset();
+  Instruido.findOne.mockReset();
   Instruido.findAll.mockReset();
   SerieEjecutada.findAll.mockReset();
   sequelize.query.mockReset();
@@ -96,7 +98,7 @@ describe('Reportes', () => {
   describe('metricasPorGrupo', () => {
     test('devuelve métricas agrupadas y evolución semanal', async () => {
       const usuario = crearUsuario('instruido', 1);
-      Instruido.findByPk.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll.mockResolvedValue([
         crearSerie({ id: 1, repeticionesRealizadas: 10, pesoKg: 50, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
         crearSerie({ id: 2, repeticionesRealizadas: 8, pesoKg: 60, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
@@ -119,7 +121,7 @@ describe('Reportes', () => {
   describe('evolucionPorGrupo', () => {
     test('devuelve evolución filtrada por grupo muscular', async () => {
       const usuario = crearUsuario('entrenador', 2);
-      Instruido.findByPk.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll.mockResolvedValue([
         crearSerie({ id: 1, repeticionesRealizadas: 10, pesoKg: 50, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
         crearSerie({ id: 2, repeticionesRealizadas: 8, pesoKg: 60, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-08' } }),
@@ -136,7 +138,7 @@ describe('Reportes', () => {
   describe('comparativa', () => {
     test('devuelve comparativa con promedio histórico y otros instruidos', async () => {
       const usuario = crearUsuario('entrenador', 2);
-      Instruido.findByPk.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll
         .mockResolvedValueOnce([
           crearSerie({ id: 1, repeticionesRealizadas: 10, pesoKg: 50, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
@@ -163,21 +165,21 @@ describe('Reportes', () => {
         .toMatchObject({ status: 403, message: 'No puede consultar reportes de otro instruido' });
     });
 
-    test('entrenador puede consultar reportes de cualquier instruido', async () => {
+    test('entrenador no puede consultar reportes de instruido ajeno', async () => {
       const usuario = crearUsuario('entrenador', 2);
-      Instruido.findByPk.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 3 });
+      Instruido.findOne.mockResolvedValue(null);
       SerieEjecutada.findAll.mockResolvedValue([]);
 
-      const resultado = await reportesService.metricasPorGrupo(5, '30d', usuario);
-
-      expect(resultado.instruidoId).toBe(5);
+      await expect(reportesService.metricasPorGrupo(5, '30d', usuario))
+        .rejects
+        .toMatchObject({ status: 404, message: 'Instruido no encontrado' });
     });
   });
 
   describe('asociaciones de reportes', () => {
     test('los includes de SerieEjecutada usan el alias correcto', async () => {
       const usuario = crearUsuario('instruido', 1);
-      Instruido.findByPk.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll.mockResolvedValue([]);
 
       await reportesService.metricasPorGrupo(1, '30d', usuario);
@@ -196,7 +198,7 @@ describe('Reportes', () => {
   describe('validaciones defensivas', () => {
     test('ignora series sin asociaciones y trata valores no numéricos como cero', async () => {
       const usuario = crearUsuario('instruido', 1);
-      Instruido.findByPk.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 1, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll.mockResolvedValue([
         crearSerie({ id: 1, repeticionesRealizadas: 10, pesoKg: 50, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
         crearSerie({ id: 2, repeticionesRealizadas: null, pesoKg: 'no numerico', ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),
@@ -215,7 +217,7 @@ describe('Reportes', () => {
 
     test('promedio historico no falla con fechas nulas ni sin series', async () => {
       const usuario = crearUsuario('entrenador', 2);
-      Instruido.findByPk.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([
@@ -235,7 +237,7 @@ describe('Reportes', () => {
 
     test('comparativa no falla con series sin asociaciones o valores no numéricos', async () => {
       const usuario = crearUsuario('entrenador', 2);
-      Instruido.findByPk.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
+      Instruido.findOne.mockResolvedValue({ id: 5, nombre: 'Cliente A', entrenadorId: 2 });
       SerieEjecutada.findAll
         .mockResolvedValueOnce([
           crearSerie({ id: 1, repeticionesRealizadas: 10, pesoKg: 50, ejercicio: { grupoMuscular: 'Pecho' }, registroEntrenamiento: { fecha: '2026-09-01' } }),

@@ -1,5 +1,8 @@
 import json
+import logging
 from services.db_connector import execute_query, execute_one
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_cliente_completo(cliente_id: int) -> dict:
@@ -31,7 +34,48 @@ def fetch_perfil_medico(cliente_id: int) -> dict:
         WHERE pm.cliente_id = %s
     """
     perfil = execute_one(query, (cliente_id,))
+    if perfil and _perfil_medico_parece_cifrado(perfil):
+        logger.warning(
+            'perfil_medico del cliente %s parece estar cifrado en DB; '
+            'Guardian usara valores vacios como fallback',
+            cliente_id,
+        )
+        return _perfil_medico_vacio_seguro()
     return perfil
+
+
+def _perfil_medico_vacio_seguro() -> dict:
+    return {
+        'lesiones': [],
+        'condiciones_preexistentes': [],
+        'condicionesPreexistentes': [],
+        'alergias': [],
+        'medicacion': [],
+        'medicacionActual': [],
+    }
+
+
+def _perfil_medico_parece_cifrado(perfil: dict) -> bool:
+    campos = [
+        'alergias',
+        'intolerancias',
+        'lesiones',
+        'condiciones_preexistentes',
+        'medicacion_actual',
+        'observaciones',
+    ]
+    for campo in campos:
+        valor = perfil.get(campo)
+        if not isinstance(valor, str) or not valor.strip():
+            continue
+        try:
+            json.loads(valor)
+            continue
+        except (json.JSONDecodeError, TypeError):
+            pass
+        if ':' in valor:
+            return True
+    return False
 
 
 def fetch_todos_ejercicios() -> list:

@@ -1,3 +1,4 @@
+import json
 import time
 import logging
 from services.data_fetcher import (
@@ -113,7 +114,11 @@ class HitlEngine:
         return keys_to_camel_case(resultado)
 
     def validar_ejercicio_individual(
-        self, ejercicio_id: int, cliente_id: int, carga_kg: float = None
+        self,
+        ejercicio_id: int,
+        cliente_id: int,
+        carga_kg: float = None,
+        perfil_medico: dict = None,
     ) -> dict:
         from services.data_fetcher import fetch_ejercicio_por_id
 
@@ -125,14 +130,16 @@ class HitlEngine:
         if not datos_cliente:
             return {'error': 'Cliente no encontrado', 'bloqueado': False}
 
-        perfil_medico = fetch_perfil_medico(cliente_id)
-        lesiones = parsear_lesiones(perfil_medico)
-        condiciones = parsear_condiciones(perfil_medico)
-
-        perfil_parseado = {
-            'lesiones': lesiones,
-            'condicionesPreexistentes': condiciones,
-        }
+        if perfil_medico is not None:
+            perfil_parseado = self._normalizar_perfil_medico_para_validacion(
+                perfil_medico
+            )
+        else:
+            perfil_raw = fetch_perfil_medico(cliente_id)
+            perfil_parseado = {
+                'lesiones': parsear_lesiones(perfil_raw),
+                'condicionesPreexistentes': parsear_condiciones(perfil_raw),
+            }
 
         datos_cliente_camel = {
             'edad': datos_cliente['edad'],
@@ -220,6 +227,45 @@ class HitlEngine:
             'alergias': parsear_alergias(perfil_raw),
             'medicacion': [],
         }
+
+    def _normalizar_perfil_medico_para_validacion(
+        self, perfil_medico: dict
+    ) -> dict:
+        """Normaliza un perfil medico recibido desde Node para la validacion.
+
+        Soporta tanto claves camelCase (contrato HTTP) como snake_case.
+        Acepta listas, cadenas JSON o cadenas separadas por comas.
+        """
+        if not perfil_medico:
+            return {'lesiones': [], 'condicionesPreexistentes': []}
+
+        lesiones_raw = perfil_medico.get('lesiones', [])
+        condiciones_raw = (
+            perfil_medico.get('condicionesPreexistentes')
+            if 'condicionesPreexistentes' in perfil_medico
+            else perfil_medico.get('condiciones_preexistentes', [])
+        )
+
+        return {
+            'lesiones': self._a_lista_strings(lesiones_raw),
+            'condicionesPreexistentes': self._a_lista_strings(condiciones_raw),
+        }
+
+    @staticmethod
+    def _a_lista_strings(valor) -> list:
+        if not valor:
+            return []
+        if isinstance(valor, list):
+            return [str(item) for item in valor if item]
+        if isinstance(valor, str):
+            try:
+                data = json.loads(valor)
+                if isinstance(data, list):
+                    return [str(item) for item in data if item]
+                return [str(data)]
+            except (json.JSONDecodeError, TypeError):
+                return [item.strip() for item in valor.split(',') if item.strip()]
+        return []
 
     def _error_response(self, mensaje: str, status: int, datos_extra: dict = None) -> dict:
         respuesta = {

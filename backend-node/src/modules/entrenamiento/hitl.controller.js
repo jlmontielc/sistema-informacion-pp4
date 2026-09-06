@@ -26,6 +26,7 @@ const validarEjercicio = async (req, res, next) => {
     const resultado = await hitlService.validarEjercicio(
       Number(ejercicioId),
       Number(clienteId),
+      req.usuario,
       cargaKg ? Number(cargaKg) : null,
     );
     res.json(resultado);

@@ -3,18 +3,21 @@ const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
 const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
 
+const esAdmin = (usuario) => usuario && usuario.rol === 'administrador';
+
+const wherePorUsuario = (usuario) => (esAdmin(usuario) ? {} : { entrenadorId: usuario.id });
+
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
   where.eliminado = false;
-  if (!filtros.admin) {
+  const admin = filtros.admin === true;
+  const propias = filtros.propias === true || filtros.propias === 'true';
+  if (!admin && !propias) {
     where.entrenadorId = entrenadorId;
   }
-  if (filtros.instruidoId) where.instruidoId = filtros.instruidoId;
-  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
-  if (filtros.propias === 'true' && filtros.instruidoIdActual) {
-    where.instruidoId = filtros.instruidoIdActual;
-  }
-  if (filtros.ia === 'true') {
+  if (filtros.instruidoId) where.instruidoId = Number(filtros.instruidoId);
+  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true' || filtros.activa === true;
+  if (filtros.ia === 'true' || filtros.ia === true) {
     where.activa = false;
     where.personalizadaPorEntrenador = false;
   }
@@ -25,9 +28,9 @@ const obtenerTodos = async (entrenadorId, filtros = {}) => {
   });
 };
 
-const obtenerPorId = async (id, entrenadorId) =>
+const obtenerPorId = async (id, usuario) =>
   RutinaAsignada.findOne({
-    where: { id, entrenadorId },
+    where: { id, ...wherePorUsuario(usuario) },
     include: [{ model: Instruido, attributes: ['id', 'nombre'] }],
   });
 
@@ -54,11 +57,13 @@ const crear = async (datos, entrenadorId) => {
   return RutinaAsignada.create(datosFinales);
 };
 
-const actualizar = async (id, datos, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+const actualizar = async (id, datos, usuario) => {
+  const rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!rutina) return null;
   if (datos.instruidoId) {
-    const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
+    const whereInstruido = { id: datos.instruidoId };
+    if (!esAdmin(usuario)) whereInstruido.entrenadorId = usuario.id;
+    const instruido = await Instruido.findOne({ where: whereInstruido });
     if (!instruido) {
       const err = new Error('Instruido no encontrado');
       err.status = 404;
@@ -80,9 +85,9 @@ const eliminar = async (id, usuario) => {
   return rutina.update({ eliminado: true });
 };
 
-const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
+const clonarDesdePlantilla = async (plantillaId, datos, usuario) => {
   const plantilla = await PlantillaEntrenamiento.findOne({
-    where: { id: plantillaId, entrenadorId },
+    where: { id: plantillaId, ...wherePorUsuario(usuario) },
   });
   if (!plantilla) {
     const err = new Error('Plantilla no encontrada');
@@ -90,9 +95,9 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
     throw err;
   }
 
-  const instruido = await Instruido.findOne({
-    where: { id: datos.instruidoId, entrenadorId },
-  });
+  const whereInstruido = { id: datos.instruidoId };
+  if (!esAdmin(usuario)) whereInstruido.entrenadorId = usuario.id;
+  const instruido = await Instruido.findOne({ where: whereInstruido });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');
     err.status = 404;
@@ -105,7 +110,7 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
   const rutinaCreada = await RutinaAsignada.create({
     instruidoId: datos.instruidoId,
     plantillaOrigenId: plantillaId,
-    entrenadorId,
+    entrenadorId: usuario.id,
     nombre: plantilla.nombre,
     tipo: plantilla.tipo,
     ejercicios: ejerciciosNormalizados,
@@ -120,12 +125,12 @@ const clonarDesdePlantilla = async (plantillaId, datos, entrenadorId) => {
   return rutinaCreada;
 };
 
-const obtenerPorDia = async (id, dia, entrenadorId, instruidoId = null) => {
+const obtenerPorDia = async (id, dia, usuario, instruidoId = null) => {
   let rutina;
   if (instruidoId) {
     rutina = await RutinaAsignada.findOne({ where: { id, instruidoId } });
   } else {
-    rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+    rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   }
   if (!rutina) return null;
 
@@ -145,12 +150,12 @@ const obtenerPorDia = async (id, dia, entrenadorId, instruidoId = null) => {
   };
 };
 
-const obtenerResumenSemanal = async (id, entrenadorId, instruidoId = null) => {
+const obtenerResumenSemanal = async (id, usuario, instruidoId = null) => {
   let rutina;
   if (instruidoId) {
     rutina = await RutinaAsignada.findOne({ where: { id, instruidoId } });
   } else {
-    rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+    rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   }
   if (!rutina) return null;
 
@@ -183,8 +188,8 @@ const obtenerResumenSemanal = async (id, entrenadorId, instruidoId = null) => {
   };
 };
 
-const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+const agregarEjercicioADia = async (id, dia, datos, usuario) => {
+  const rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!rutina) return null;
 
   if (!rutina.diasSemana || !rutina.diasSemana[String(dia)]) {
@@ -225,8 +230,8 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
   return normalizado;
 };
 
-const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+const editarEjercicioEnDia = async (id, dia, idx, datos, usuario) => {
+  const rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!rutina) return null;
 
   const ejercicios = rutina.ejercicios || [];
@@ -266,8 +271,8 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
   return normalizado;
 };
 
-const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+const eliminarEjercicioDeDia = async (id, dia, idx, usuario) => {
+  const rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!rutina) return null;
 
   const ejercicios = rutina.ejercicios || [];
@@ -299,8 +304,8 @@ const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {
   return { eliminado: true, ejercicio: ejercicioAEliminar };
 };
 
-const reordenarDia = async (id, dia, nuevoOrden, entrenadorId) => {
-  const rutina = await RutinaAsignada.findOne({ where: { id, entrenadorId } });
+const reordenarDia = async (id, dia, nuevoOrden, usuario) => {
+  const rutina = await RutinaAsignada.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!rutina) return null;
 
   const ejercicios = rutina.ejercicios || [];

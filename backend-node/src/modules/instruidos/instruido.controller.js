@@ -70,7 +70,7 @@ const actualizarMiPerfil = async (req, res, next) => {
 
 const obtenerMiPerfilMedico = async (req, res, next) => {
   try {
-    const perfil = await perfilMedicoService.obtenerPorInstruidoId(req.usuario.id, req.usuario);
+    const perfil = await perfilMedicoService.obtenerPerfilSeguroParaFrontend(req.usuario.id, req.usuario);
     res.json(perfil || {});
   } catch (err) {
     next(err);
