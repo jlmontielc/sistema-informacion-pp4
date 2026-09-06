@@ -1,4 +1,5 @@
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const jwt = require('jsonwebtoken');
 const config = require('../constants');
@@ -15,9 +16,11 @@ const generarTokenServicio = () => jwt.sign(
 const httpRequest = (path, method, body, timeout) => new Promise((resolve, reject) => {
   const parsedUrl = url.parse(FLASK_URL);
   const data = body ? JSON.stringify(body) : '';
+  const esHttps = parsedUrl.protocol === 'https:';
+  const cliente = esHttps ? https : http;
   const options = {
     hostname: parsedUrl.hostname,
-    port: parsedUrl.port || 80,
+    port: parsedUrl.port || (esHttps ? 443 : 80),
     path,
     method,
     timeout: timeout || 15000,
@@ -28,7 +31,7 @@ const httpRequest = (path, method, body, timeout) => new Promise((resolve, rejec
     },
   };
 
-  const req = http.request(options, (res) => {
+  const req = cliente.request(options, (res) => {
     let responseData = '';
     res.on('data', (chunk) => { responseData += chunk; });
     res.on('end', () => {

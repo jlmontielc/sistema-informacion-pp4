@@ -1,5 +1,9 @@
 const Joi = require('joi');
 
+const esquemaInstruidoIdParam = Joi.object({
+  instruidoId: Joi.number().integer().positive().required(),
+});
+
 const esquemaPerfilMedico = Joi.object({
   alergias: Joi.string().allow('', null).optional(),
   intolerancias: Joi.string().allow('', null).optional(),
@@ -9,4 +13,4 @@ const esquemaPerfilMedico = Joi.object({
   observaciones: Joi.string().allow('', null).optional(),
 });
 
-module.exports = { esquemaPerfilMedico };
+module.exports = { esquemaInstruidoIdParam, esquemaPerfilMedico };

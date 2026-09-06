@@ -2,14 +2,16 @@ const rutinasAsignadasService = require('./rutinas-asignadas.service');
 
 const obtenerTodos = async (req, res, next) => {
   try {
-    const filtros = { ...req.query };
+    const admin = req.usuario.rol === 'administrador';
+    const filtros = { admin };
     if (req.usuario.rol === 'instruido') {
-      filtros.instruidoIdActual = req.usuario.id;
-      filtros.propias = 'true';
+      filtros.instruidoId = req.usuario.id;
+      filtros.propias = true;
+    } else if (req.query.instruidoId) {
+      filtros.instruidoId = req.query.instruidoId;
     }
-    if (req.usuario.rol === 'administrador') {
-      filtros.admin = true;
-    }
+    if (req.query.activa !== undefined) filtros.activa = req.query.activa;
+    if (req.query.ia !== undefined) filtros.ia = req.query.ia;
     const rutinas = await rutinasAsignadasService.obtenerTodos(req.usuario.id, filtros);
     res.json(rutinas);
   } catch (err) {
@@ -23,7 +25,7 @@ const obtenerPorId = async (req, res, next) => {
     if (req.usuario.rol === 'instruido') {
       rutina = await rutinasAsignadasService.obtenerPorIdPropio(req.params.id, req.usuario.id);
     } else {
-      rutina = await rutinasAsignadasService.obtenerPorId(req.params.id, req.usuario.id);
+      rutina = await rutinasAsignadasService.obtenerPorId(req.params.id, req.usuario);
     }
     if (!rutina) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(rutina);
@@ -43,7 +45,7 @@ const crear = async (req, res, next) => {
 
 const actualizar = async (req, res, next) => {
   try {
-    const rutina = await rutinasAsignadasService.actualizar(req.params.id, req.body, req.usuario.id);
+    const rutina = await rutinasAsignadasService.actualizar(req.params.id, req.body, req.usuario);
     if (!rutina) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(rutina);
   } catch (err) {
@@ -63,7 +65,7 @@ const eliminar = async (req, res, next) => {
 const clonarDesdePlantilla = async (req, res, next) => {
   try {
     const rutina = await rutinasAsignadasService.clonarDesdePlantilla(
-      req.params.plantillaId, req.body, req.usuario.id
+      req.params.plantillaId, req.body, req.usuario
     );
     res.status(201).json(rutina);
   } catch (err) {
@@ -80,7 +82,7 @@ const obtenerPorDia = async (req, res, next) => {
       );
     } else {
       resultado = await rutinasAsignadasService.obtenerPorDia(
-        req.params.id, req.params.dia, req.usuario.id
+        req.params.id, req.params.dia, req.usuario
       );
     }
     if (!resultado) return res.status(404).json({ error: 'Rutina no encontrada' });
@@ -99,7 +101,7 @@ const obtenerResumenSemanal = async (req, res, next) => {
       );
     } else {
       resumen = await rutinasAsignadasService.obtenerResumenSemanal(
-        req.params.id, req.usuario.id
+        req.params.id, req.usuario
       );
     }
     if (!resumen) return res.status(404).json({ error: 'Rutina no encontrada' });
@@ -112,7 +114,7 @@ const obtenerResumenSemanal = async (req, res, next) => {
 const agregarEjercicioADia = async (req, res, next) => {
   try {
     const ejercicio = await rutinasAsignadasService.agregarEjercicioADia(
-      req.params.id, req.params.dia, req.body, req.usuario.id
+      req.params.id, req.params.dia, req.body, req.usuario
     );
     if (!ejercicio) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.status(201).json(ejercicio);
@@ -124,7 +126,7 @@ const agregarEjercicioADia = async (req, res, next) => {
 const editarEjercicioEnDia = async (req, res, next) => {
   try {
     const ejercicio = await rutinasAsignadasService.editarEjercicioEnDia(
-      req.params.id, req.params.dia, Number(req.params.idx), req.body, req.usuario.id
+      req.params.id, req.params.dia, Number(req.params.idx), req.body, req.usuario
     );
     if (!ejercicio) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(ejercicio);
@@ -136,7 +138,7 @@ const editarEjercicioEnDia = async (req, res, next) => {
 const eliminarEjercicioDeDia = async (req, res, next) => {
   try {
     const resultado = await rutinasAsignadasService.eliminarEjercicioDeDia(
-      req.params.id, req.params.dia, Number(req.params.idx), req.usuario.id
+      req.params.id, req.params.dia, Number(req.params.idx), req.usuario
     );
     if (!resultado) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(resultado);
@@ -148,7 +150,7 @@ const eliminarEjercicioDeDia = async (req, res, next) => {
 const reordenarDia = async (req, res, next) => {
   try {
     const ejercicios = await rutinasAsignadasService.reordenarDia(
-      req.params.id, req.params.dia, req.body.orden, req.usuario.id
+      req.params.id, req.params.dia, req.body.orden, req.usuario
     );
     if (!ejercicios) return res.status(404).json({ error: 'Rutina no encontrada' });
     res.json(ejercicios);

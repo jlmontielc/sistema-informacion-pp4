@@ -529,7 +529,7 @@ router.get('/historial', autorizar('entrenador', 'administrador'), ctrl.listarPa
  *       500:
  *         $ref: '#/components/responses/Error'
  */
-router.get('/:pagoId/comprobante', ctrl.obtenerComprobante);
+router.get('/:pagoId/comprobante', autorizar('instruido', 'entrenador', 'administrador'), ctrl.obtenerComprobante);
 
 /**
  * @openapi

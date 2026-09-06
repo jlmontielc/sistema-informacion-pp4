@@ -2,43 +2,48 @@ const { PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
 const { Op } = require('sequelize');
 const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
 
+const esAdmin = (usuario) => usuario && usuario.rol === 'administrador';
+
+const wherePorUsuario = (usuario) => (esAdmin(usuario) ? {} : { entrenadorId: usuario.id });
+
 const obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
-  if (!filtros.admin) {
+  const admin = filtros.admin === true;
+  if (!admin) {
     where.entrenadorId = entrenadorId;
   }
   if (filtros.tipo) where.tipo = filtros.tipo;
   if (filtros.objetivo) where.objetivo = filtros.objetivo;
-  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true';
+  if (filtros.activa !== undefined) where.activa = filtros.activa === 'true' || filtros.activa === true;
   if (filtros.busqueda) {
     where.nombre = { [Op.like]: `%${filtros.busqueda}%` };
   }
   return PlantillaEntrenamiento.findAll({ where, order: [['createdAt', 'DESC']] });
 };
 
-const obtenerPorId = async (id, entrenadorId) =>
-  PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const obtenerPorId = async (id, usuario) =>
+  PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
 
 const crear = async (datos, entrenadorId) => {
   const normalizados = await normalizarPayloadRutina(datos);
   return PlantillaEntrenamiento.create({ ...normalizados, entrenadorId });
 };
 
-const actualizar = async (id, datos, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const actualizar = async (id, datos, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
   const normalizados = await normalizarPayloadRutina(datos);
   return plantilla.update(normalizados);
 };
 
-const eliminar = async (id, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const eliminar = async (id, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
   return plantilla.destroy();
 };
 
-const obtenerPorDia = async (id, dia, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const obtenerPorDia = async (id, dia, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
   const ejerciciosNormalizados = await normalizarEjercicios(plantilla.ejercicios || []);
@@ -57,8 +62,8 @@ const obtenerPorDia = async (id, dia, entrenadorId) => {
   };
 };
 
-const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const agregarEjercicioADia = async (id, dia, datos, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
   if (!plantilla.diasSemana || !plantilla.diasSemana[String(dia)]) {
@@ -99,8 +104,8 @@ const agregarEjercicioADia = async (id, dia, datos, entrenadorId) => {
   return normalizado;
 };
 
-const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const editarEjercicioEnDia = async (id, dia, idx, datos, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
   const ejercicios = plantilla.ejercicios || [];
@@ -140,8 +145,8 @@ const editarEjercicioEnDia = async (id, dia, idx, datos, entrenadorId) => {
   return normalizado;
 };
 
-const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const eliminarEjercicioDeDia = async (id, dia, idx, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
   const ejercicios = plantilla.ejercicios || [];
@@ -173,8 +178,8 @@ const eliminarEjercicioDeDia = async (id, dia, idx, entrenadorId) => {
   return { eliminado: true, ejercicio: ejercicioAEliminar };
 };
 
-const reordenarDia = async (id, dia, nuevoOrden, entrenadorId) => {
-  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, entrenadorId } });
+const reordenarDia = async (id, dia, nuevoOrden, usuario) => {
+  const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
   const ejercicios = plantilla.ejercicios || [];

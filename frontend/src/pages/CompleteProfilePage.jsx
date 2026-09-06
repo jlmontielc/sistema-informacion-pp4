@@ -15,13 +15,20 @@ const CAMPOS_MEDICOS = [
   { name: 'observaciones', label: 'Observaciones', placeholder: 'Cualquier otra información relevante para tu entrenamiento' },
 ];
 
+const inicializarForm = () => {
+  const inicial = {};
+  CAMPOS_MEDICOS.forEach(({ name }) => { inicial[name] = ''; });
+  return inicial;
+};
+
 export default function CompleteProfilePage() {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState(inicializarForm);
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+  const [perfilMedicoCompleto, setPerfilMedicoCompleto] = useState(false);
 
   useEffect(() => {
     if (!user || user.tipo !== 'instruido') {
@@ -30,22 +37,15 @@ export default function CompleteProfilePage() {
     }
     api.get('/instruidos/yo/perfil-medico')
       .then((res) => {
-        if (res.data && Object.keys(res.data).length > 0) {
-          const datos = {};
-          CAMPOS_MEDICOS.forEach(({ name }) => {
-            datos[name] = res.data[name] || '';
-          });
-          setForm(datos);
-        } else {
-          const inicial = {};
-          CAMPOS_MEDICOS.forEach(({ name }) => { inicial[name] = ''; });
-          setForm(inicial);
+        const datos = res.data || {};
+        setPerfilMedicoCompleto(Boolean(datos.perfilMedicoCompleto));
+        // El backend ya no devuelve datos sensibles; solo usamos observaciones si vienen.
+        if (datos.observaciones) {
+          setForm((prev) => ({ ...prev, observaciones: datos.observaciones }));
         }
       })
       .catch(() => {
-        const inicial = {};
-        CAMPOS_MEDICOS.forEach(({ name }) => { inicial[name] = ''; });
-        setForm(inicial);
+        setPerfilMedicoCompleto(false);
       })
       .finally(() => setCargando(false));
   }, [user, navigate]);
@@ -95,6 +95,20 @@ export default function CompleteProfilePage() {
               Separa los valores con coma.
             </p>
           </div>
+
+          {perfilMedicoCompleto && (
+            <div style={{
+              padding: 'var(--space-3) var(--space-4)',
+              marginBottom: 'var(--space-6)',
+              backgroundColor: 'var(--color-success)',
+              color: 'var(--color-text-inverse)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-sm)',
+              textAlign: 'center',
+            }}>
+              Perfil médico ya registrado. Puedes actualizarlo si es necesario.
+            </div>
+          )}
 
           {error && (
             <div style={{

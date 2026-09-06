@@ -8,6 +8,11 @@ const esquemaIdParam = Joi.object({
   id: Joi.number().integer().positive().required(),
 });
 
+const esquemaValidateParams = Joi.object({
+  ejercicioId: Joi.number().integer().positive().required(),
+  clienteId: Joi.number().integer().positive().required(),
+});
+
 const ejercicioRutina = Joi.object({
   ejercicioId: Joi.number().integer().required(),
   dia: Joi.number().integer().min(1).max(7).required(),
@@ -43,11 +48,12 @@ const esquemaDecisionRutina = Joi.object({
   fechaFin: Joi.date().iso().optional(),
   ejerciciosAgregados: Joi.array().items(Joi.object()).optional(),
   ejerciciosEliminados: Joi.array().items(Joi.object()).optional(),
-  modificacionCargas: Joi.object().optional(),
+  modificacionCargas: Joi.array().items(Joi.object()).optional(),
 });
 
 module.exports = {
   esquemaClienteIdParam,
   esquemaIdParam,
+  esquemaValidateParams,
   esquemaDecisionRutina,
 };

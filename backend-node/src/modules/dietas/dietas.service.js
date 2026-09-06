@@ -26,7 +26,7 @@ const listarPorUsuario = async (usuario) => {
   if (usuario.rol === 'instruido') where.instruidoId = usuario.id;
   return Dieta.findAll({
     where,
-    order: [['created_at', 'DESC']],
+    order: [['createdAt', 'DESC']],
   });
 };
 

@@ -60,16 +60,19 @@ const verificarAcceso = async (instruidoId, usuario) => {
     throw errorAutorizacion('No puede consultar reportes de otro instruido');
   }
 
-  const instruido = await Instruido.findByPk(instruidoId, {
+  const where = { id: instruidoId };
+  if (usuario.rol === 'entrenador') {
+    where.entrenadorId = usuario.id;
+  }
+
+  const instruido = await Instruido.findOne({
+    where,
     attributes: ['id', 'nombre', 'entrenadorId'],
   });
 
   if (!instruido) {
     throw errorAutorizacion('Instruido no encontrado', 404);
   }
-
-  // El entrenador puede consultar reportes de cualquier instruido,
-  // pero el listado solo muestra los instruidos asignados a él.
 
   return instruido;
 };

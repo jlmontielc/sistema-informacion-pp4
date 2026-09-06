@@ -14,7 +14,11 @@ const obtenerTodos = async (usuarioId, rol) => {
 };
 
 const obtenerPorId = async (id, usuarioId, rol) => {
-  return Instruido.findByPk(id, ATRIBUTOS_SEGUROS);
+  const where = { id };
+  if (rol === 'entrenador') {
+    where.entrenadorId = usuarioId;
+  }
+  return Instruido.findOne({ where, ...ATRIBUTOS_SEGUROS });
 };
 
 const crear = async (datos, entrenadorId) => {
@@ -28,7 +32,11 @@ const crear = async (datos, entrenadorId) => {
 };
 
 const actualizar = async (id, datos, usuarioId, rol) => {
-  const instruido = await Instruido.findByPk(id);
+  const where = { id };
+  if (rol === 'entrenador') {
+    where.entrenadorId = usuarioId;
+  }
+  const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
   const datosActualizar = {};
   if (datos.nombre) datosActualizar.nombre = datos.nombre;
@@ -51,7 +59,11 @@ const actualizar = async (id, datos, usuarioId, rol) => {
 };
 
 const eliminar = async (id, usuarioId, rol) => {
-  const instruido = await Instruido.findByPk(id);
+  const where = { id };
+  if (rol === 'entrenador') {
+    where.entrenadorId = usuarioId;
+  }
+  const instruido = await Instruido.findOne({ where });
   if (!instruido) return null;
   return instruido.destroy();
 };

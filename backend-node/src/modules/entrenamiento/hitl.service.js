@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const { Instruido } = require('../instruidos/instruido.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
+const perfilMedicoService = require('../instruidos/perfil-medico.service');
 const { RegistroEntrenamiento, RutinaAsignada, PlantillaEntrenamiento } = require('./entrenamiento.model');
 const { HitlFeedback } = require('./hitl-feedback.model');
 const { CalculoMetabolico } = require('../metabolismo/metabolismo.model');
@@ -152,10 +153,29 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
   };
 };
 
-const validarEjercicio = async (ejercicioId, clienteId, cargaKg = null) => {
+const validarEjercicio = async (ejercicioId, clienteId, usuario, cargaKg = null) => {
+  const where = { id: clienteId };
+  if (usuario.rol !== 'administrador') {
+    where.entrenadorId = usuario.id;
+  }
+  const instruido = await Instruido.findOne({ where });
+  if (!instruido) {
+    const err = new Error('Instruido no encontrado o no pertenece al entrenador');
+    err.status = 404;
+    throw err;
+  }
+
+  const perfilDescifrado = await perfilMedicoService.obtenerPerfilDescifradoParaFlask(clienteId);
+
   const payload = {
     ejercicioId,
     clienteId,
+    perfilMedico: {
+      lesiones: perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [],
+      condicionesPreexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
+      alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
+      medicacion: perfilDescifrado ? parsearCampoJson(perfilDescifrado.medicacionActual) : [],
+    },
   };
   if (cargaKg !== null) {
     payload.cargaKg = cargaKg;
