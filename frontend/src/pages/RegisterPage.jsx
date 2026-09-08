@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { Card } from '../components/common/Card';
+import { DiaSelector } from '../components/entrenamiento/DiaSelector';
 import { OBJETIVOS_ENTRENAMIENTO, NIVELES_EXPERIENCIA } from '../utils/constants';
 
 const OPCIONES_SEXO = [
@@ -24,6 +25,7 @@ const OPCIONES_PROPOSTO = OBJETIVOS_ENTRENAMIENTO;
 export default function RegisterPage() {
   const { register, loading } = useAuth();
   const [error, setError] = useState('');
+  const [diasSemana, setDiasSemana] = useState([]);
   const [form, setForm] = useState({
     nombre: '',
     email: '',
@@ -43,6 +45,13 @@ export default function RegisterPage() {
     setError('');
   };
 
+  const toggleDia = (dia) => {
+    setDiasSemana((prev) =>
+      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia].sort((a, b) => a - b)
+    );
+    setError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -54,6 +63,11 @@ export default function RegisterPage() {
 
     if (!form.edad || !form.peso || !form.altura || !form.sexo || !form.nivelActividad) {
       setError('Completa todos los campos obligatorios');
+      return;
+    }
+
+    if (diasSemana.length === 0) {
+      setError('Selecciona al menos un día disponible para entrenar');
       return;
     }
 
@@ -69,6 +83,8 @@ export default function RegisterPage() {
         nivelActividad: form.nivelActividad,
         propositoEntrenamiento: form.propositoEntrenamiento,
         nivelExperiencia: form.nivelExperiencia || null,
+        diasDisponibles: diasSemana.length,
+        diasSemana,
       };
 
       await register(datosEnvio);
@@ -247,6 +263,14 @@ export default function RegisterPage() {
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Días disponibles para entrenar</label>
+              <DiaSelector seleccionados={diasSemana} onToggle={toggleDia} />
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
+                Has seleccionado {diasSemana.length} {diasSemana.length === 1 ? 'día' : 'días'}
+              </p>
             </div>
 
             <Button type="submit" loading={loading} style={{ marginTop: 'var(--space-2)' }}>

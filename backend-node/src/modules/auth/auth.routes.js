@@ -350,6 +350,7 @@
  *                   nivelActividad: moderado
  *                   propositoEntrenamiento: Mejorar condición física general
  *                   diasDisponibles: 3
+ *                   diasSemana: [1, 3, 5]
  *                   fechaRegistro: 2025-03-10
  *                   activo: true
  *                   entrenadorId: 1
@@ -432,6 +433,7 @@
  *                   nivelActividad: activo
  *                   propositoEntrenamiento: Mejorar condición física general
  *                   diasDisponibles: 4
+ *                   diasSemana: [1, 3, 5, 6]
  *                   fechaRegistro: 2025-03-10
  *                   activo: true
  *                   entrenadorId: 1

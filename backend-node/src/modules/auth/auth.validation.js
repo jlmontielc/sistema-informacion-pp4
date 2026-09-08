@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { validarDiasSemana, validarCoherenciaDias } = require('../instruidos/instruido.validation');
 
 const esquemaRegistro = Joi.object({
   nombre: Joi.string().max(100).required(),
@@ -11,7 +12,11 @@ const esquemaRegistro = Joi.object({
   altura: Joi.when('rol', { is: 'instruido', then: Joi.number().positive().required(), otherwise: Joi.optional() }),
   sexo: Joi.when('rol', { is: 'instruido', then: Joi.string().valid('masculino', 'femenino').required(), otherwise: Joi.optional() }),
   nivelActividad: Joi.when('rol', { is: 'instruido', then: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').required(), otherwise: Joi.optional() }),
+  diasDisponibles: Joi.when('rol', { is: 'instruido', then: Joi.number().integer().min(1).max(7).required(), otherwise: Joi.optional() }),
+  diasSemana: Joi.when('rol', { is: 'instruido', then: validarDiasSemana.required(), otherwise: Joi.optional() }),
   entrenadorId: Joi.number().integer().positive().optional(),
+}).custom(validarCoherenciaDias).messages({
+  'dias.coherencia': 'diasDisponibles debe coincidir con la cantidad de dias en diasSemana',
 });
 
 const esquemaInicioSesion = Joi.object({
@@ -41,7 +46,11 @@ const esquemaActualizarPerfil = Joi.object({
   propositoEntrenamiento: Joi.string().valid('perdida_peso', 'ganancia_muscular', 'mantenimiento', 'rendimiento', 'rehabilitacion').optional().allow(''),
   nivelExperiencia: Joi.string().valid('principiante', 'intermedio', 'avanzado').optional().allow('', null),
   diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
-}).min(1).messages({ 'object.min': 'Debe proporcionar al menos un campo para actualizar' });
+  diasSemana: validarDiasSemana.optional(),
+}).min(1).messages({
+  'object.min': 'Debe proporcionar al menos un campo para actualizar',
+  'dias.coherencia': 'diasDisponibles debe coincidir con la cantidad de dias en diasSemana',
+}).custom(validarCoherenciaDias);
 
 const esquemaCertificacion = Joi.object({
   nombre: Joi.string().max(150).required(),
@@ -63,7 +72,10 @@ const esquemaRegistroInstruido = Joi.object({
   nivelActividad: Joi.string().valid('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo').required(),
   propositoEntrenamiento: Joi.string().valid('perdida_peso', 'ganancia_muscular', 'mantenimiento', 'rendimiento', 'rehabilitacion').optional().allow(''),
   nivelExperiencia: Joi.string().valid('principiante', 'intermedio', 'avanzado').optional().allow('', null),
-  diasDisponibles: Joi.number().integer().min(1).max(7).optional(),
+  diasDisponibles: Joi.number().integer().min(1).max(7).required(),
+  diasSemana: validarDiasSemana.required(),
+}).custom(validarCoherenciaDias).messages({
+  'dias.coherencia': 'diasDisponibles debe coincidir con la cantidad de dias en diasSemana',
 });
 
 module.exports = { esquemaRegistro, esquemaRegistroInstruido, esquemaInicioSesion, esquemaRefrescar, esquemaActualizarPerfil, esquemaCertificacion };

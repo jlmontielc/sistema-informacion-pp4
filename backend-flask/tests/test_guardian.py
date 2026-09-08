@@ -225,6 +225,7 @@ def test_clasificador_normaliza_proposito():
         'nivelExperiencia': 'principiante',
         'proposito': 'Ganar masa muscular',
         'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': [],
@@ -283,6 +284,7 @@ def test_clasificador_descarta_plantilla_con_ejerciciosBloqueados():
         'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'activo', 'nivelExperiencia': 'principiante',
         'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
@@ -331,6 +333,7 @@ def test_clasificador_todas_descartadas():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
         'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': ['rodilla - LCA'],
@@ -377,6 +380,7 @@ def test_clasificador_sin_historial():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
         'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': [],
@@ -592,6 +596,7 @@ def test_clasificador_precaucion_solo_si_lesion_coincide():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
         'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     # Lesión de rodilla - no debe afectar a ejercicios de hombro (precaución media)
     perfil_medico_rodilla = {
@@ -636,6 +641,7 @@ def test_clasificador_descarta_por_ejercicio_critical_en_plantilla():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
         'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico_rodilla = {
         'lesiones': ['rodilla - LCA'],
@@ -676,6 +682,7 @@ def test_clasificador_compatibilidad_sin_perfil_medico():
         'edad': 25, 'peso': 70, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'activo', 'nivelExperiencia': 'principiante',
         'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': [],
@@ -745,6 +752,7 @@ def test_clasificador_descarta_por_lesion_critical():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
         'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
@@ -791,6 +799,7 @@ def test_clasificador_descarta_por_lesion_high():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
         'proposito': 'ganar masa muscular', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
     }
     perfil_medico = {
         'lesiones': ['Manguito rotador hombro izquierdo'],
@@ -858,6 +867,7 @@ def test_clasificador_retorna_mejor_viable():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
         'proposito': 'ganar masa muscular', 'diasDisponibles': 4,
+        'diasSemana': [1, 2, 4, 5],
     }
     perfil_medico = {
         'lesiones': ['LCA reconstruido rodilla derecha'],
@@ -907,6 +917,7 @@ def test_clasificador_advertencia_baja_confianza():
         'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
         'nivelActividad': 'moderado', 'nivelExperiencia': 'intermedio',
         'proposito': 'ganar masa muscular', 'diasDisponibles': 5,
+        'diasSemana': [1, 2, 3, 5, 6],
     }
     perfil_medico = {
         'lesiones': [],
@@ -925,6 +936,72 @@ def test_clasificador_advertencia_baja_confianza():
     assert resultado['advertencia'] is not None
     assert 'sujeta a modificaciones' in resultado['advertencia'].lower()
     print("[PASS] test_clasificador_advertencia_baja_confianza")
+
+
+def test_clasificador_prefiere_dias_semana_compatibles():
+    from services.recommender import RecommenderEngine
+    from services.guardian import GuardianSeguridad
+
+    engine = RecommenderEngine()
+    guardian = GuardianSeguridad()
+
+    plantillas = [
+        {
+            'id': 70,
+            'nombre': 'Rutina Lunes-Miercoles-Viernes',
+            'tipo': 'fuerza',
+            'objetivo': 'mantenimiento',
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
+            'dias_semana': {
+                '1': {'diaSemana': 1, 'nombre': 'Lunes'},
+                '2': {'diaSemana': 3, 'nombre': 'Miercoles'},
+                '3': {'diaSemana': 5, 'nombre': 'Viernes'},
+            },
+            'ejercicios': [
+                {'ejercicioId': 1, 'nombre': 'Plancha', 'grupoMuscular': 'Core', 'contraindicaLesiones': None},
+            ],
+        },
+        {
+            'id': 71,
+            'nombre': 'Rutina Martes-Jueves-Sabado',
+            'tipo': 'fuerza',
+            'objetivo': 'mantenimiento',
+            'nivelDificultad': 'principiante',
+            'frecuenciaSemanal': 3,
+            'dias_semana': {
+                '1': {'diaSemana': 2, 'nombre': 'Martes'},
+                '2': {'diaSemana': 4, 'nombre': 'Jueves'},
+                '3': {'diaSemana': 6, 'nombre': 'Sabado'},
+            },
+            'ejercicios': [
+                {'ejercicioId': 2, 'nombre': 'Press de banca', 'grupoMuscular': 'Pecho', 'contraindicaLesiones': None},
+            ],
+        },
+    ]
+
+    datos_cliente = {
+        'edad': 30, 'peso': 75, 'altura': 1.75, 'sexo': 'masculino',
+        'nivelActividad': 'moderado', 'nivelExperiencia': 'principiante',
+        'proposito': 'mantenimiento', 'diasDisponibles': 3,
+        'diasSemana': [1, 3, 5],
+    }
+    perfil_medico = {
+        'lesiones': [],
+        'condicionesPreexistentes': [],
+    }
+
+    resultado = engine.clasificar_mejor_plantilla(
+        plantillas_con_ejercicios=plantillas,
+        datos_cliente=datos_cliente,
+        perfil_medico=perfil_medico,
+        guardian=guardian,
+    )
+
+    assert resultado['plantillaId'] == 70
+    assert resultado['confianza'] > 50
+    assert resultado['metadata']['scoresDetalle'][70] > resultado['metadata']['scoresDetalle'][71]
+    print("[PASS] test_clasificador_prefiere_dias_semana_compatibles")
 
 
 def test_validar_ejercicio_usa_perfil_medico_explicito():
@@ -1091,6 +1168,7 @@ if __name__ == '__main__':
     test_clasificador_descarta_por_lesion_high()
     test_clasificador_retorna_mejor_viable()
     test_clasificador_advertencia_baja_confianza()
+    test_clasificador_prefiere_dias_semana_compatibles()
     test_validar_ejercicio_usa_perfil_medico_explicito()
     test_validar_ejercicio_no_consulta_db_si_perfil_medico_presente()
     test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro()
