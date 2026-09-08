@@ -40,7 +40,8 @@ CREATE TABLE instruidos (
   nivel_actividad ENUM('sedentario', 'ligero', 'moderado', 'activo', 'muy_activo') NOT NULL,
   nivel_experiencia ENUM('principiante', 'intermedio', 'avanzado') DEFAULT NULL COMMENT 'Experiencia en entrenamiento - usado por IA predictiva',
   proposito_entrenamiento TEXT,
-  dias_disponibles INT,
+  dias_disponibles INT NOT NULL COMMENT 'Cantidad de dias disponibles (1-7)',
+  dias_semana JSON NOT NULL COMMENT 'Array de dias de la semana [1-7] (lunes=1, domingo=7)',
   fecha_registro DATE DEFAULT (CURRENT_DATE),
   activo BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -48,6 +49,10 @@ CREATE TABLE instruidos (
   CONSTRAINT fk_instruido_entrenador
     FOREIGN KEY (entrenador_id) REFERENCES entrenadores(id)
     ON DELETE CASCADE,
+  CONSTRAINT chk_instruidos_dias_semana_json CHECK (JSON_TYPE(dias_semana) = 'ARRAY'),
+  CONSTRAINT chk_instruidos_dias_semana_rango CHECK (JSON_LENGTH(dias_semana) BETWEEN 1 AND 7),
+  CONSTRAINT chk_instruidos_dias_semana_valores CHECK (JSON_CONTAINS('[1,2,3,4,5,6,7]', dias_semana) = 1),
+  CONSTRAINT chk_instruidos_dias_coherencia CHECK (dias_disponibles = JSON_LENGTH(dias_semana)),
   INDEX idx_instruido_entrenador (entrenador_id)
 ) ENGINE=InnoDB;
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
+import { DiaSelector } from '../entrenamiento/DiaSelector';
 import api from '../../services/api';
 import { labelObjetivo, labelNivelExperiencia } from '../../utils/constants';
 
@@ -59,7 +60,7 @@ export function MiPerfil({ perfil, onActualizar }) {
       nivelActividad: perfil.nivelActividad || '',
       propositoEntrenamiento: perfil.propositoEntrenamiento || '',
       nivelExperiencia: perfil.nivelExperiencia || '',
-      diasDisponibles: perfil.diasDisponibles || '',
+      diasSemana: Array.isArray(perfil.diasSemana) ? perfil.diasSemana : [],
       contrasena: '',
       contrasenaActual: '',
     });
@@ -75,6 +76,14 @@ export function MiPerfil({ perfil, onActualizar }) {
 
   const handleChange = (e) => {
     setDatos({ ...datos, [e.target.name]: e.target.value });
+  };
+
+  const handleToggleDia = (dia) => {
+    const actuales = datos.diasSemana || [];
+    const nuevos = actuales.includes(dia)
+      ? actuales.filter((d) => d !== dia)
+      : [...actuales, dia].sort((a, b) => a - b);
+    setDatos({ ...datos, diasSemana: nuevos });
   };
 
   const guardar = async () => {
@@ -98,11 +107,21 @@ export function MiPerfil({ perfil, onActualizar }) {
       if (!payload.nivelActividad) delete payload.nivelActividad;
       if (!payload.propositoEntrenamiento) delete payload.propositoEntrenamiento;
       if (!payload.nivelExperiencia) delete payload.nivelExperiencia;
-      if (!payload.diasDisponibles) delete payload.diasDisponibles;
+      if (perfil.tipo === 'instruido') {
+        const diasSeleccionados = Array.isArray(payload.diasSemana) ? payload.diasSemana : [];
+        if (diasSeleccionados.length === 0) {
+          setError('Selecciona al menos un día disponible');
+          setGuardando(false);
+          return;
+        }
+        payload.diasDisponibles = diasSeleccionados.length;
+        payload.diasSemana = diasSeleccionados;
+      } else {
+        delete payload.diasSemana;
+      }
       if (payload.edad) payload.edad = Number(payload.edad);
       if (payload.peso) payload.peso = Number(payload.peso);
       if (payload.altura) payload.altura = Number(payload.altura);
-      if (payload.diasDisponibles) payload.diasDisponibles = Number(payload.diasDisponibles);
       const res = await api.put('/auth/profile', payload);
       onActualizar(res.data);
       setSuccess('Cambios guardados correctamente');
@@ -173,7 +192,13 @@ export function MiPerfil({ perfil, onActualizar }) {
               <SelectField label="Nivel de actividad" name="nivelActividad" value={datos.nivelActividad} onChange={handleChange} options={nivelLabels} />
               <SelectField label="Propósito de entrenamiento" name="propositoEntrenamiento" value={datos.propositoEntrenamiento} onChange={handleChange} options={{ perdida_peso: 'Perder peso', ganancia_muscular: 'Ganar masa muscular', mantenimiento: 'Mantenimiento / Salud y bienestar', rendimiento: 'Rendimiento deportivo', rehabilitacion: 'Rehabilitación' }} />
               <SelectField label="Nivel de experiencia" name="nivelExperiencia" value={datos.nivelExperiencia} onChange={handleChange} options={{ principiante: 'Principiante', intermedio: 'Intermedio', avanzado: 'Avanzado' }} />
-              <Field label="Días disponibles" name="diasDisponibles" type="number" min="1" max="7" value={datos.diasDisponibles} onChange={handleChange} />
+              <div className="field" style={{ gridColumn: '1 / -1' }}>
+                <label className="field-label">Días disponibles para entrenar</label>
+                <DiaSelector seleccionados={datos.diasSemana || []} onToggle={handleToggleDia} />
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
+                  Has seleccionado {(datos.diasSemana || []).length} {(datos.diasSemana || []).length === 1 ? 'día' : 'días'}
+                </p>
+              </div>
             </div>
           )}
           {(perfil.tipo === 'instruido' || perfil.rol === 'entrenador') && (
@@ -230,7 +255,14 @@ export function MiPerfil({ perfil, onActualizar }) {
             <InfoField label="Altura" value={perfil.altura ? `${perfil.altura} m` : '—'} />
             <InfoField label="Sexo" value={sexoLabels[perfil.sexo] || '—'} />
             <InfoField label="Nivel de actividad" value={nivelLabels[perfil.nivelActividad] || '—'} />
-            <InfoField label="Días disponibles" value={perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'} />
+            <div>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>Días disponibles</p>
+              {Array.isArray(perfil.diasSemana) && perfil.diasSemana.length > 0 ? (
+                <DiaSelector modo="vista" seleccionados={perfil.diasSemana} />
+              ) : (
+                <p style={{ fontWeight: 'var(--font-medium)' }}>{perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'}</p>
+              )}
+            </div>
             <InfoField label="Propósito" value={perfil.propositoEntrenamiento ? labelObjetivo(perfil.propositoEntrenamiento) : '—'} />
             <InfoField label="Nivel de experiencia" value={perfil.nivelExperiencia ? labelNivelExperiencia(perfil.nivelExperiencia) : '—'} />
             <InfoField label="Fecha de registro" value={perfil.fechaRegistro || '—'} />

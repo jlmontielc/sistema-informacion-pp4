@@ -177,6 +177,10 @@ class HitlEngine:
 
     def _construir_datos_cliente(self, request_data: dict, cliente_id: int) -> dict:
         if 'edad' in request_data and 'peso' in request_data:
+            dias_disponibles = request_data.get('diasDisponibles', 3)
+            dias_semana = self._normalizar_dias_semana(
+                request_data.get('diasSemana'), dias_disponibles
+            )
             return {
                 'id': cliente_id,
                 'edad': request_data['edad'],
@@ -186,13 +190,19 @@ class HitlEngine:
                 'nivelActividad': request_data.get('nivelActividad', 'moderado'),
                 'nivelExperiencia': request_data.get('nivelExperiencia'),
                 'proposito': request_data.get('proposito', 'mantenimiento'),
-                'diasDisponibles': request_data.get('diasDisponibles', 3),
+                'diasDisponibles': dias_disponibles,
+                'diasSemana': dias_semana,
                 'preferencias': request_data.get('preferencias', {}),
             }
 
         cliente = fetch_cliente_completo(cliente_id)
         if not cliente:
             return None
+
+        dias_disponibles = cliente.get('dias_disponibles', 3)
+        dias_semana = self._normalizar_dias_semana(
+            cliente.get('diasSemana'), dias_disponibles
+        )
 
         return {
             'id': cliente['id'],
@@ -203,7 +213,8 @@ class HitlEngine:
             'nivelActividad': cliente.get('nivel_actividad'),
             'nivelExperiencia': cliente.get('nivel_experiencia'),
             'proposito': cliente.get('proposito', 'mantenimiento'),
-            'diasDisponibles': cliente.get('dias_disponibles', 3),
+            'diasDisponibles': dias_disponibles,
+            'diasSemana': dias_semana,
             'preferencias': request_data.get('preferencias', {}),
         }
 
@@ -266,6 +277,41 @@ class HitlEngine:
             except (json.JSONDecodeError, TypeError):
                 return [item.strip() for item in valor.split(',') if item.strip()]
         return []
+
+    @staticmethod
+    def _normalizar_dias_semana(dias_semana_raw, dias_disponibles: int = None) -> list:
+        """Convierte diasSemana a una lista ordenada de enteros 1-7.
+
+        Si no se recibe diasSemana, genera un default razonable a partir
+        de diasDisponibles (o [1, 2, 3, 4, 5] como ultimo recurso).
+        """
+        dias = []
+        if isinstance(dias_semana_raw, list):
+            dias = dias_semana_raw
+        elif isinstance(dias_semana_raw, str):
+            try:
+                data = json.loads(dias_semana_raw)
+                if isinstance(data, list):
+                    dias = data
+            except (json.JSONDecodeError, TypeError):
+                dias = [d.strip() for d in dias_semana_raw.split(',') if d.strip()]
+
+        validos = set()
+        for dia in dias:
+            try:
+                numero = int(dia)
+                if 1 <= numero <= 7:
+                    validos.add(numero)
+            except (ValueError, TypeError):
+                continue
+
+        if validos:
+            return sorted(validos)
+
+        if dias_disponibles:
+            cantidad = max(1, min(int(dias_disponibles), 7))
+            return list(range(1, cantidad + 1))
+        return [1, 2, 3, 4, 5]
 
     def _error_response(self, mensaje: str, status: int, datos_extra: dict = None) -> dict:
         respuesta = {

@@ -54,6 +54,7 @@ router.use(autenticar);
  *               nivelActividad: { type: string, enum: [sedentario, ligero, moderado, activo, muy_activo] }
  *               propositoEntrenamiento: { type: string }
  *               diasDisponibles: { type: integer, minimum: 1, maximum: 7 }
+ *               diasSemana: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
  *     responses:
  *       200:
  *         description: Perfil actualizado

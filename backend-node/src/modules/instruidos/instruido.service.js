@@ -49,6 +49,7 @@ const actualizar = async (id, datos, usuarioId, rol) => {
   if (datos.nivelExperiencia !== undefined) datosActualizar.nivelExperiencia = datos.nivelExperiencia;
   if (datos.propositoEntrenamiento !== undefined) datosActualizar.propositoEntrenamiento = datos.propositoEntrenamiento;
   if (datos.diasDisponibles !== undefined) datosActualizar.diasDisponibles = datos.diasDisponibles;
+  if (datos.diasSemana !== undefined) datosActualizar.diasSemana = datos.diasSemana;
   if (datos.activo !== undefined) datosActualizar.activo = datos.activo;
   if (datos.entrenadorId !== undefined) datosActualizar.entrenadorId = datos.entrenadorId;
   if (datos.contrasena) {
@@ -84,6 +85,7 @@ const actualizarPropio = async (id, datos) => {
   if (datos.nivelExperiencia !== undefined) datosActualizar.nivelExperiencia = datos.nivelExperiencia;
   if (datos.propositoEntrenamiento !== undefined) datosActualizar.propositoEntrenamiento = datos.propositoEntrenamiento;
   if (datos.diasDisponibles !== undefined) datosActualizar.diasDisponibles = datos.diasDisponibles;
+  if (datos.diasSemana !== undefined) datosActualizar.diasSemana = datos.diasSemana;
   if (datos.contrasena) datosActualizar.contrasenaHash = await encriptarContrasena(datos.contrasena);
   await instruido.update(datosActualizar);
   return Instruido.findByPk(id, ATRIBUTOS_SEGUROS);

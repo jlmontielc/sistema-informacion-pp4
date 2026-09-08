@@ -112,6 +112,7 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     nivelExperiencia: instruido.nivelExperiencia || null,
     proposito: instruido.propositoEntrenamiento || 'mantenimiento',
     diasDisponibles: instruido.diasDisponibles || 3,
+    diasSemana: instruido.diasSemana || [1, 2, 3, 4, 5, 6, 7].slice(0, instruido.diasDisponibles || 3),
     perfilMedico: {
       lesiones: lesionesFiltradas,
       condicionesPreexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],

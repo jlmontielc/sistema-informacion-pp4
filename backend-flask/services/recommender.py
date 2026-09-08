@@ -64,6 +64,7 @@ class RecommenderEngine:
             2,
         )
         dias_disponibles = max(2, min(datos_cliente.get('diasDisponibles', 3), 6))
+        dias_semana_cliente = datos_cliente.get('diasSemana') or []
         lesiones_cliente = (perfil_medico or {}).get('lesiones', [])
 
         if guardian is None:
@@ -142,7 +143,9 @@ class RecommenderEngine:
 
             score_objetivo = self._score_objetivo_plantilla(plantilla, objetivo_cliente)
             score_nivel = self._score_nivel_plantilla(plantilla, nivel_cliente)
-            score_dias = self._score_dias_plantilla(plantilla, dias_disponibles)
+            score_dias = self._score_dias_plantilla(
+                plantilla, dias_disponibles, dias_semana_cliente
+            )
 
             pesos_norm = self._normalizar_pesos()
 
@@ -264,8 +267,29 @@ class RecommenderEngine:
             return 33.0
         return 0.0
 
-    def _score_dias_plantilla(self, plantilla: dict, dias_disponibles: int) -> float:
+    def _score_dias_plantilla(
+        self,
+        plantilla: dict,
+        dias_disponibles: int,
+        dias_semana_cliente: list = None,
+    ) -> float:
         frecuencia = plantilla.get('frecuenciaSemanal') or plantilla.get('frecuencia_semanal')
+        score_frecuencia = self._score_frecuencia_dias(frecuencia, dias_disponibles)
+
+        dias_plantilla = self._extraer_dias_semana_plantilla(plantilla)
+        if not dias_semana_cliente or not dias_plantilla:
+            # Compatibilidad con datos antiguos: si no hay dias especificos,
+            # se mantiene el scoring unicamente por frecuencia semanal.
+            return score_frecuencia
+
+        coincidencias = len(set(dias_semana_cliente) & set(dias_plantilla))
+        ratio = coincidencias / len(set(dias_plantilla))
+        score_compatibilidad = 100.0 * ratio
+
+        # 60% frecuencia semanal, 40% compatibilidad de dias especificos.
+        return round(score_frecuencia * 0.6 + score_compatibilidad * 0.4, 1)
+
+    def _score_frecuencia_dias(self, frecuencia, dias_disponibles: int) -> float:
         if not frecuencia:
             return 30.0
         try:
@@ -281,6 +305,52 @@ class RecommenderEngine:
         if diferencia == 2:
             return 40.0
         return 10.0
+
+    def _extraer_dias_semana_plantilla(self, plantilla: dict) -> list:
+        """Extrae la lista de dias de la semana de una plantilla.
+
+        Soporta listas simples y el formato mapa de slots usado en la base de datos:
+        {"1": {"diaSemana": 1, "nombre": "Lunes"}, ...}
+        """
+        raw = plantilla.get('diasSemana') or plantilla.get('dias_semana')
+        if not raw:
+            return []
+        if isinstance(raw, list):
+            return self._filtrar_dias_semana_validos(raw)
+        if isinstance(raw, dict):
+            dias = []
+            for slot in raw.values():
+                if isinstance(slot, dict):
+                    dia = slot.get('diaSemana') or slot.get('dia_semana')
+                    if dia is not None:
+                        dias.append(dia)
+                elif isinstance(slot, int):
+                    dias.append(slot)
+            return self._filtrar_dias_semana_validos(dias)
+        if isinstance(raw, str):
+            try:
+                data = json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return self._filtrar_dias_semana_validos(
+                    [d.strip() for d in raw.split(',') if d.strip()]
+                )
+            if isinstance(data, list):
+                return self._filtrar_dias_semana_validos(data)
+            if isinstance(data, dict):
+                return self._extraer_dias_semana_plantilla({'dias_semana': data})
+            return []
+        return []
+
+    def _filtrar_dias_semana_validos(self, dias) -> list:
+        validos = set()
+        for dia in dias:
+            try:
+                numero = int(dia)
+                if 1 <= numero <= 7:
+                    validos.add(numero)
+            except (ValueError, TypeError):
+                continue
+        return sorted(validos)
 
     def _generar_explicacion_clasificador(
         self, mejor: dict, objetivo_cliente: str, nivel_cliente: int,

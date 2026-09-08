@@ -28,6 +28,8 @@ const crearInstruidoMock = (sobreescribir = {}) => ({
   altura: 1.75,
   sexo: 'masculino',
   nivelActividad: 'moderado',
+  diasDisponibles: 3,
+  diasSemana: [1, 3, 5],
   entrenadorId: 2,
   ...sobreescribir,
 });

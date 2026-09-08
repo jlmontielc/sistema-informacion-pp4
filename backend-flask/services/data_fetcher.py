@@ -6,18 +6,85 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_cliente_completo(cliente_id: int) -> dict:
-    query = """
+    query_con_dias = """
         SELECT
             i.id, i.nombre, i.edad, i.peso, i.altura, i.sexo,
-            i.nivel_actividad, i.nivel_experiencia, i.proposito_entrenamiento, i.dias_disponibles,
-            i.activo
+            i.nivel_actividad, i.nivel_experiencia, i.proposito_entrenamiento,
+            i.dias_disponibles, i.dias_semana, i.activo
         FROM instruidos i
         WHERE i.id = %s AND i.activo = TRUE
     """
-    cliente = execute_one(query, (cliente_id,))
+    query_sin_dias = """
+        SELECT
+            i.id, i.nombre, i.edad, i.peso, i.altura, i.sexo,
+            i.nivel_actividad, i.nivel_experiencia, i.proposito_entrenamiento,
+            i.dias_disponibles, i.activo
+        FROM instruidos i
+        WHERE i.id = %s AND i.activo = TRUE
+    """
+    try:
+        cliente = execute_one(query_con_dias, (cliente_id,))
+    except Exception as exc:
+        # Fallback si la columna dias_semana aun no existe en la base de datos.
+        error = str(exc).lower()
+        if 'unknown column' in error and 'dias_semana' in error:
+            cliente = execute_one(query_sin_dias, (cliente_id,))
+        else:
+            raise
+
     if cliente and 'proposito_entrenamiento' in cliente:
         cliente['proposito'] = cliente.pop('proposito_entrenamiento')
+    if cliente:
+        cliente['diasSemana'] = _parsear_dias_semana(cliente.get('dias_semana'))
     return cliente
+
+
+def _parsear_dias_semana(valor) -> list:
+    """Convierte el valor almacenado de dias_semana a una lista de enteros 1-7.
+
+    Soporta listas Python, cadenas JSON y cadenas separadas por comas.
+    Si el valor es un mapa de slots, extrae los dias de la semana de cada slot.
+    """
+    if not valor:
+        return []
+    if isinstance(valor, list):
+        return _filtrar_dias_validos(valor)
+    if isinstance(valor, dict):
+        dias = []
+        for slot in valor.values():
+            if isinstance(slot, dict):
+                dia = slot.get('diaSemana') or slot.get('dia_semana')
+                if dia is not None:
+                    dias.append(dia)
+            elif isinstance(slot, int):
+                dias.append(slot)
+        return _filtrar_dias_validos(dias)
+    if isinstance(valor, str):
+        try:
+            data = json.loads(valor)
+        except (json.JSONDecodeError, TypeError):
+            return _filtrar_dias_validos(
+                [d.strip() for d in valor.split(',') if d.strip()]
+            )
+        if isinstance(data, list):
+            return _filtrar_dias_validos(data)
+        if isinstance(data, dict):
+            return _parsear_dias_semana(data)
+        return []
+    return []
+
+
+def _filtrar_dias_validos(dias) -> list:
+    """Filtra y devuelve enteros unicos entre 1 y 7."""
+    validos = set()
+    for dia in dias:
+        try:
+            numero = int(dia)
+            if 1 <= numero <= 7:
+                validos.add(numero)
+        except (ValueError, TypeError):
+            continue
+    return sorted(validos)
 
 
 def fetch_perfil_medico(cliente_id: int) -> dict:

@@ -125,7 +125,8 @@ const registrar = async (datos, usuarioSolicitante) => {
     sexo: datos.sexo,
     nivelActividad: datos.nivelActividad,
     propositoEntrenamiento: datos.propositoEntrenamiento || null,
-    diasDisponibles: datos.diasDisponibles || null,
+    diasDisponibles: datos.diasDisponibles,
+    diasSemana: datos.diasSemana,
     entrenadorId: principal ? principal.id : null,
     rol: 'instruido',
   });
@@ -255,6 +256,7 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
   if (datos.nivelActividad) datosActualizar.nivelActividad = datos.nivelActividad;
   if (datos.propositoEntrenamiento !== undefined) datosActualizar.propositoEntrenamiento = datos.propositoEntrenamiento;
   if (datos.diasDisponibles !== undefined) datosActualizar.diasDisponibles = datos.diasDisponibles;
+  if (datos.diasSemana !== undefined) datosActualizar.diasSemana = datos.diasSemana;
   if (datos.contrasena) datosActualizar.contrasenaHash = await encriptarContrasena(datos.contrasena);
   await instruido.update(datosActualizar);
   return Instruido.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
