@@ -2,7 +2,7 @@ const perfilMedicoService = require('./perfil-medico.service');
 
 const obtenerPorInstruido = async (req, res, next) => {
   try {
-    const perfil = await perfilMedicoService.obtenerPerfilSeguroParaFrontend(req.params.instruidoId, req.usuario);
+    const perfil = await perfilMedicoService.obtenerPerfilDescifradoPorInstruidoId(req.params.instruidoId, req.usuario);
     if (perfil === null) return res.status(404).json({ error: 'Instruido no encontrado' });
     res.json(perfil);
   } catch (err) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
@@ -29,6 +30,7 @@ const CAMPOS_MEDICOS = [
 ];
 
 export function MiPerfil({ perfil, onActualizar }) {
+  const navigate = useNavigate();
   const [editando, setEditando] = useState(false);
   const [datos, setDatos] = useState({});
   const [guardando, setGuardando] = useState(false);
@@ -39,6 +41,7 @@ export function MiPerfil({ perfil, onActualizar }) {
   const [datosMedicos, setDatosMedicos] = useState({});
   const [guardandoMedico, setGuardandoMedico] = useState(false);
   const [errorMedico, setErrorMedico] = useState(null);
+  const [mostrarMedicos, setMostrarMedicos] = useState(false);
 
   useEffect(() => {
     if (perfil.tipo === 'instruido') {
@@ -127,7 +130,6 @@ export function MiPerfil({ perfil, onActualizar }) {
       setSuccess('Cambios guardados correctamente');
       setEditando(false);
     } catch (err) {
-      console.error('Error al guardar perfil:', err);
       setError(err.response?.data?.error || 'Error al guardar');
     } finally {
       setGuardando(false);
@@ -277,14 +279,52 @@ export function MiPerfil({ perfil, onActualizar }) {
       {perfil.tipo === 'instruido' && !editandoMedico && (
         <Card header="Datos Médicos">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              padding: 'var(--space-2) var(--space-3)',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success-bg, #e8f5e9)' : 'var(--color-warning-bg, #fff3e0)',
+              color: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success, #2e7d32)' : 'var(--color-warning, #ef6c00)',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--font-medium)',
+              width: 'fit-content',
+            }}>
+              <span>{perfilMedico?.perfilMedicoCompleto ? '✅' : '⏳'}</span>
+              <span>{perfilMedico?.perfilMedicoCompleto ? 'Perfil médico completo' : 'Perfil médico pendiente'}</span>
+            </div>
+
+            {perfilMedico?.datosMedicosCorruptos && (
+              <div style={{
+                padding: 'var(--space-3) var(--space-4)',
+                backgroundColor: 'var(--color-error)',
+                color: 'var(--color-text-inverse)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--text-sm)',
+              }}>
+                <p style={{ margin: 0, marginBottom: 'var(--space-2)' }}>
+                  ⚠️ No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.
+                </p>
+                <p style={{ margin: 0 }}>Regístralos nuevamente para restaurar la información.</p>
+              </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
               {CAMPOS_MEDICOS.map(({ name, label }) => (
-                <InfoField key={name} label={label} value={perfilMedico?.[name] || '—'} />
+                <InfoField
+                  key={name}
+                  label={label}
+                  value={mostrarMedicos ? (perfilMedico?.[name] || '—') : (perfilMedico?.[name] ? '••••••' : '—')}
+                />
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+              <Button variant="secondary" onClick={() => setMostrarMedicos((prev) => !prev)}>
+                {mostrarMedicos ? 'Ocultar datos médicos' : 'Ver datos médicos'}
+              </Button>
               <Button variant="primary" onClick={iniciarEdicionMedico}>
-                {perfilMedico && Object.values(perfilMedico).some(v => v) ? 'Editar datos médicos' : 'Completar datos médicos'}
+                {perfilMedico?.perfilMedicoCompleto ? 'Editar datos médicos' : 'Completar datos médicos'}
               </Button>
             </div>
           </div>

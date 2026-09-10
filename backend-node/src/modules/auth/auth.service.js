@@ -4,6 +4,7 @@ const { Entrenador } = require('./entrenador.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Certificacion } = require('./certificacion.model');
 const { PerfilMedico } = require('../instruidos/perfil-medico.model');
+const { calcularPerfilMedicoCompleto } = require('../instruidos/perfil-medico.service');
 const config = require('../../shared/constants');
 const blacklist = require('../../shared/utils/blacklist');
 
@@ -69,6 +70,10 @@ const iniciarSesion = async (datos) => {
   };
   if (tipo === 'entrenador') {
     user.especialidad = usuario.especialidad;
+  }
+  if (tipo === 'instruido') {
+    const perfilMedico = await PerfilMedico.findOne({ where: { instruidoId: usuario.id } });
+    user.perfilMedicoCompleto = calcularPerfilMedicoCompleto(perfilMedico);
   }
   return { accessToken, refreshToken, user };
 };
@@ -183,9 +188,7 @@ const obtenerPerfil = async (usuarioId, tipo) => {
     throw err;
   }
   const perfilMedico = await PerfilMedico.findOne({ where: { instruidoId: usuarioId } });
-  const perfilMedicoCompleto = perfilMedico
-    ? !!(perfilMedico.alergias || perfilMedico.intolerancias || perfilMedico.lesiones || perfilMedico.condicionesPreexistentes)
-    : false;
+  const perfilMedicoCompleto = calcularPerfilMedicoCompleto(perfilMedico);
   return { ...instruido.toJSON(), perfilMedicoCompleto };
 };
 

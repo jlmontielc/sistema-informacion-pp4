@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
@@ -7,6 +7,7 @@ import { Card } from '../components/common/Card';
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', contrasena: '' });
   const [error, setError] = useState('');
 
@@ -19,7 +20,12 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     try {
-      await login(form.email, form.contrasena);
+      const user = await login(form.email, form.contrasena);
+      if (user?.tipo === 'instruido' && !user?.perfilMedicoCompleto) {
+        navigate('/complete-profile', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
