@@ -22,6 +22,7 @@ const PerfilPage = lazy(() => import('./pages/PerfilPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const OfflinePage = lazy(() => import('./pages/OfflinePage'));
 const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
+const ClienteDetalle = lazy(() => import('./components/profile/ClienteDetalle').then((m) => ({ default: m.ClienteDetalle })));
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -102,6 +103,7 @@ function AppContent() {
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/clientes" element={<ClientesPage />} />
+                        <Route path="/clientes/:id" element={<ClienteDetalle />} />
                         <Route path="/entrenador" element={<ClientesPage />} />
                         <Route path="/metabolismo" element={<MetabolismoPage />} />
                         <Route path="/entrenamiento" element={<EntrenamientoPage />} />

@@ -89,7 +89,7 @@ Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_
 
 ## Seguridad & HITL
 
-- **Datos médicos** (`alergias`, `intolerancias`, `lesiones`, `condiciones_preexistentes`, `medicacionActual`) se cifran en reposo con AES-256-CBC (`backend-node/src/shared/utils/crypto.js`). Node los descifra **solo** antes de enviarlos a Flask; el frontend nunca los recibe en claro.
+- **Datos médicos** (`alergias`, `intolerancias`, `lesiones`, `condiciones_preexistentes`, `medicacionActual`) se cifran en reposo con AES-256-CBC (`backend-node/src/shared/utils/crypto.js`). Node los descifra antes de enviarlos a Flask y, **como excepción de seguridad autorizada**, también antes de enviarlos al frontend cuando el solicitante es el propio instruido, el entrenador asignado o un administrador. En el frontend los valores se ocultan por defecto y se revelan mediante un botón de privacidad.
 - **Auth servicio-a-servicio:** Node firma un JWT `{service:'backend-node'}` de 5 min con `JWT_SECRET` y lo envía como `Bearer` a Flask. Flask valida firma, expiración y emisor en `api/auth.py`. Solo `/api/health` es público en Flask.
 - **Flujo HITL:** Flask `HitlEngine` ejecuta `GuardianSeguridad` (filtra ejercicios por lesiones/condiciones/carga) y luego `RecommenderEngine` genera la rutina/dieta. Node persiste el resultado; el entrenador aprueba/modifica/rechaza; feedback en `feedback_hitl`. Ver `.opencode/skills/hitl/SKILL.md`.
 - **Endpoints Flask** bajo `/api/predict`: `POST /routine`, `/validate`, `/recalibrar`, `/feedback`, `/dieta`; `GET /history/<id>`, `/stats`, `/last/<id>`.
@@ -113,6 +113,9 @@ Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_
 - Local dev contra MySQL sin SSL requiere quitar `dialectOptions.ssl` en `connection.js` y ajustar `db_connector.py`.
 - Token blacklist está en memoria (`Set`); se pierde al reiniciar Node.
 - Roles: `administrador` y `entrenador` usan `tipo='entrenador'` en el JWT; `instruido` usa `tipo='instruido'`. `autorizar` revisa `rol`.
+- Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/complete-profile`; de lo contrario, a `/dashboard`. El flag se calcula en el backend y se incluye en la respuesta de login.
+- Datos médicos guardados con una `ENC_KEY`/`ENC_IV` distinta a la actual no podrán descifrarse. El backend detecta este caso y devuelve `datosMedicosCorruptos: true`; el frontend muestra una advertencia y pide al usuario reingresar la información. No es posible recuperar los valores originales sin la clave/IV con la que se cifraron.
+- Módulo de clientes (`/clientes`): entrenadores y administradores pueden listar a sus instruidos y ver su perfil médico completo descifrado en `/clientes/:id`.
 - PWA: no romper `serviceWorkerRegistration.js`, `service-worker.js` ni la estrategia offline (`OfflinePage`, `OfflineBanner`, `useOnlineStatus`).
 
 ## Recursos de agentes

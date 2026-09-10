@@ -1,13 +1,11 @@
 const { Router } = require('express');
 const ctrl = require('./perfil-medico.controller');
 const { validar } = require('../../shared/middleware/validate');
-const { autenticar } = require('../../shared/middleware/authenticate');
-const { autorizar } = require('../../shared/middleware/autorizar');
 const { esquemaInstruidoIdParam, esquemaPerfilMedico } = require('./perfil-medico.validation');
 
 const router = Router({ mergeParams: true });
 
-router.use(autenticar, autorizar('administrador', 'entrenador', 'instruido'));
+// La autenticación y autorización de esta ruta se aplican en instruido.routes.js
 
 /**
  * @openapi

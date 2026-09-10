@@ -85,11 +85,11 @@ router.put('/yo', autorizar('instruido'), validar(esquemaActualizarPropio), ctrl
  *   get:
  *     tags: [Instruidos]
  *     summary: Obtener mi perfil médico
- *     description: Devuelve el perfil médico del instruido autenticado (campos cifrados).
+ *     description: Devuelve el perfil médico completo del instruido autenticado con los datos sensibles descifrados.
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Perfil médico (campos sensibles cifrados con AES-256-CBC)
+ *         description: Perfil médico (datos sensibles descifrados)
  *         content:
  *           application/json:
  *             schema:
@@ -298,8 +298,8 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *     tags: [Instruidos]
  *     summary: Obtener perfil médico de un instruido
  *     description: >
- *       Entrenador/administrador puede ver el perfil médico de cualquier instruido.
- *       Instruido solo puede ver el suyo propio.
+ *       Entrenador/administrador puede ver el perfil médico descifrado de un instruido.
+ *       El entrenador solo puede acceder a los instruidos que tenga asignados.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -365,10 +365,10 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *         $ref: '#/components/responses/Error'
  */
 router.use('/:instruidoId/perfil-medico', (req, res, next) => {
-  if (req.usuario.rol === 'instruido' && Number(req.usuario.id) !== Number(req.params.instruidoId)) {
-    return res.status(403).json({ error: 'No puedes acceder al perfil médico de otro usuario' });
+  if (req.usuario.rol === 'instruido') {
+    return res.status(403).json({ error: 'Accede a tu perfil médico desde /api/instruidos/yo/perfil-medico' });
   }
-  if (!['administrador', 'entrenador', 'instruido'].includes(req.usuario.rol)) {
+  if (!['administrador', 'entrenador'].includes(req.usuario.rol)) {
     return res.status(403).json({ error: 'Acceso denegado' });
   }
   next();

@@ -39,10 +39,13 @@ export default function CompleteProfilePage() {
       .then((res) => {
         const datos = res.data || {};
         setPerfilMedicoCompleto(Boolean(datos.perfilMedicoCompleto));
-        // El backend ya no devuelve datos sensibles; solo usamos observaciones si vienen.
-        if (datos.observaciones) {
-          setForm((prev) => ({ ...prev, observaciones: datos.observaciones }));
-        }
+        const nuevoForm = { ...inicializarForm() };
+        CAMPOS_MEDICOS.forEach(({ name }) => {
+          if (datos[name] !== undefined && datos[name] !== null) {
+            nuevoForm[name] = datos[name];
+          }
+        });
+        setForm(nuevoForm);
       })
       .catch(() => {
         setPerfilMedicoCompleto(false);
@@ -64,9 +67,9 @@ export default function CompleteProfilePage() {
       CAMPOS_MEDICOS.forEach(({ name }) => {
         payload[name] = form[name] || '';
       });
-      await api.put('/instruidos/yo/perfil-medico', payload);
+      const res = await api.put('/instruidos/yo/perfil-medico', payload);
       if (setUser) {
-        setUser(prev => ({ ...prev, perfilMedicoCompleto: true }));
+        setUser(prev => ({ ...prev, perfilMedicoCompleto: Boolean(res.data?.perfilMedicoCompleto) }));
       }
       navigate('/dashboard');
     } catch (err) {
