@@ -39,6 +39,11 @@ class HitlEngine:
             return self._error_response('Cliente no encontrado o inactivo', 404)
 
         perfil_medico = self._construir_perfil_medico(request_data, cliente_id)
+        sin_lesiones = self.guardian.calcular_flag_sin_lesiones(perfil_medico)
+        advertencia_perfil = (
+            'Perfil médico incompleto o no recibido; la evaluación de seguridad puede no ser precisa.'
+            if sin_lesiones is None else None
+        )
 
         plantillas_meta = request_data.get('plantillasDisponibles', [])
         if not plantillas_meta:
@@ -74,6 +79,8 @@ class HitlEngine:
                     'plantillas_descartadas_por_lesiones': resultado_clasificador['metadata']['plantillasDescartadasPorLesiones'],
                     'plantillas_viables': 0,
                     'scores_detalle': resultado_clasificador['metadata']['scoresDetalle'],
+                    'sin_lesiones': sin_lesiones,
+                    'advertencia_perfil_medico': advertencia_perfil,
                 }
             )
 
@@ -83,6 +90,8 @@ class HitlEngine:
             'confianza': resultado_clasificador['confianza'],
             'explicacion': resultado_clasificador['explicacion'],
             'advertencia': resultado_clasificador.get('advertencia'),
+            'sin_lesiones': sin_lesiones,
+            'advertencia_perfil_medico': advertencia_perfil,
             'metadata': {
                 'tiempo_ms': tiempo_total,
                 'version_modelo': '3.0.0',
@@ -156,6 +165,12 @@ class HitlEngine:
             ejercicio, datos_cliente_camel, perfil_parseado, carga_kg
         )
 
+        sin_lesiones = self.guardian.calcular_flag_sin_lesiones(perfil_parseado)
+        advertencia_perfil = (
+            'Perfil médico incompleto o no recibido; la evaluación de seguridad puede no ser precisa.'
+            if sin_lesiones is None else None
+        )
+
         return keys_to_camel_case({
             'ejercicio': {
                 'id': ejercicio['id'],
@@ -163,6 +178,8 @@ class HitlEngine:
                 'grupo_muscular': ejercicio['grupo_muscular'],
             },
             'validacion': resultado,
+            'sin_lesiones': sin_lesiones,
+            'advertencia_perfil_medico': advertencia_perfil,
         })
 
     def _obtener_historial(self, request_data: dict, cliente_id: int) -> list:
@@ -219,13 +236,20 @@ class HitlEngine:
         }
 
     def _construir_perfil_medico(self, request_data: dict, cliente_id: int) -> dict:
-        if 'perfilMedico' in request_data:
-            pm = request_data['perfilMedico']
+        if 'perfilMedico' in request_data or 'perfil_medico' in request_data:
+            pm = request_data.get('perfilMedico') or request_data.get('perfil_medico')
+            condiciones = (
+                pm.get('condicionesPreexistentes', [])
+                if 'condicionesPreexistentes' in pm
+                else pm.get('condiciones_preexistentes', [])
+            )
             return {
-                'lesiones': pm.get('lesiones', []),
-                'condicionesPreexistentes': pm.get('condicionesPreexistentes', []),
-                'alergias': pm.get('alergias', []),
-                'medicacion': pm.get('medicacion', []),
+                'lesiones': self._a_lista_strings(pm.get('lesiones', [])),
+                'condicionesPreexistentes': self._a_lista_strings(condiciones),
+                'alergias': self._a_lista_strings(pm.get('alergias', [])),
+                'medicacion': self._a_lista_strings(
+                    pm.get('medicacion') or pm.get('medicacionActual') or pm.get('medicacion_actual') or []
+                ),
             }
 
         perfil_raw = fetch_perfil_medico(cliente_id)
@@ -343,7 +367,13 @@ class HitlEngine:
 
         proposito = normalizar_proposito(request_data.get('proposito', 'mantener'))
         nivel_actividad = request_data.get('nivelActividad')
-        datos_medicos = request_data.get('datosMedicos', {})
+        datos_medicos = request_data.get('datosMedicos') or request_data.get('datos_medicos') or {}
+
+        sin_lesiones = self.guardian.calcular_flag_sin_lesiones(datos_medicos)
+        advertencia_perfil = (
+            'Datos médicos incompletos o no recibidos; la evaluación de seguridad puede no ser precisa.'
+            if sin_lesiones is None else None
+        )
 
         macros = calcular_macros(gct, peso, proposito)
 
@@ -368,6 +398,8 @@ class HitlEngine:
             'grasas_gramos': macros['grasasGramos'],
             'guardian': resultado_guardian,
             'justificacion': justificacion,
+            'sin_lesiones': sin_lesiones,
+            'advertencia_perfil_medico': advertencia_perfil,
             'metadata': {
                 'tiempo_ms': tiempo_total,
                 'version_modelo': '1.1.0',

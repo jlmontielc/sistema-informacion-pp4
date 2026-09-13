@@ -1,4 +1,5 @@
 from config.constants import NivelRiesgo, MAPA_LESIONES
+from utils.texto_utils import normalizar_texto, texto_contiene_termino
 
 
 REGLAS_LESION_EJERCICIO = {
@@ -175,66 +176,294 @@ REGLAS_LESION_EJERCICIO = {
 }
 
 
+# Señales débiles: grupo muscular o equipo fuertemente asociado a una lesion.
+MAPEO_GRUPO_MUSCULAR_LESION = {
+    'piernas': ('rodilla', 'cadera', 'tobillo'),
+    'cuadriceps': ('rodilla', 'cadera'),
+    'isquiotibiales': ('rodilla', 'cadera'),
+    'gluteos': ('cadera', 'espalda_baja'),
+    'core': ('espalda_baja', 'espalda_alta', 'cuello'),
+    'abdomen': ('espalda_baja', 'cuello'),
+    'espalda baja': ('espalda_baja',),
+    'espalda': ('espalda_baja', 'espalda_alta', 'cuello'),
+    'hombro': ('hombro',),
+    'pecho': ('hombro',),
+    'brazos': ('codo', 'muneca', 'hombro'),
+    'antebrazo': ('codo', 'muneca'),
+    'cuello': ('cuello',),
+    'muñeca': ('muneca',),
+}
+
+MAPEO_EQUIPO_LESION = {
+    'barra': ('espalda_baja', 'hombro', 'rodilla', 'cadera'),
+    'mancuerna': ('hombro', 'muneca'),
+    'kettlebell': ('espalda_baja', 'hombro'),
+    'polea': ('hombro', 'codo'),
+    'maquina': ('rodilla', 'cadera'),
+    'cuerda': ('tobillo', 'rodilla'),
+    'banda elastica': ('hombro', 'codo'),
+    'balon': ('espalda_baja', 'cadera'),
+}
+
+
 def detectar_grupo_lesion(texto_lesion: str) -> list:
-    texto_lower = texto_lesion.lower()
+    """Detecta los grupos anatomicos de lesion presentes en el texto.
+
+    Normaliza el texto y busca secuencias exactas de tokens (incluyendo
+    bigramas y frases mas largas) para evitar falsos positivos.
+    """
     grupos_detectados = []
     for grupo, alias_list in MAPA_LESIONES.items():
         for alias in alias_list:
-            if alias in texto_lower:
+            if texto_contiene_termino(texto_lesion, alias):
                 if grupo not in grupos_detectados:
                     grupos_detectados.append(grupo)
                 break
     return grupos_detectados
 
 
-def evaluar_ejercicio_por_lesiones(nombre_ejercicio: str, lesiones_cliente: list) -> dict:
-    nombre_lower = nombre_ejercicio.lower().strip()
+def evaluar_ejercicio_por_lesiones(ejercicio, lesiones_cliente: list) -> dict:
+    """Evalua un ejercicio contra las lesiones de un cliente.
+
+    Acepta un diccionario con los campos del ejercicio o, para compatibilidad
+    legacy, un string con el nombre del ejercicio.
+    """
+    if isinstance(ejercicio, str):
+        ejercicio = {'nombre': ejercicio}
+
+    contexto = {
+        'nombre': normalizar_texto(ejercicio.get('nombre', '')),
+        'grupo_muscular': normalizar_texto(
+            ejercicio.get('grupo_muscular') or ejercicio.get('grupoMuscular', '')
+        ),
+        'descripcion': normalizar_texto(ejercicio.get('descripcion', '')),
+        'equipo_necesario': normalizar_texto(
+            ejercicio.get('equipo_necesario') or ejercicio.get('equipoNecesario', '')
+        ),
+    }
+
+    contraindica_raw = (
+        ejercicio.get('contraindica_lesiones')
+        or ejercicio.get('contraindicaLesiones', '')
+    )
+    contraindica = _parsear_contraindicaciones(contraindica_raw)
+    contraindica_norm = [normalizar_texto(c) for c in contraindica if c]
+
+    lesiones_cliente = lesiones_cliente or []
+
+    grupos_lesion_cliente = set()
+    lesion_representativa_por_grupo = {}
+    for texto_lesion in lesiones_cliente:
+        for grupo in detectar_grupo_lesion(texto_lesion):
+            grupos_lesion_cliente.add(grupo)
+            lesion_representativa_por_grupo[grupo] = texto_lesion
+
     alertas = []
     nivel_maximo = NivelRiesgo.SAFE
     modificacion_sugerida = None
+    motivo_restriccion = None
 
-    for texto_lesion in lesiones_cliente:
-        grupos = detectar_grupo_lesion(texto_lesion)
-        for grupo in grupos:
-            reglas = REGLAS_LESION_EJERCICIO.get(grupo, {})
+    # 1. Reglas especificas por nombre de ejercicio y grupo de lesion.
+    for grupo in grupos_lesion_cliente:
+        reglas = REGLAS_LESION_EJERCICIO.get(grupo, {})
 
-            prohibidos = reglas.get('prohibidos', {})
-            for ejercicio_regla, nivel in prohibidos.items():
-                if ejercicio_regla.lower() in nombre_lower or nombre_lower in ejercicio_regla.lower():
-                    if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
-                        nivel_maximo = nivel
-                    alertas.append({
-                        'tipo': 'lesion',
-                        'zonaAfectada': grupo,
-                        'lesionDetectada': texto_lesion,
-                        'nivelRiesgo': nivel.value,
-                        'mensaje': f'Ejercicio contraindicado por lesión en {grupo}',
-                    })
-
-            precaucion = reglas.get('permitidos_con_precaucion', {})
-            for ejercicio_regla, nivel in precaucion.items():
-                if ejercicio_regla.lower() in nombre_lower or nombre_lower in ejercicio_regla.lower():
-                    if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
-                        nivel_maximo = nivel
-                    alertas.append({
-                        'tipo': 'lesion_precaucion',
-                        'zonaAfectada': grupo,
-                        'lesionDetectada': texto_lesion,
-                        'nivelRiesgo': nivel.value,
-                        'mensaje': f'Ejercicio permitido con precaución por lesión en {grupo}',
-                    })
-
-            modificaciones = reglas.get('modificaciones', {})
-            for ejercicio_regla, modif in modificaciones.items():
-                if ejercicio_regla.lower() in nombre_lower or nombre_lower in ejercicio_regla.lower():
+        for ejercicio_regla, nivel in reglas.get('prohibidos', {}).items():
+            if _nombre_coincide(contexto['nombre'], ejercicio_regla):
+                if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
+                    nivel_maximo = nivel
+                    motivo_restriccion = 'nombre_ejercicio'
+                alertas.append({
+                    'tipo': 'lesion',
+                    'zonaAfectada': grupo,
+                    'lesionDetectada': lesion_representativa_por_grupo.get(grupo, ''),
+                    'nivelRiesgo': nivel.value,
+                    'mensaje': f'Ejercicio contraindicado por lesión en {grupo}',
+                })
+                modif = reglas.get('modificaciones', {}).get(ejercicio_regla)
+                if modif:
                     modificacion_sugerida = modif
+
+        for ejercicio_regla, nivel in reglas.get('permitidos_con_precaucion', {}).items():
+            if _nombre_coincide(contexto['nombre'], ejercicio_regla):
+                if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
+                    nivel_maximo = nivel
+                    if not motivo_restriccion:
+                        motivo_restriccion = 'nombre_ejercicio'
+                alertas.append({
+                    'tipo': 'lesion_precaucion',
+                    'zonaAfectada': grupo,
+                    'lesionDetectada': lesion_representativa_por_grupo.get(grupo, ''),
+                    'nivelRiesgo': nivel.value,
+                    'mensaje': f'Ejercicio permitido con precaución por lesión en {grupo}',
+                })
+                modif = reglas.get('modificaciones', {}).get(ejercicio_regla)
+                if modif:
+                    modificacion_sugerida = modif
+
+    # 2. Contraindicaciones declaradas por el ejercicio.
+    grupos_cliente_norm = {normalizar_texto(g) for g in grupos_lesion_cliente}
+    for termino in contraindica_norm:
+        coincidencias = []
+        for texto_lesion in lesiones_cliente:
+            if texto_contiene_termino(texto_lesion, termino):
+                coincidencias.append(texto_lesion)
+                break
+        coincide_grupo = termino in grupos_cliente_norm
+
+        if not coincidencias and not coincide_grupo:
+            continue
+
+        # Determina el nivel de riesgo a partir del grupo afectado.
+        nivel = None
+        if coincidencias:
+            for grupo in detectar_grupo_lesion(coincidencias[0]):
+                nivel = _nivel_para_ejercicio_en_grupo(contexto['nombre'], grupo)
+                if nivel:
+                    break
+        if nivel is None and coincide_grupo:
+            for grupo in grupos_lesion_cliente:
+                if normalizar_texto(grupo) == termino:
+                    nivel = _nivel_para_ejercicio_en_grupo(contexto['nombre'], grupo)
+                    if nivel:
+                        break
+        if nivel is None:
+            nivel = NivelRiesgo.HIGH
+
+        if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
+            nivel_maximo = nivel
+            motivo_restriccion = 'contraindica_lesiones'
+
+        tipo_alerta = (
+            'contraindicacion_ejercicio'
+            if nivel in (NivelRiesgo.CRITICAL, NivelRiesgo.HIGH)
+            else 'lesion_precaucion'
+        )
+        lesion_detectada = coincidencias[0] if coincidencias else ''
+        zona = None
+        if lesion_detectada:
+            zonas = detectar_grupo_lesion(lesion_detectada)
+            zona = zonas[0] if zonas else None
+        if zona is None and coincide_grupo:
+            for grupo in grupos_lesion_cliente:
+                if normalizar_texto(grupo) == termino:
+                    zona = grupo
+                    break
+        if zona is None:
+            zona = termino
+
+        alertas.append({
+            'tipo': tipo_alerta,
+            'zonaAfectada': zona,
+            'lesionDetectada': lesion_detectada,
+            'nivelRiesgo': nivel.value,
+            'mensaje': f'Ejercicio contraindicado por coincidencia con lesión ({termino})',
+        })
+
+    # 3. Señales débiles por grupo muscular o equipo.
+    for grupo in grupos_lesion_cliente:
+        if _grupo_muscular_asociado(contexto['grupo_muscular'], grupo):
+            nivel = NivelRiesgo.LOW
+            if not _alerta_existente_para_zona(alertas, grupo, nivel):
+                if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
+                    nivel_maximo = nivel
+                    if not motivo_restriccion:
+                        motivo_restriccion = 'grupo_muscular'
+                alertas.append({
+                    'tipo': 'lesion_precaucion',
+                    'zonaAfectada': grupo,
+                    'lesionDetectada': lesion_representativa_por_grupo.get(grupo, ''),
+                    'nivelRiesgo': nivel.value,
+                    'mensaje': f'Ejercicio asociado a grupo muscular afectado por lesión en {grupo}',
+                })
+
+        if _equipo_asociado(contexto['equipo_necesario'], grupo):
+            nivel = NivelRiesgo.MEDIUM
+            if not _alerta_existente_para_zona(alertas, grupo, nivel):
+                if _orden_riesgo(nivel) > _orden_riesgo(nivel_maximo):
+                    nivel_maximo = nivel
+                    if not motivo_restriccion:
+                        motivo_restriccion = 'equipo_necesario'
+                alertas.append({
+                    'tipo': 'lesion_precaucion',
+                    'zonaAfectada': grupo,
+                    'lesionDetectada': lesion_representativa_por_grupo.get(grupo, ''),
+                    'nivelRiesgo': nivel.value,
+                    'mensaje': f'Ejercicio con equipo asociado a lesión en {grupo}',
+                })
 
     return {
         'alertas': alertas,
         'nivelMaximo': nivel_maximo,
         'modificacionSugerida': modificacion_sugerida,
         'bloqueado': nivel_maximo in (NivelRiesgo.CRITICAL, NivelRiesgo.HIGH),
+        'motivoRestriccion': motivo_restriccion,
     }
+
+
+def _parsear_contraindicaciones(valor_campo) -> list:
+    """Convierte el campo contraindicaLesiones a una lista de strings."""
+    if not valor_campo:
+        return []
+    if isinstance(valor_campo, list):
+        return [str(v).strip() for v in valor_campo if v]
+    if isinstance(valor_campo, str):
+        import json
+        try:
+            data = json.loads(valor_campo)
+            if isinstance(data, list):
+                return [str(v).strip() for v in data if v]
+            return [str(data).strip()]
+        except (json.JSONDecodeError, TypeError):
+            return [z.strip() for z in valor_campo.split(',') if z.strip()]
+    return []
+
+
+def _nombre_coincide(nombre_normalizado: str, ejercicio_regla: str) -> bool:
+    """Comprueba si el nombre normalizado coincide con el de una regla."""
+    regla_norm = normalizar_texto(ejercicio_regla)
+    if not regla_norm or not nombre_normalizado:
+        return False
+    return texto_contiene_termino(nombre_normalizado, regla_norm) or \
+           texto_contiene_termino(regla_norm, nombre_normalizado)
+
+
+def _nivel_para_ejercicio_en_grupo(nombre_normalizado: str, grupo: str):
+    """Busca el nivel de riesgo de un ejercicio en las reglas de un grupo."""
+    reglas = REGLAS_LESION_EJERCICIO.get(grupo, {})
+    for ejercicio_regla, nivel in reglas.get('prohibidos', {}).items():
+        if _nombre_coincide(nombre_normalizado, ejercicio_regla):
+            return nivel
+    for ejercicio_regla, nivel in reglas.get('permitidos_con_precaucion', {}).items():
+        if _nombre_coincide(nombre_normalizado, ejercicio_regla):
+            return nivel
+    return None
+
+
+def _grupo_muscular_asociado(grupo_muscular: str, lesion_grupo: str) -> bool:
+    if not grupo_muscular:
+        return False
+    for clave, grupos in MAPEO_GRUPO_MUSCULAR_LESION.items():
+        if lesion_grupo in grupos and texto_contiene_termino(grupo_muscular, clave):
+            return True
+    return False
+
+
+def _equipo_asociado(equipo: str, lesion_grupo: str) -> bool:
+    if not equipo:
+        return False
+    for clave, grupos in MAPEO_EQUIPO_LESION.items():
+        if lesion_grupo in grupos and texto_contiene_termino(equipo, clave):
+            return True
+    return False
+
+
+def _alerta_existente_para_zona(alertas: list, zona: str, nivel_minimo: NivelRiesgo) -> bool:
+    """Evita duplicar alertas cuando ya existe una señal mas fuerte."""
+    for alerta in alertas:
+        if alerta.get('zonaAfectada') == zona:
+            if _orden_riesgo_string(alerta.get('nivelRiesgo')) >= _orden_riesgo(nivel_minimo):
+                return True
+    return False
 
 
 def _orden_riesgo(nivel: NivelRiesgo) -> int:
@@ -246,3 +475,12 @@ def _orden_riesgo(nivel: NivelRiesgo) -> int:
         NivelRiesgo.CRITICAL: 4,
     }
     return orden.get(nivel, 0)
+
+
+def _orden_riesgo_string(nivel) -> int:
+    mapping = {
+        'SAFE': 0, 'LOW': 1, 'MEDIUM': 2, 'HIGH': 3, 'CRITICAL': 4,
+    }
+    if isinstance(nivel, NivelRiesgo):
+        return _orden_riesgo(nivel)
+    return mapping.get(str(nivel).upper(), 0)

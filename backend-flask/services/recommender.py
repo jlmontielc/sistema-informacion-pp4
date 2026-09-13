@@ -44,11 +44,18 @@ class RecommenderEngine:
         historial: list = None,
         guardian: GuardianSeguridad = None,
     ) -> dict:
+        if guardian is None:
+            guardian = GuardianSeguridad()
+
+        sin_lesiones = guardian.calcular_flag_sin_lesiones(perfil_medico)
+        omitir_filtros_lesion = sin_lesiones is True
+
         if not plantillas_con_ejercicios:
             return keys_to_camel_case({
                 'plantilla_id': None,
                 'confianza': 0.0,
                 'explicacion': 'No hay plantillas disponibles del entrenador.',
+                'sin_lesiones': sin_lesiones,
                 'metadata': {
                     'plantillas_evaluadas': 0,
                     'plantillas_descartadas_por_lesiones': 0,
@@ -66,9 +73,6 @@ class RecommenderEngine:
         dias_disponibles = max(2, min(datos_cliente.get('diasDisponibles', 3), 6))
         dias_semana_cliente = datos_cliente.get('diasSemana') or []
         lesiones_cliente = (perfil_medico or {}).get('lesiones', [])
-
-        if guardian is None:
-            guardian = GuardianSeguridad()
 
         plantillas_viables = []
         scores_detalle = {}
@@ -111,6 +115,8 @@ class RecommenderEngine:
                     'id': ej_id,
                     'nombre': ej.get('nombre', f'Ejercicio {ej_id}'),
                     'grupo_muscular': ej.get('grupoMuscular') or ej.get('grupo_muscular', ''),
+                    'descripcion': ej.get('descripcion', ''),
+                    'equipo_necesario': ej.get('equipoNecesario') or ej.get('equipo_necesario', ''),
                     'contraindica_lesiones': ej.get('contraindicaLesiones') or ej.get('contraindica_lesiones', ''),
                 }
 
@@ -118,6 +124,7 @@ class RecommenderEngine:
                     ejercicio=ejercicio_para_guardian,
                     datos_cliente=datos_cliente,
                     perfil_medico=perfil_medico,
+                    omitir_lesiones=omitir_filtros_lesion,
                 )
 
                 if resultado_guardian['bloqueado'] and resultado_guardian['nivelRiesgo'] in ('HIGH', 'CRITICAL'):
@@ -127,6 +134,7 @@ class RecommenderEngine:
                         'nombre': ejercicio_para_guardian['nombre'],
                         'nivel_riesgo': resultado_guardian['nivelRiesgo'],
                         'razon': resultado_guardian['alertas'][0]['mensaje'] if resultado_guardian['alertas'] else 'Contraindicado por lesión',
+                        'motivoRestriccion': resultado_guardian.get('motivoRestriccion'),
                     })
                 elif resultado_guardian['nivelRiesgo'] != 'SAFE':
                     ejercicios_precaucion.append({
@@ -134,6 +142,7 @@ class RecommenderEngine:
                         'nombre': ejercicio_para_guardian['nombre'],
                         'nivel_riesgo': resultado_guardian['nivelRiesgo'],
                         'modificacion': resultado_guardian.get('modificacionSugerida'),
+                        'motivoRestriccion': resultado_guardian.get('motivoRestriccion'),
                     })
 
             if plantilla_bloqueada:
@@ -179,6 +188,7 @@ class RecommenderEngine:
                 'plantilla_id': None,
                 'confianza': 0.0,
                 'explicacion': 'Todas las plantillas fueron descartadas por incompatibilidad con lesiones/condiciones del cliente.',
+                'sin_lesiones': sin_lesiones,
                 'metadata': {
                     'plantillas_evaluadas': len(plantillas_con_ejercicios),
                     'plantillas_descartadas_por_lesiones': descartadas_por_lesiones,
@@ -204,6 +214,7 @@ class RecommenderEngine:
             'confianza': mejor['confianza'],
             'explicacion': explicacion,
             'advertencia': advertencia,
+            'sin_lesiones': sin_lesiones,
             'metadata': {
                 'plantillas_evaluadas': len(plantillas_con_ejercicios),
                 'plantillas_descartadas_por_lesiones': descartadas_por_lesiones,

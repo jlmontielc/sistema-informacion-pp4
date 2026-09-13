@@ -42,7 +42,7 @@ def validate_exercise():
 
     ejercicio_id = data.get('ejercicioId')
     cliente_id = data.get('clienteId')
-    perfil_medico = data.get('perfilMedico')
+    perfil_medico = data.get('perfilMedico') or data.get('perfil_medico')
 
     if not ejercicio_id or not cliente_id:
         return jsonify({'error': 'ejercicioId y clienteId son requeridos'}), 400

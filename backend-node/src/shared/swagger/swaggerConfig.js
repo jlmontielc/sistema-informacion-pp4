@@ -787,7 +787,7 @@ const options = {
             explicacion: { type: 'string', nullable: true, description: 'Justificación de la recomendación' },
             advertencia: { type: 'string', nullable: true, description: 'Advertencia de seguridad si aplica' },
             hasLesiones: { type: 'boolean', description: 'Si el cliente tiene lesiones registradas' },
-            lesionesDetalle: { type: 'array', items: { type: 'string' }, description: 'Detalle de lesiones del cliente' },
+            sinLesiones: { type: 'boolean', nullable: true, description: 'True si no hay lesiones ni condiciones, false si las hay, null si no se pudo determinar' },
             metadata: { type: 'object', description: 'Metadatos adicionales del modelo' },
           },
           example: {
@@ -797,7 +797,7 @@ const options = {
             explicacion: 'Se recomienda rutina de hipertrofia moderada dado nivel intermedio y disponibilidad de 4 días.',
             advertencia: null,
             hasLesiones: true,
-            lesionesDetalle: ['Hernia discal L4-L5'],
+            sinLesiones: false,
             metadata: { modelo: 'recommender_v2', tiempoMs: 320 },
           },
         },
