@@ -271,28 +271,37 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
               </div>
             )}
 
-            {resultado.hasLesiones && resultado.lesionesDetalle?.length > 0 && (
-              <div style={{
-                padding: 'var(--space-4)',
-                background: '#fff7ed',
-                border: '1px solid #fb923c',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex',
-                gap: 'var(--space-3)',
-                alignItems: 'flex-start',
-              }}>
-                <span style={{ fontSize: 22, lineHeight: 1 }}>⚠️</span>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 'var(--font-semibold)', color: '#9a3412', fontSize: 'var(--text-base)' }}>
-                    Atención: el instruido tiene antecedentes de lesión
-                  </p>
-                  <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#9a3412' }}>
-                    Condición(es) registrada(s): {resultado.lesionesDetalle.join(', ')}.
-                    Tómalas en cuenta al personalizar la plantilla antes de asignarla.
-                  </p>
+            {(resultado.hasLesiones || resultado.sinLesiones === false || resultado.sinLesiones === null) && (() => {
+              const esIndeterminado = resultado.sinLesiones === null;
+              const titulo = esIndeterminado
+                ? 'No se pudo determinar el estado médico del instruido'
+                : 'Atención: el instruido tiene antecedentes médicos registrados';
+              const mensaje = esIndeterminado
+                ? 'Verifica el perfil médico.'
+                : 'Revísalos en el perfil médico antes de asignar la rutina.';
+
+              return (
+                <div style={{
+                  padding: 'var(--space-4)',
+                  background: '#fff7ed',
+                  border: '1px solid #fb923c',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  gap: 'var(--space-3)',
+                  alignItems: 'flex-start',
+                }}>
+                  <span style={{ fontSize: 22, lineHeight: 1 }}>⚠️</span>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 'var(--font-semibold)', color: '#9a3412', fontSize: 'var(--text-base)' }}>
+                      {titulo}
+                    </p>
+                    <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#9a3412' }}>
+                      {mensaje}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div style={{
               padding: 'var(--space-3)',

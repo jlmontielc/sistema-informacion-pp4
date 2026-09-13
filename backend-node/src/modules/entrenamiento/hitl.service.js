@@ -9,6 +9,7 @@ const {
   httpRequest,
   descifrarSeguro,
   parsearCampoJson,
+  limpiarArrayMedico,
   CAMPOS_SENSIBLES,
 } = require('../../shared/utils/flask-client');
 
@@ -42,7 +43,6 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     explicacion: resultado.explicacion || null,
     advertencia: resultado.advertencia || null,
     hasLesiones: resultado.hasLesiones || false,
-    lesionesDetalle: resultado.lesionesDetalle || [],
     metadata: resultado.metadata || {},
   };
 
@@ -99,7 +99,10 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
 
   const plantillasMetadata = plantillas.map(p => p.toJSON());
 
-  const lesionesFiltradas = perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [];
+  const lesionesCrudas = perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [];
+  const condicionesCrudas = perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [];
+  const lesionesFiltradas = limpiarArrayMedico(lesionesCrudas);
+  const condicionesFiltradas = limpiarArrayMedico(condicionesCrudas);
 
   const payload = {
     clienteId,
@@ -115,9 +118,9 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     diasSemana: instruido.diasSemana || [1, 2, 3, 4, 5, 6, 7].slice(0, instruido.diasDisponibles || 3),
     perfilMedico: {
       lesiones: lesionesFiltradas,
-      condicionesPreexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
-      alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
-      medicacion: perfilDescifrado ? parsearCampoJson(perfilDescifrado.medicacionActual) : [],
+      condicionesPreexistentes: condicionesFiltradas,
+      alergias: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.alergias)) : [],
+      medicacion: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.medicacionActual)) : [],
     },
     historialReciente: {
       ultimas4Semanas: historialFormateado,
@@ -142,7 +145,6 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     const resultadoPersistir = {
       ...response.data,
       hasLesiones: lesionesFiltradas.length > 0,
-      lesionesDetalle: lesionesFiltradas,
     };
     await persistRoutineFromPrediction(clienteId, entrenadorId, resultadoPersistir);
   }
@@ -150,7 +152,6 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
   return {
     ...response.data,
     hasLesiones: lesionesFiltradas.length > 0,
-    lesionesDetalle: lesionesFiltradas,
   };
 };
 
@@ -168,14 +169,19 @@ const validarEjercicio = async (ejercicioId, clienteId, usuario, cargaKg = null)
 
   const perfilDescifrado = await perfilMedicoService.obtenerPerfilDescifradoParaFlask(clienteId);
 
+  const lesionesFiltradas = perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.lesiones)) : [];
+  const condicionesFiltradas = perfilDescifrado
+    ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.condicionesPreexistentes))
+    : [];
+
   const payload = {
     ejercicioId,
     clienteId,
     perfilMedico: {
-      lesiones: perfilDescifrado ? parsearCampoJson(perfilDescifrado.lesiones) : [],
-      condicionesPreexistentes: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
-      alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
-      medicacion: perfilDescifrado ? parsearCampoJson(perfilDescifrado.medicacionActual) : [],
+      lesiones: lesionesFiltradas,
+      condicionesPreexistentes: condicionesFiltradas,
+      alergias: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.alergias)) : [],
+      medicacion: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.medicacionActual)) : [],
     },
   };
   if (cargaKg !== null) {
@@ -259,9 +265,9 @@ const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {
     edad: instruido.edad,
     sexo: instruido.sexo,
     datosMedicos: {
-      alergias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.alergias) : [],
-      intolerancias: perfilDescifrado ? parsearCampoJson(perfilDescifrado.intolerancias) : [],
-      condiciones: perfilDescifrado ? parsearCampoJson(perfilDescifrado.condicionesPreexistentes) : [],
+      alergias: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.alergias)) : [],
+      intolerancias: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.intolerancias)) : [],
+      condiciones: perfilDescifrado ? limpiarArrayMedico(parsearCampoJson(perfilDescifrado.condicionesPreexistentes)) : [],
     },
   };
 

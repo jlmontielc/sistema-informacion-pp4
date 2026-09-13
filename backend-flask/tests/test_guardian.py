@@ -25,6 +25,12 @@ from models.rules.load_rules import (
     estimar_1rm_repeticiones,
 )
 from services.guardian import GuardianSeguridad
+from utils.texto_utils import (
+    normalizar_texto,
+    stem_basico_espanol,
+    obtener_tokens_y_bigramas,
+    texto_contiene_termino,
+)
 
 
 def test_detectar_grupo_lesion():
@@ -1133,6 +1139,145 @@ def test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro():
     print("[PASS] test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro")
 
 
+def test_normalizacion_texto():
+    assert normalizar_texto('  LÚMBAGO Agudo!! ') == 'lumbago agudo'
+    assert normalizar_texto('Túnel Carpiano') == 'tunel carpiano'
+    assert normalizar_texto('Hombro congelado (manguito rotador)') == 'hombro congelado manguito rotador'
+
+    assert stem_basico_espanol('Tendinitis') == 'tendin'
+    assert stem_basico_espanol('Lumbalgias') == 'lumb'
+    assert stem_basico_espanol('condromalacias') == 'condromalacia'
+
+    tokens = obtener_tokens_y_bigramas('LCA rodilla')
+    assert 'lca' in tokens
+    assert 'rodilla' in tokens
+    assert 'lca rodilla' in tokens
+
+    assert texto_contiene_termino('Luxación de rótula', 'rotula') is True
+    assert texto_contiene_termino('Hernia discal lumbar', 'espalda baja') is False
+    assert texto_contiene_termino('Hernia discal lumbar', 'hernia discal') is True
+    print("[PASS] test_normalizacion_texto")
+
+
+def test_sinonimos_lesiones_lumbares():
+    assert detectar_grupo_lesion('Lumbalgia crónica') == ['espalda_baja']
+    assert detectar_grupo_lesion('Ciática') == ['espalda_baja']
+    assert detectar_grupo_lesion('Ciatalgia') == ['espalda_baja']
+    assert detectar_grupo_lesion('Hernia discal lumbar L5') == ['espalda_baja']
+    assert detectar_grupo_lesion('Espondilolistesis') == ['espalda_baja']
+    print("[PASS] test_sinonimos_lesiones_lumbares")
+
+
+def test_sinonimos_lesiones_rodilla():
+    assert detectar_grupo_lesion('Tendinitis rotuliana') == ['rodilla']
+    assert detectar_grupo_lesion('Gonalgia') == ['rodilla']
+    assert detectar_grupo_lesion('Luxación de rótula') == ['rodilla']
+    assert detectar_grupo_lesion('Menisco roto') == ['rodilla']
+    assert detectar_grupo_lesion('Ligamento cruzado anterior') == ['rodilla']
+    print("[PASS] test_sinonimos_lesiones_rodilla")
+
+
+def test_ejercicio_prohibido_por_contraindicaciones():
+    ejercicio = {
+        'nombre': 'Aducción de cadera',
+        'grupo_muscular': 'Piernas',
+        'contraindicaLesiones': 'rodilla',
+    }
+    resultado = evaluar_ejercicio_por_lesiones(ejercicio, ['Luxación de rótula'])
+    assert resultado['bloqueado'] is True
+    assert resultado['motivoRestriccion'] == 'contraindica_lesiones'
+    assert resultado['nivelMaximo'] in (NivelRiesgo.HIGH, NivelRiesgo.CRITICAL)
+    print("[PASS] test_ejercicio_prohibido_por_contraindicaciones")
+
+
+def test_ejercicio_precaucion_por_grupo_muscular():
+    ejercicio = {
+        'nombre': 'Aducción de cadera',
+        'grupo_muscular': 'Piernas',
+        'contraindicaLesiones': '',
+    }
+    resultado = evaluar_ejercicio_por_lesiones(ejercicio, ['rodilla - LCA'])
+    assert resultado['bloqueado'] is False
+    assert resultado['nivelMaximo'] == NivelRiesgo.LOW
+    assert resultado['motivoRestriccion'] == 'grupo_muscular'
+    print("[PASS] test_ejercicio_precaucion_por_grupo_muscular")
+
+
+def test_ejercicio_permitido_sin_lesiones():
+    ejercicio = {
+        'nombre': 'Sentadilla',
+        'grupo_muscular': 'Piernas',
+        'contraindicaLesiones': '',
+    }
+    resultado = evaluar_ejercicio_por_lesiones(ejercicio, [])
+    assert resultado['bloqueado'] is False
+    assert resultado['nivelMaximo'] == NivelRiesgo.SAFE
+    assert resultado['alertas'] == []
+    print("[PASS] test_ejercicio_permitido_sin_lesiones")
+
+
+def test_flag_sin_lesiones():
+    guardian = GuardianSeguridad()
+    assert guardian.calcular_flag_sin_lesiones({
+        'lesiones': [],
+        'condicionesPreexistentes': [],
+    }) is True
+
+    assert guardian.calcular_flag_sin_lesiones({
+        'lesiones': ['rodilla - LCA'],
+        'condicionesPreexistentes': [],
+    }) is False
+
+    assert guardian.calcular_flag_sin_lesiones({
+        'lesiones': [],
+        'condicionesPreexistentes': ['Diabetes tipo 2'],
+    }) is False
+
+    assert guardian.calcular_flag_sin_lesiones({}) is None
+    assert guardian.calcular_flag_sin_lesiones(None) is None
+
+    # Valores vacios o negativos no deben contar como informacion medica.
+    assert guardian.calcular_flag_sin_lesiones({
+        'lesiones': ['ninguna', 'no', ''],
+        'condicionesPreexistentes': ['N/A'],
+    }) is True
+    print("[PASS] test_flag_sin_lesiones")
+
+
+def test_no_loguea_datos_medicos():
+    import logging
+    guardian = GuardianSeguridad()
+
+    class CapturadorLog(logging.Handler):
+        def __init__(self):
+            super().__init__()
+            self.records = []
+
+        def emit(self, record):
+            self.records.append(record)
+
+    handler = CapturadorLog()
+    logger = logging.getLogger('services.guardian')
+    logger.addHandler(handler)
+    nivel_previo = logger.level
+    logger.setLevel(logging.DEBUG)
+
+    try:
+        ejercicio = {'nombre': 'Sentadilla', 'grupo_muscular': 'Piernas'}
+        datos_cliente = {'edad': 30, 'peso': 75, 'altura': 1.75, 'nivelActividad': 'moderado'}
+        perfil_medico = {'lesiones': ['Hernia discal lumbar'], 'condicionesPreexistentes': []}
+        resultado = guardian.validar_ejercicio(ejercicio, datos_cliente, perfil_medico)
+
+        texto_unido = ' '.join(str(r.getMessage()) for r in handler.records)
+        assert 'Hernia discal lumbar' not in texto_unido
+        assert resultado['bloqueado'] is True
+    finally:
+        logger.removeHandler(handler)
+        logger.setLevel(nivel_previo)
+
+    print("[PASS] test_no_loguea_datos_medicos")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -1172,4 +1317,12 @@ if __name__ == '__main__':
     test_validar_ejercicio_usa_perfil_medico_explicito()
     test_validar_ejercicio_no_consulta_db_si_perfil_medico_presente()
     test_fetch_perfil_medico_cifrado_devuelve_perfil_vacio_seguro()
+    test_normalizacion_texto()
+    test_sinonimos_lesiones_lumbares()
+    test_sinonimos_lesiones_rodilla()
+    test_ejercicio_prohibido_por_contraindicaciones()
+    test_ejercicio_precaucion_por_grupo_muscular()
+    test_ejercicio_permitido_sin_lesiones()
+    test_flag_sin_lesiones()
+    test_no_loguea_datos_medicos()
     print("\n=== TODOS LOS TESTS PASARON ===")

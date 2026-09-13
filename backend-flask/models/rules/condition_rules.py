@@ -1,12 +1,17 @@
 from config.constants import NivelRiesgo, MAPA_CONDICIONES
+from utils.texto_utils import normalizar_texto, texto_contiene_termino
 
 
 def detectar_condicion(texto_condicion: str) -> list:
-    texto_lower = texto_condicion.lower()
+    """Detecta las condiciones medicas presentes en el texto.
+
+    Normaliza acentos y mayusculas y busca secuencias exactas de tokens
+    para evitar falsos positivos (p. ej. 'tipo 2' no activa 'tipo 1').
+    """
     condiciones_detectadas = []
     for condicion_key, condicion_data in MAPA_CONDICIONES.items():
         for alias in condicion_data['alias']:
-            if alias in texto_lower:
+            if texto_contiene_termino(texto_condicion, alias):
                 if condicion_key not in [c['key'] for c in condiciones_detectadas]:
                     condiciones_detectadas.append({
                         'key': condicion_key,
@@ -21,7 +26,7 @@ def evaluar_ejercicio_por_condiciones(
     condiciones_cliente: list,
     nivel_actividad: str = None,
 ) -> dict:
-    nombre_lower = nombre_ejercicio.lower().strip()
+    nombre_norm = normalizar_texto(nombre_ejercicio)
     alertas = []
     nivel_maximo = NivelRiesgo.SAFE
     intensidad_permitida = 1.0
@@ -35,7 +40,7 @@ def evaluar_ejercicio_por_condiciones(
 
             ejercicios_prohibidos = data.get('ejercicios_prohibidos', [])
             for ej_prohibido in ejercicios_prohibidos:
-                if ej_prohibido.lower() in nombre_lower or nombre_lower in ej_prohibido.lower():
+                if _nombre_coincide(nombre_norm, ej_prohibido):
                     nivel_maximo = NivelRiesgo.CRITICAL
                     alertas.append({
                         'tipo': 'condicion',
@@ -79,6 +84,15 @@ def evaluar_ejercicio_por_condiciones(
         'precauciones': precauciones,
         'bloqueado': False,
     }
+
+
+def _nombre_coincide(nombre_normalizado: str, ejercicio_regla: str) -> bool:
+    """Comprueba si el nombre del ejercicio coincide con una regla."""
+    regla_norm = normalizar_texto(ejercicio_regla)
+    if not regla_norm or not nombre_normalizado:
+        return False
+    return texto_contiene_termino(nombre_normalizado, regla_norm) or \
+           texto_contiene_termino(regla_norm, nombre_normalizado)
 
 
 def _ajustar_nivel_por_intensidad(intensidad: float) -> NivelRiesgo:

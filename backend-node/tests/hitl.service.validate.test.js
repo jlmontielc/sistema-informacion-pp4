@@ -29,6 +29,17 @@ jest.mock('../src/shared/utils/flask-client', () => ({
       return [];
     }
   }),
+  limpiarArrayMedico: jest.fn((valores) => {
+    if (!Array.isArray(valores)) return [];
+    const vacios = new Set([
+      '', 'ninguna', 'ninguno', 'no', 'n/a', 'sin lesiones', 'sin condiciones',
+    ]);
+    return valores
+      .filter((v) => v !== null && v !== undefined)
+      .map((v) => String(v).trim())
+      .filter((v) => v.length > 0)
+      .filter((v) => !vacios.has(v.toLowerCase()));
+  }),
   CAMPOS_SENSIBLES: ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'],
 }));
 

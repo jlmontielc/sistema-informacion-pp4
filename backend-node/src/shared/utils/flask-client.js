@@ -88,11 +88,45 @@ const parsearCampoJson = (raw) => {
 
 const CAMPOS_SENSIBLES = ['alergias', 'intolerancias', 'lesiones', 'condicionesPreexistentes', 'medicacionActual'];
 
+const normalizarTextoLimpieza = (texto) => {
+  if (typeof texto !== 'string') return '';
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+};
+
+const VALORES_VACIOS_MEDICOS = new Set([
+  '', '0', 'n/a', 'n a', 'na', 's/n', 's n', 'no', 'none', 'nada',
+  'ninguna', 'ningunas', 'ninguno', 'ningunos',
+  'ninguna lesion', 'ninguna lesiones', 'ningun lesion',
+  'ninguna condicion', 'ninguna condiciones', 'ningun condicion',
+  'ninguna alergia', 'ninguna alergias', 'ningun alergia',
+  'ninguna intolerancia', 'ninguna intolerancias', 'ningun intolerancia',
+  'ninguna medicacion', 'ninguna medicaciones', 'ningun medicacion',
+  'ningun medicamento', 'ninguna medicamento', 'ningunos medicamentos',
+  'sin', 'sin lesiones', 'sin lesion', 'sin condiciones', 'sin condicion',
+  'sin alergias', 'sin alergia', 'sin intolerancias', 'sin intolerancia',
+  'sin medicacion', 'sin medicamentos', 'sin medicamento',
+]);
+
+const limpiarArrayMedico = (valores) => {
+  if (!Array.isArray(valores)) return [];
+  return valores
+    .filter((valor) => valor !== null && valor !== undefined)
+    .map((valor) => String(valor).trim())
+    .filter((valor) => valor.length > 0)
+    .filter((valor) => !VALORES_VACIOS_MEDICOS.has(normalizarTextoLimpieza(valor)));
+};
+
 module.exports = {
   FLASK_URL,
   generarTokenServicio,
   httpRequest,
   descifrarSeguro,
   parsearCampoJson,
+  limpiarArrayMedico,
   CAMPOS_SENSIBLES,
 };
