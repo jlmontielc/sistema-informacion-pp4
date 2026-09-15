@@ -4,11 +4,15 @@ const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const { CalculoMetabolico } = require('../metabolismo/metabolismo.model');
 const { calcularTMB, calcularGCT } = require('../../shared/utils/helpers');
 const { HitlFeedback } = require('../entrenamiento/hitl-feedback.model');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 const {
   httpRequest,
   descifrarSeguro,
   parsearCampoJson,
 } = require('../../shared/utils/flask-client');
+
+const TTL_DIETAS = 120;
 
 const verificarPertenencia = async (usuario, instruidoId) => {
   if (usuario.rol === 'instruido') {
@@ -20,7 +24,7 @@ const verificarPertenencia = async (usuario, instruidoId) => {
   return !!pertenece;
 };
 
-const listarPorUsuario = async (usuario) => {
+const _listarPorUsuario = async (usuario) => {
   const where = {};
   if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
   if (usuario.rol === 'instruido') where.instruidoId = usuario.id;
@@ -28,6 +32,11 @@ const listarPorUsuario = async (usuario) => {
     where,
     order: [['createdAt', 'DESC']],
   });
+};
+
+const listarPorUsuario = async (usuario) => {
+  const clave = cacheKeys.dietas.listado(usuario.id, usuario.rol);
+  return cache.envolver(clave, () => _listarPorUsuario(usuario), TTL_DIETAS);
 };
 
 const crear = async (usuario, datos) => {
@@ -47,7 +56,7 @@ const crear = async (usuario, datos) => {
   return Dieta.create({ ...resto, instruidoId, entrenadorId: usuario.id });
 };
 
-const obtenerPorId = async (usuario, id) => {
+const _obtenerPorId = async (usuario, id) => {
   const dieta = await Dieta.findByPk(id);
   if (!dieta) {
     const err = new Error('Dieta no encontrada');
@@ -78,6 +87,11 @@ const obtenerPorId = async (usuario, id) => {
   const err = new Error('Dieta no encontrada');
   err.status = 404;
   throw err;
+};
+
+const obtenerPorId = async (usuario, id) => {
+  const clave = cacheKeys.dietas.porId(id, usuario.rol, usuario.id);
+  return cache.envolver(clave, () => _obtenerPorId(usuario, id), TTL_DIETAS);
 };
 
 const CAMPOS_EDITABLES = [

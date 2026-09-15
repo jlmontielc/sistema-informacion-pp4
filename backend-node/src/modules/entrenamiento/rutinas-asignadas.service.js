@@ -2,12 +2,16 @@ const { RutinaAsignada, PlantillaEntrenamiento, Ejercicio } = require('./entrena
 const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
 const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const TTL_RUTINAS = 120;
 
 const esAdmin = (usuario) => usuario && usuario.rol === 'administrador';
 
 const wherePorUsuario = (usuario) => (esAdmin(usuario) ? {} : { entrenadorId: usuario.id });
 
-const obtenerTodos = async (entrenadorId, filtros = {}) => {
+const _obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
   where.eliminado = false;
   const admin = filtros.admin === true;
@@ -28,16 +32,33 @@ const obtenerTodos = async (entrenadorId, filtros = {}) => {
   });
 };
 
-const obtenerPorId = async (id, usuario) =>
+const obtenerTodos = async (entrenadorId, filtros = {}) => {
+  const rol = filtros.propias ? 'instruido' : 'entrenador';
+  const viewerId = filtros.propias ? filtros.instruidoId : entrenadorId;
+  const clave = cacheKeys.rutinas.listado(viewerId, rol, filtros);
+  return cache.envolver(clave, () => _obtenerTodos(entrenadorId, filtros), TTL_RUTINAS);
+};
+
+const _obtenerPorId = async (id, usuario) =>
   RutinaAsignada.findOne({
     where: { id, ...wherePorUsuario(usuario) },
     include: [{ model: Instruido, attributes: ['id', 'nombre'] }],
   });
 
-const obtenerPorIdPropio = async (id, instruidoId) =>
+const obtenerPorId = async (id, usuario) => {
+  const clave = cacheKeys.rutinas.porId(id, usuario.rol, usuario.id);
+  return cache.envolver(clave, () => _obtenerPorId(id, usuario), TTL_RUTINAS);
+};
+
+const _obtenerPorIdPropio = async (id, instruidoId) =>
   RutinaAsignada.findOne({
     where: { id, instruidoId },
   });
+
+const obtenerPorIdPropio = async (id, instruidoId) => {
+  const clave = cacheKeys.rutinas.porId(id, 'instruido', instruidoId);
+  return cache.envolver(clave, () => _obtenerPorIdPropio(id, instruidoId), TTL_RUTINAS);
+};
 
 const crear = async (datos, entrenadorId) => {
   const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
@@ -125,7 +146,7 @@ const clonarDesdePlantilla = async (plantillaId, datos, usuario) => {
   return rutinaCreada;
 };
 
-const obtenerPorDia = async (id, dia, usuario, instruidoId = null) => {
+const _obtenerPorDia = async (id, dia, usuario, instruidoId = null) => {
   let rutina;
   if (instruidoId) {
     rutina = await RutinaAsignada.findOne({ where: { id, instruidoId } });
@@ -150,7 +171,14 @@ const obtenerPorDia = async (id, dia, usuario, instruidoId = null) => {
   };
 };
 
-const obtenerResumenSemanal = async (id, usuario, instruidoId = null) => {
+const obtenerPorDia = async (id, dia, usuario, instruidoId = null) => {
+  const rol = instruidoId ? 'instruido' : usuario.rol;
+  const viewerId = instruidoId || usuario.id;
+  const clave = cacheKeys.rutinas.porDia(id, dia, rol, viewerId);
+  return cache.envolver(clave, () => _obtenerPorDia(id, dia, usuario, instruidoId), TTL_RUTINAS);
+};
+
+const _obtenerResumenSemanal = async (id, usuario, instruidoId = null) => {
   let rutina;
   if (instruidoId) {
     rutina = await RutinaAsignada.findOne({ where: { id, instruidoId } });
@@ -186,6 +214,13 @@ const obtenerResumenSemanal = async (id, usuario, instruidoId = null) => {
     configuracionDias: diasSemana,
     dias: resumenDias,
   };
+};
+
+const obtenerResumenSemanal = async (id, usuario, instruidoId = null) => {
+  const rol = instruidoId ? 'instruido' : usuario.rol;
+  const viewerId = instruidoId || usuario.id;
+  const clave = cacheKeys.rutinas.resumen(id, rol, viewerId);
+  return cache.envolver(clave, () => _obtenerResumenSemanal(id, usuario, instruidoId), TTL_RUTINAS);
 };
 
 const agregarEjercicioADia = async (id, dia, datos, usuario) => {

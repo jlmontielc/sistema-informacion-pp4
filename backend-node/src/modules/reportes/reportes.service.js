@@ -3,6 +3,10 @@ const { sequelize } = require('../../shared/database/connection');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Ejercicio, RegistroEntrenamiento } = require('../entrenamiento/entrenamiento.model');
 const { SerieEjecutada } = require('../entrenamiento/series-ejecutadas.model');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const TTL_REPORTES = 300;
 
 const PERIODOS_DIAS = {
   '7d': 7,
@@ -325,7 +329,7 @@ const calcularPromedioOtrosInstruidos = async (instruidoId, usuario) => {
   };
 };
 
-const metricasPorGrupo = async (instruidoId, periodo, usuario) => {
+const _metricasPorGrupo = async (instruidoId, periodo, usuario) => {
   const instruido = await verificarAcceso(instruidoId, usuario);
   const { fechaInicio, fechaFin } = calcularRangoFechas(periodo);
   const series = await obtenerSeriesPeriodo(instruidoId, fechaInicio, fechaFin);
@@ -341,7 +345,12 @@ const metricasPorGrupo = async (instruidoId, periodo, usuario) => {
   };
 };
 
-const evolucionPorGrupo = async (instruidoId, grupoMuscular, periodo, usuario) => {
+const metricasPorGrupo = async (instruidoId, periodo, usuario) => {
+  const clave = cacheKeys.reportes.metricasPorGrupo(instruidoId, periodo, usuario.rol);
+  return cache.envolver(clave, () => _metricasPorGrupo(instruidoId, periodo, usuario), TTL_REPORTES);
+};
+
+const _evolucionPorGrupo = async (instruidoId, grupoMuscular, periodo, usuario) => {
   const instruido = await verificarAcceso(instruidoId, usuario);
   const { fechaInicio, fechaFin } = calcularRangoFechas(periodo);
   const series = await obtenerSeriesPeriodo(instruidoId, fechaInicio, fechaFin);
@@ -362,7 +371,12 @@ const evolucionPorGrupo = async (instruidoId, grupoMuscular, periodo, usuario) =
   };
 };
 
-const comparativa = async (instruidoId, periodo, usuario) => {
+const evolucionPorGrupo = async (instruidoId, grupoMuscular, periodo, usuario) => {
+  const clave = cacheKeys.reportes.evolucionPorGrupo(instruidoId, grupoMuscular, periodo, usuario.rol);
+  return cache.envolver(clave, () => _evolucionPorGrupo(instruidoId, grupoMuscular, periodo, usuario), TTL_REPORTES);
+};
+
+const _comparativa = async (instruidoId, periodo, usuario) => {
   const instruido = await verificarAcceso(instruidoId, usuario);
   const { fechaInicio, fechaFin } = calcularRangoFechas(periodo);
   const series = await obtenerSeriesPeriodo(instruidoId, fechaInicio, fechaFin);
@@ -391,6 +405,11 @@ const comparativa = async (instruidoId, periodo, usuario) => {
     promedioHistoricoGlobal: promedioHistorico,
     comparativaOtros: promedioOtros,
   };
+};
+
+const comparativa = async (instruidoId, periodo, usuario) => {
+  const clave = cacheKeys.reportes.comparativa(instruidoId, periodo, usuario.rol);
+  return cache.envolver(clave, () => _comparativa(instruidoId, periodo, usuario), TTL_REPORTES);
 };
 
 const listarInstruidos = async (usuario) => {

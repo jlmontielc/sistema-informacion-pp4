@@ -1,11 +1,13 @@
 const app = require('./app');
 const { sequelize, connectDB } = require('./shared/database/connection');
+const { conectarRedis } = require('./shared/cache/redis');
 const config = require('./shared/constants');
 const sembrarAdmin = require('./shared/utils/seed-admin');
 
 const start = async () => {
   try {
     await connectDB();
+    await conectarRedis();
     await sequelize.sync();
     await sembrarAdmin();
     app.listen(config.PORT, () => {

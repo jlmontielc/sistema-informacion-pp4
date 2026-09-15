@@ -1,4 +1,15 @@
 const rutinasAsignadasService = require('./rutinas-asignadas.service');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const invalidarCacheRutina = async (rutinaId, usuario, instruidoId = null) => {
+  await cache.eliminarPorPatron(cacheKeys.rutinas.patronListado());
+  await cache.eliminarPorPatron(cacheKeys.rutinas.patronPorId(rutinaId));
+  await cache.eliminar(cacheKeys.dashboard.stats(usuario.rol, usuario.id));
+  if (instruidoId) {
+    await cache.eliminar(cacheKeys.dashboard.stats('instruido', instruidoId));
+  }
+};
 
 const obtenerTodos = async (req, res, next) => {
   try {
@@ -37,6 +48,7 @@ const obtenerPorId = async (req, res, next) => {
 const crear = async (req, res, next) => {
   try {
     const rutina = await rutinasAsignadasService.crear(req.body, req.usuario.id);
+    await invalidarCacheRutina(rutina.id, req.usuario, rutina.instruidoId);
     res.status(201).json(rutina);
   } catch (err) {
     next(err);
@@ -47,6 +59,7 @@ const actualizar = async (req, res, next) => {
   try {
     const rutina = await rutinasAsignadasService.actualizar(req.params.id, req.body, req.usuario);
     if (!rutina) return res.status(404).json({ error: 'Rutina no encontrada' });
+    await invalidarCacheRutina(rutina.id, req.usuario, rutina.instruidoId);
     res.json(rutina);
   } catch (err) {
     next(err);
@@ -55,7 +68,10 @@ const actualizar = async (req, res, next) => {
 
 const eliminar = async (req, res, next) => {
   try {
-    await rutinasAsignadasService.eliminar(req.params.id, req.usuario);
+    const rutina = await rutinasAsignadasService.eliminar(req.params.id, req.usuario);
+    if (rutina) {
+      await invalidarCacheRutina(rutina.id, req.usuario, rutina.instruidoId);
+    }
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -67,6 +83,7 @@ const clonarDesdePlantilla = async (req, res, next) => {
     const rutina = await rutinasAsignadasService.clonarDesdePlantilla(
       req.params.plantillaId, req.body, req.usuario
     );
+    await invalidarCacheRutina(rutina.id, req.usuario, rutina.instruidoId);
     res.status(201).json(rutina);
   } catch (err) {
     next(err);
@@ -117,6 +134,7 @@ const agregarEjercicioADia = async (req, res, next) => {
       req.params.id, req.params.dia, req.body, req.usuario
     );
     if (!ejercicio) return res.status(404).json({ error: 'Rutina no encontrada' });
+    await invalidarCacheRutina(req.params.id, req.usuario);
     res.status(201).json(ejercicio);
   } catch (err) {
     next(err);
@@ -129,6 +147,7 @@ const editarEjercicioEnDia = async (req, res, next) => {
       req.params.id, req.params.dia, Number(req.params.idx), req.body, req.usuario
     );
     if (!ejercicio) return res.status(404).json({ error: 'Rutina no encontrada' });
+    await invalidarCacheRutina(req.params.id, req.usuario);
     res.json(ejercicio);
   } catch (err) {
     next(err);
@@ -141,6 +160,7 @@ const eliminarEjercicioDeDia = async (req, res, next) => {
       req.params.id, req.params.dia, Number(req.params.idx), req.usuario
     );
     if (!resultado) return res.status(404).json({ error: 'Rutina no encontrada' });
+    await invalidarCacheRutina(req.params.id, req.usuario);
     res.json(resultado);
   } catch (err) {
     next(err);
@@ -153,6 +173,7 @@ const reordenarDia = async (req, res, next) => {
       req.params.id, req.params.dia, req.body.orden, req.usuario
     );
     if (!ejercicios) return res.status(404).json({ error: 'Rutina no encontrada' });
+    await invalidarCacheRutina(req.params.id, req.usuario);
     res.json(ejercicios);
   } catch (err) {
     next(err);
