@@ -6,7 +6,8 @@
 - **API principal:** Node 20 + Express 4 + Sequelize 6 + mysql2 + JWT + Swagger en `/api/docs`.
 - **Motor IA:** Python 3.11 + Flask 3 + scikit-learn/pandas, aislado en `backend-flask/`.
 - **DB:** MySQL 8.0 (Aiven en prod). Tanto Node como Flask fuerzan SSL. Para desarrollo local sin SSL hay que ajustar `backend-node/src/shared/database/connection.js` y `backend-flask/services/db_connector.py`.
-- **Infra:** Docker Compose 3 servicios. nginx sirve el SPA y hace proxy de `/api/*` a Node. Flask no expone puerto al host, solo dentro de la red Docker.
+- **Caché:** Redis 7 (opcional en local, habilitado en Docker Compose). Usado en Node para caché de lectura (dashboard, ejercicios, reportes, rutinas asignadas, dietas, listados) y blacklist JWT. Flask no se cachea.
+- **Infra:** Docker Compose 4 servicios (`frontend`, `backend-node`, `backend-flask`, `redis`). nginx sirve el SPA y hace proxy de `/api/*` a Node. Flask no expone puerto al host, solo dentro de la red Docker.
 
 ```
 User -> nginx:80
@@ -64,7 +65,7 @@ Obligatorias y validadas en `src/shared/constants/index.js`:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
 - `FLASK_IA_URL=http://localhost:5000` (en Docker: `http://backend-flask:5000`)
 
-Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_IN` (def 10d).
+Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_IN` (def 10d), `REDIS_URL` (def `redis://localhost:6379/0`), `REDIS_ENABLED` (def `false`).
 
 ### `backend-flask/.env`
 - Mismas credenciales DB.
@@ -111,7 +112,7 @@ Opcionales: `PORT` (def 3000), `JWT_EXPIRES_IN` (def 15m), `JWT_REFRESH_EXPIRES_
 - `npm run seed:ejercicios` es destructivo: borra la tabla `ejercicios` y la vuelve a insertar.
 - Body de `/api/pagos` tiene límite de 5 MB para comprobantes base64 (`app.js`).
 - Local dev contra MySQL sin SSL requiere quitar `dialectOptions.ssl` en `connection.js` y ajustar `db_connector.py`.
-- Token blacklist está en memoria (`Set`); se pierde al reiniciar Node.
+- Token blacklist persiste en Redis cuando `REDIS_ENABLED=true`; si Redis no está disponible, usa fallback en memoria (`Set`) y se pierde al reiniciar Node.
 - Roles: `administrador` y `entrenador` usan `tipo='entrenador'` en el JWT; `instruido` usa `tipo='instruido'`. `autorizar` revisa `rol`.
 - Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/complete-profile`; de lo contrario, a `/dashboard`. El flag se calcula en el backend y se incluye en la respuesta de login.
 - Datos médicos guardados con una `ENC_KEY`/`ENC_IV` distinta a la actual no podrán descifrarse. El backend detecta este caso y devuelve `datosMedicosCorruptos: true`; el frontend muestra una advertencia y pide al usuario reingresar la información. No es posible recuperar los valores originales sin la clave/IV con la que se cifraron.

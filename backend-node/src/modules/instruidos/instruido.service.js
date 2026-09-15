@@ -1,16 +1,25 @@
 const { Instruido } = require('./instruido.model');
 const bcrypt = require('bcryptjs');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 
 const ATRIBUTOS_SEGUROS = { attributes: { exclude: ['contrasenaHash'] } };
+const TTL_INSTRUIDOS = 120;
 
 const encriptarContrasena = async (contrasena) => bcrypt.hash(contrasena, 10);
 
 const obtenerTodos = async (usuarioId, rol) => {
+  const clave = cacheKeys.instruidos.listado(usuarioId, rol);
+  const cacheado = await cache.obtener(clave);
+  if (cacheado) return cacheado;
+
   const where = {};
   if (rol === 'entrenador') {
     where.entrenadorId = usuarioId;
   }
-  return Instruido.findAll({ ...ATRIBUTOS_SEGUROS, where });
+  const instruidos = await Instruido.findAll({ ...ATRIBUTOS_SEGUROS, where });
+  await cache.guardar(clave, instruidos, TTL_INSTRUIDOS);
+  return instruidos;
 };
 
 const obtenerPorId = async (id, usuarioId, rol) => {

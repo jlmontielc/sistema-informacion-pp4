@@ -266,8 +266,8 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
 };
 
 const cerrarSesion = async (token, refreshToken) => {
-  if (token) blacklist.agregar(token);
-  if (refreshToken) blacklist.agregar(refreshToken);
+  if (token) await blacklist.agregar(token);
+  if (refreshToken) await blacklist.agregar(refreshToken);
   return { message: 'Sesión cerrada correctamente' };
 };
 

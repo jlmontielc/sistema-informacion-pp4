@@ -37,6 +37,8 @@ module.exports = {
   ENC_KEY: process.env.ENC_KEY,
   ENC_IV: process.env.ENC_IV,
   FLASK_IA_URL: process.env.FLASK_IA_URL || 'http://localhost:5000',
+  REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379/0',
+  REDIS_ENABLED: process.env.REDIS_ENABLED === 'true',
   ADMIN_EMAIL,
   ADMIN_PASSWORD,
 };

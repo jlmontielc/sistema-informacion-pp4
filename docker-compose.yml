@@ -1,4 +1,11 @@
 services:
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    restart: unless-stopped
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+
   backend-flask:
     build: ./backend-flask
     expose:
@@ -14,6 +21,10 @@ services:
     environment:
       - NODE_ENV=production
       - FLASK_IA_URL=http://backend-flask:5000
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=true
+    depends_on:
+      - redis
     restart: unless-stopped
 
   frontend:

@@ -3,6 +3,8 @@ const { SerieEjecutada } = require('./series-ejecutadas.model');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Op } = require('sequelize');
 const { normalizarEjercicios } = require('./ejercicios-normalizer');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 
 const ESTADOS = {
   EN_PROGRESO: 'en_progreso',
@@ -350,6 +352,16 @@ const finalizar = async (registroId, usuario, datos = {}) => {
     duracionMinutos,
     observaciones,
   });
+
+  await cache.eliminar(cacheKeys.dashboard.stats('instruido', registro.instruidoId));
+  await cache.eliminarPorPatron(cacheKeys.reportes.patronPorInstruido(registro.instruidoId));
+
+  const rutina = await RutinaAsignada.findByPk(registro.rutinaAsignadaId, {
+    attributes: ['entrenadorId'],
+  });
+  if (rutina && rutina.entrenadorId) {
+    await cache.eliminar(cacheKeys.dashboard.stats('entrenador', rutina.entrenadorId));
+  }
 
   return registro;
 };

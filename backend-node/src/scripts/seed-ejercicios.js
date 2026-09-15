@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { sequelize } = require('../shared/database/connection');
 const { Ejercicio } = require('../modules/entrenamiento/entrenamiento.model');
+const cache = require('../shared/cache/cache');
+const cacheKeys = require('../shared/cache/cacheKeys');
 
 require('../shared/database/associations');
 
@@ -136,6 +138,9 @@ const seed = async () => {
     porGrupo.forEach(g => {
       if (g.grupoMuscular) console.log(`  ${g.grupoMuscular}: ${g.total}`);
     });
+
+    await cache.eliminarPorPatron(cacheKeys.ejercicios.patronTodos());
+    console.log('Caché de ejercicios invalidada.');
 
   } catch (err) {
     console.error('Error fatal:', err.message);

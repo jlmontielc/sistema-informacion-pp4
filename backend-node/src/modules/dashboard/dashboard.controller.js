@@ -2,18 +2,30 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../../shared/database/connection');
 const { Instruido } = require('../instruidos/instruido.model');
 const { Entrenador } = require('../auth/entrenador.model');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const TTL_DASHBOARD = 60;
 
 const stats = async (req, res, next) => {
   try {
     const { rol, id } = req.usuario;
+    const clave = cacheKeys.dashboard.stats(rol, id);
 
+    const cacheado = await cache.obtener(clave);
+    if (cacheado) return res.json(cacheado);
+
+    let resultado;
     if (rol === 'administrador') {
-      return res.json(await statsAdministrador());
+      resultado = await statsAdministrador();
+    } else if (rol === 'entrenador') {
+      resultado = await statsEntrenador(id);
+    } else {
+      resultado = await statsInstruido(id);
     }
-    if (rol === 'entrenador') {
-      return res.json(await statsEntrenador(id));
-    }
-    return res.json(await statsInstruido(id));
+
+    await cache.guardar(clave, resultado, TTL_DASHBOARD);
+    return res.json(resultado);
   } catch (err) {
     next(err);
   }

@@ -4,18 +4,19 @@ const blacklist = require('../utils/blacklist');
 
 const TIPOS_VALIDOS = ['entrenador', 'instruido'];
 
-const autenticar = (req, res, next) => {
+const autenticar = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token no proporcionado' });
   }
 
   const token = header.split(' ')[1];
-  if (blacklist.estaInvalidado(token)) {
-    return res.status(401).json({ error: 'Token invalidado' });
-  }
-
   try {
+    const invalidado = await blacklist.estaInvalidado(token);
+    if (invalidado) {
+      return res.status(401).json({ error: 'Token invalidado' });
+    }
+
     const decodificado = jwt.verify(token, config.JWT_SECRET);
 
     if (!TIPOS_VALIDOS.includes(decodificado.tipo)) {
