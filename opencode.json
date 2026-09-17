@@ -1,5 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "stitch": {
+      "type": "local",
+      "command": ["npx", "@_davideast/stitch-mcp", "proxy"],
+      "enabled": true,
+      "environment": {
+        "STITCH_API_KEY": "{env:STITCH_API_KEY}"
+      }
+    }
+  },
   "permission": {
     "bash": {
       "docker-compose *": "allow",
