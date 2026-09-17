@@ -13,3 +13,4 @@ database/*
 !database/schema.sql
 !database/migrations/
 coverage/
+opencode.json
