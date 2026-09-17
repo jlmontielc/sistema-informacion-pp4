@@ -6,7 +6,7 @@ const { SerieEjecutada } = require('../entrenamiento/series-ejecutadas.model');
 const cache = require('../../shared/cache/cache');
 const cacheKeys = require('../../shared/cache/cacheKeys');
 
-const TTL_REPORTES = 300;
+const TTL_REPORTES = 900;
 
 const PERIODOS_DIAS = {
   '7d': 7,

@@ -1,12 +1,16 @@
 const { PlantillaEntrenamiento, Ejercicio } = require('./entrenamiento.model');
 const { Op } = require('sequelize');
 const { normalizarPayloadRutina, normalizarEjercicios, normalizarDiasSemana } = require('./ejercicios-normalizer');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const TTL_PLANTILLAS = 600;
 
 const esAdmin = (usuario) => usuario && usuario.rol === 'administrador';
 
 const wherePorUsuario = (usuario) => (esAdmin(usuario) ? {} : { entrenadorId: usuario.id });
 
-const obtenerTodos = async (entrenadorId, filtros = {}) => {
+const _obtenerTodos = async (entrenadorId, filtros = {}) => {
   const where = {};
   const admin = filtros.admin === true;
   if (!admin) {
@@ -21,8 +25,22 @@ const obtenerTodos = async (entrenadorId, filtros = {}) => {
   return PlantillaEntrenamiento.findAll({ where, order: [['createdAt', 'DESC']] });
 };
 
-const obtenerPorId = async (id, usuario) =>
+const obtenerTodos = async (entrenadorId, filtros = {}) =>
+  cache.envolver(
+    cacheKeys.plantillas.listado(entrenadorId, filtros),
+    () => _obtenerTodos(entrenadorId, filtros),
+    TTL_PLANTILLAS,
+  );
+
+const _obtenerPorId = async (id, usuario) =>
   PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
+
+const obtenerPorId = async (id, usuario) =>
+  cache.envolver(
+    cacheKeys.plantillas.porId(id, usuario.rol, usuario.id),
+    () => _obtenerPorId(id, usuario),
+    TTL_PLANTILLAS,
+  );
 
 const crear = async (datos, entrenadorId) => {
   const normalizados = await normalizarPayloadRutina(datos);
@@ -39,10 +57,11 @@ const actualizar = async (id, datos, usuario) => {
 const eliminar = async (id, usuario) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
-  return plantilla.destroy();
+  await plantilla.destroy();
+  return plantilla;
 };
 
-const obtenerPorDia = async (id, dia, usuario) => {
+const _obtenerPorDia = async (id, dia, usuario) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });
   if (!plantilla) return null;
 
@@ -61,6 +80,13 @@ const obtenerPorDia = async (id, dia, usuario) => {
     ejercicios: ejerciciosDelDia,
   };
 };
+
+const obtenerPorDia = async (id, dia, usuario) =>
+  cache.envolver(
+    cacheKeys.plantillas.porDia(id, dia, usuario.rol, usuario.id),
+    () => _obtenerPorDia(id, dia, usuario),
+    TTL_PLANTILLAS,
+  );
 
 const agregarEjercicioADia = async (id, dia, datos, usuario) => {
   const plantilla = await PlantillaEntrenamiento.findOne({ where: { id, ...wherePorUsuario(usuario) } });

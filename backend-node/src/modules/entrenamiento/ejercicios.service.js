@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const cache = require('../../shared/cache/cache');
 const cacheKeys = require('../../shared/cache/cacheKeys');
 
-const TTL_EJERCICIOS = 600;
+const TTL_EJERCICIOS = 1800;
 
 const obtenerTodos = async (filtros = {}) => {
   const clave = cacheKeys.ejercicios.lista(filtros);

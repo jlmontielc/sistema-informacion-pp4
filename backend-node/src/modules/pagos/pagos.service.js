@@ -8,8 +8,13 @@ const {
   Instruido,
 } = require('../../shared/database/associations');
 const hitlService = require('../entrenamiento/hitl.service');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 
 const TASA_POR_DEFECTO = 40.0000;
+const TTL_PLANES_METODOS = 600;
+const TTL_CONFIG_CATALOGO = 300;
+const TTL_PAGOS_SUSCRIPCION = 60;
 
 // Aritmetica de fechas pura en UTC para evitar desfases por zona horaria
 const hoyISO = () => new Date().toISOString().slice(0, 10);
@@ -49,11 +54,18 @@ const verificarPertenencia = async (instruidoId, entrenadorId) => {
 
 // ============ PLANES ============
 
-const listarPlanes = async (usuario) => {
+const _listarPlanes = async (usuario) => {
   const where = {};
   if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
   return PlanPago.findAll({ where, order: [['created_at', 'DESC']] });
 };
+
+const listarPlanes = async (usuario) =>
+  cache.envolver(
+    cacheKeys.pagos.planes(usuario.rol, usuario.id),
+    () => _listarPlanes(usuario),
+    TTL_PLANES_METODOS,
+  );
 
 const crearPlan = async (usuario, datos) =>
   PlanPago.create({ ...datos, entrenadorId: usuario.id });
@@ -80,11 +92,18 @@ const eliminarPlan = async (planId, usuario) => {
 
 // ============ MÉTODOS DE PAGO ============
 
-const listarMetodos = async (usuario) => {
+const _listarMetodos = async (usuario) => {
   const where = {};
   if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
   return MetodoPago.findAll({ where, order: [['created_at', 'DESC']] });
 };
+
+const listarMetodos = async (usuario) =>
+  cache.envolver(
+    cacheKeys.pagos.metodos(usuario.rol, usuario.id),
+    () => _listarMetodos(usuario),
+    TTL_PLANES_METODOS,
+  );
 
 const crearMetodo = async (usuario, datos) =>
   MetodoPago.create({ ...datos, entrenadorId: usuario.id });
@@ -111,7 +130,7 @@ const eliminarMetodo = async (metodoId, usuario) => {
 
 // ============ CONFIGURACIÓN (TASA DE CAMBIO) ============
 
-const obtenerConfiguracion = async (entrenadorId) => {
+const _obtenerConfiguracion = async (entrenadorId) => {
   const [config] = await ConfiguracionPago.findOrCreate({
     where: { entrenadorId },
     defaults: { tasaCambio: TASA_POR_DEFECTO },
@@ -119,15 +138,22 @@ const obtenerConfiguracion = async (entrenadorId) => {
   return config;
 };
 
+const obtenerConfiguracion = async (entrenadorId) =>
+  cache.envolver(
+    cacheKeys.pagos.configuracion(entrenadorId),
+    () => _obtenerConfiguracion(entrenadorId),
+    TTL_CONFIG_CATALOGO,
+  );
+
 const actualizarTasa = async (entrenadorId, tasaCambio) => {
-  const config = await obtenerConfiguracion(entrenadorId);
+  const config = await _obtenerConfiguracion(entrenadorId);
   await config.update({ tasaCambio });
   return config;
 };
 
 // ============ CATÁLOGO PARA EL INSTRUIDO ============
 
-const obtenerCatalogo = async (instruidoId, entrenadorId) => {
+const _obtenerCatalogo = async (instruidoId, entrenadorId) => {
   await verificarPertenencia(instruidoId, entrenadorId);
   const [planes, metodos, config] = await Promise.all([
     PlanPago.findAll({ where: { entrenadorId, activo: true }, order: [['montoUsd', 'ASC']] }),
@@ -136,6 +162,13 @@ const obtenerCatalogo = async (instruidoId, entrenadorId) => {
   ]);
   return { planes, metodos, tasaCambio: Number(config.tasaCambio) };
 };
+
+const obtenerCatalogo = async (instruidoId, entrenadorId) =>
+  cache.envolver(
+    cacheKeys.pagos.catalogo(entrenadorId),
+    () => _obtenerCatalogo(instruidoId, entrenadorId),
+    TTL_CONFIG_CATALOGO,
+  );
 
 // ============ PAGOS ============
 
@@ -170,7 +203,7 @@ const registrarPago = async (instruidoId, datos) => {
   });
 };
 
-const listarMisPagos = async (instruidoId) =>
+const _listarMisPagos = async (instruidoId) =>
   Pago.findAll({
     where: { instruidoId },
     include: [
@@ -180,9 +213,16 @@ const listarMisPagos = async (instruidoId) =>
     order: [['created_at', 'DESC']],
   }).then(limpiar);
 
+const listarMisPagos = async (instruidoId) =>
+  cache.envolver(
+    cacheKeys.pagos.misPagos(instruidoId),
+    () => _listarMisPagos(instruidoId),
+    TTL_PAGOS_SUSCRIPCION,
+  );
+
 const ESTADOS_VALIDOS = ['pendiente', 'verificado', 'rechazado'];
 
-const listarPagosEntrenador = async (usuario, filtros = {}) => {
+const _listarPagosEntrenador = async (usuario, filtros = {}) => {
   const where = {};
   if (usuario.rol === 'entrenador') where.entrenadorId = usuario.id;
   if (filtros.estado && ESTADOS_VALIDOS.includes(filtros.estado)) {
@@ -199,6 +239,13 @@ const listarPagosEntrenador = async (usuario, filtros = {}) => {
     order: [['created_at', 'DESC']],
   }).then(limpiar);
 };
+
+const listarPagosEntrenador = async (usuario, filtros = {}) =>
+  cache.envolver(
+    cacheKeys.pagos.historial(usuario.rol, usuario.id, filtros),
+    () => _listarPagosEntrenador(usuario, filtros),
+    TTL_PAGOS_SUSCRIPCION,
+  );
 
 const obtenerComprobante = async (pagoId, usuario) => {
   const pago = await Pago.findByPk(pagoId, {
@@ -315,7 +362,7 @@ const rechazarPago = async (pagoId, usuario, comentario) => {
   return limpiar(pago);
 };
 
-const obtenerMiSuscripcion = async (instruidoId) => {
+const _obtenerMiSuscripcion = async (instruidoId) => {
   const hoy = hoyISO();
 
   const vigente = await Pago.findOne({
@@ -352,6 +399,13 @@ const obtenerMiSuscripcion = async (instruidoId) => {
     mensaje: 'La suscripción ha vencido',
   };
 };
+
+const obtenerMiSuscripcion = async (instruidoId) =>
+  cache.envolver(
+    cacheKeys.pagos.miSuscripcion(instruidoId),
+    () => _obtenerMiSuscripcion(instruidoId),
+    TTL_PAGOS_SUSCRIPCION,
+  );
 
 module.exports = {
   listarPlanes,

@@ -38,7 +38,11 @@ const actualizar = async (req, res, next) => {
     if (!instruido) return res.status(404).json({ error: 'Instruido no encontrado' });
     await cache.eliminar(cacheKeys.instruidos.listado(req.usuario.id, req.usuario.rol));
     await cache.eliminarPorPatron(cacheKeys.instruidos.patronListado());
+    await cache.eliminar(cacheKeys.auth.perfil('instruido', req.params.id));
     await cache.eliminar(cacheKeys.dashboard.stats('instruido', req.params.id));
+    if (instruido.entrenadorId) {
+      await cache.eliminar(cacheKeys.dashboard.stats('entrenador', instruido.entrenadorId));
+    }
     res.json(instruido);
   } catch (err) {
     next(err);
@@ -70,8 +74,11 @@ const actualizarMiPerfil = async (req, res, next) => {
   try {
     const perfil = await instruidoService.actualizarPropio(req.usuario.id, req.body);
     if (!perfil) return res.status(404).json({ error: 'Instruido no encontrado' });
-    await cache.eliminar(cacheKeys.instruidos.listado(req.usuario.id, 'instruido'));
+    await cache.eliminar(cacheKeys.auth.perfil('instruido', req.usuario.id));
     await cache.eliminar(cacheKeys.dashboard.stats('instruido', req.usuario.id));
+    if (perfil.entrenadorId) {
+      await cache.eliminar(cacheKeys.dashboard.stats('entrenador', perfil.entrenadorId));
+    }
     res.json(perfil);
   } catch (err) {
     next(err);
@@ -90,6 +97,8 @@ const obtenerMiPerfilMedico = async (req, res, next) => {
 const actualizarMiPerfilMedico = async (req, res, next) => {
   try {
     const perfil = await perfilMedicoService.crearOActualizar(req.usuario.id, req.body, req.usuario);
+    await cache.eliminar(cacheKeys.auth.perfil('instruido', req.usuario.id));
+    await cache.eliminar(cacheKeys.dashboard.stats('instruido', req.usuario.id));
     res.json(perfil);
   } catch (err) {
     next(err);
