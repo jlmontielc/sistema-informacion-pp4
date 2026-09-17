@@ -7,6 +7,11 @@ const { PerfilMedico } = require('../instruidos/perfil-medico.model');
 const { calcularPerfilMedicoCompleto } = require('../instruidos/perfil-medico.service');
 const config = require('../../shared/constants');
 const blacklist = require('../../shared/utils/blacklist');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
+
+const TTL_PERFIL = 600;
+const TTL_PERFILES = 900;
 
 const encriptarContrasena = async (contrasena) => bcrypt.hash(contrasena, 10);
 
@@ -167,7 +172,7 @@ const refrescarToken = async (token) => {
   return { accessToken, refreshToken };
 };
 
-const obtenerPerfil = async (usuarioId, tipo) => {
+const _obtenerPerfil = async (usuarioId, tipo) => {
   if (tipo === 'entrenador') {
     const entrenador = await Entrenador.findByPk(usuarioId, {
       attributes: { exclude: ['contrasenaHash'] },
@@ -191,6 +196,13 @@ const obtenerPerfil = async (usuarioId, tipo) => {
   const perfilMedicoCompleto = calcularPerfilMedicoCompleto(perfilMedico);
   return { ...instruido.toJSON(), perfilMedicoCompleto };
 };
+
+const obtenerPerfil = async (usuarioId, tipo) =>
+  cache.envolver(
+    cacheKeys.auth.perfil(tipo, usuarioId),
+    () => _obtenerPerfil(usuarioId, tipo),
+    TTL_PERFIL,
+  );
 
 const actualizarPerfil = async (usuarioId, tipo, datos) => {
   if (tipo === 'entrenador') {
@@ -275,7 +287,7 @@ const entrenadorPrincipal = async () => {
   return Entrenador.findOne({ where: { rol: 'entrenador' } });
 };
 
-const obtenerPerfilEntrenador = async (instruidoId) => {
+const _obtenerPerfilEntrenador = async (instruidoId) => {
   const instruido = await Instruido.findByPk(instruidoId);
   if (!instruido) {
     const err = new Error('Instruido no encontrado');
@@ -299,12 +311,26 @@ const obtenerPerfilEntrenador = async (instruidoId) => {
   return entrenador;
 };
 
-const obtenerTodosLosPerfiles = async () => {
+const obtenerPerfilEntrenador = async (instruidoId) =>
+  cache.envolver(
+    cacheKeys.auth.trainer(instruidoId),
+    () => _obtenerPerfilEntrenador(instruidoId),
+    TTL_PERFIL,
+  );
+
+const _obtenerTodosLosPerfiles = async () => {
   return Entrenador.findAll({
     attributes: { exclude: ['contrasenaHash'] },
     include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
   });
 };
+
+const obtenerTodosLosPerfiles = async () =>
+  cache.envolver(
+    cacheKeys.auth.profiles('all'),
+    () => _obtenerTodosLosPerfiles(),
+    TTL_PERFILES,
+  );
 
 const crearCertificacion = async (entrenadorId, datos) => {
   const entrenador = await Entrenador.findByPk(entrenadorId);

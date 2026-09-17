@@ -51,6 +51,40 @@ const dietas = {
   patronTodos: () => prefijo('dietas:*'),
 };
 
+const pagos = {
+  planes: (rol, usuarioId) => prefijo(`pagos:planes:${rol}:${usuarioId}`),
+  metodos: (rol, usuarioId) => prefijo(`pagos:metodos:${rol}:${usuarioId}`),
+  configuracion: (entrenadorId) => prefijo(`pagos:config:${entrenadorId}`),
+  catalogo: (entrenadorId) => prefijo(`pagos:catalogo:${entrenadorId}`),
+  misPagos: (instruidoId) => prefijo(`pagos:mis-pagos:${instruidoId}`),
+  miSuscripcion: (instruidoId) => prefijo(`pagos:suscripcion:${instruidoId}`),
+  historial: (rol, usuarioId, filtros) => {
+    const ordenados = Object.keys(filtros || {})
+      .sort()
+      .reduce((acc, key) => {
+        acc[key] = filtros[key];
+        return acc;
+      }, {});
+    return prefijo(`pagos:historial:${rol}:${usuarioId}:${JSON.stringify(ordenados)}`);
+  },
+  patronHistorial: (rol, usuarioId) => prefijo(`pagos:historial:${rol}:${usuarioId}:*`),
+};
+
+const auth = {
+  perfil: (rol, id) => prefijo(`auth:perfil:${rol}:${id}`),
+  trainer: (instruidoId) => prefijo(`auth:trainer:${instruidoId}`),
+  profiles: (adminId) => prefijo(`auth:profiles:${adminId}`),
+};
+
+const plantillas = {
+  listado: (entrenadorId, filtros) => prefijo(`plantillas:listado:${entrenadorId}:${JSON.stringify(filtros)}`),
+  porId: (id, rol, viewerId) => prefijo(`plantillas:id:${rol}:${viewerId}:${id}`),
+  porDia: (id, dia, rol, viewerId) => prefijo(`plantillas:dia:${rol}:${viewerId}:${id}:${dia}`),
+  patronListadoPorEntrenador: (entrenadorId) => prefijo(`plantillas:listado:${entrenadorId}:*`),
+  patronPorId: (id) => prefijo(`plantillas:id:*:${id}`),
+  patronPorDia: (id) => prefijo(`plantillas:dia:*:${id}:*`),
+};
+
 const blacklist = (tokenHash) => prefijo(`blacklist:${tokenHash}`);
 
 module.exports = {
@@ -60,5 +94,8 @@ module.exports = {
   reportes,
   rutinas,
   dietas,
+  pagos,
+  auth,
+  plantillas,
   blacklist,
 };

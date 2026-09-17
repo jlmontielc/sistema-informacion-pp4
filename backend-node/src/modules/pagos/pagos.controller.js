@@ -1,4 +1,6 @@
 const pagosService = require('./pagos.service');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 
 // ============ PLANES ============
 
@@ -14,6 +16,8 @@ const listarPlanes = async (req, res, next) => {
 const crearPlan = async (req, res, next) => {
   try {
     const plan = await pagosService.crearPlan(req.usuario, req.body);
+    await cache.eliminar(cacheKeys.pagos.planes(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(req.usuario.id));
     res.status(201).json(plan);
   } catch (err) {
     next(err);
@@ -23,6 +27,8 @@ const crearPlan = async (req, res, next) => {
 const actualizarPlan = async (req, res, next) => {
   try {
     const plan = await pagosService.actualizarPlan(Number(req.params.planId), req.usuario, req.body);
+    await cache.eliminar(cacheKeys.pagos.planes(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(plan.entrenadorId));
     res.json(plan);
   } catch (err) {
     next(err);
@@ -31,7 +37,9 @@ const actualizarPlan = async (req, res, next) => {
 
 const eliminarPlan = async (req, res, next) => {
   try {
-    await pagosService.eliminarPlan(Number(req.params.planId), req.usuario);
+    const plan = await pagosService.eliminarPlan(Number(req.params.planId), req.usuario);
+    await cache.eliminar(cacheKeys.pagos.planes(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(plan.entrenadorId));
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -52,6 +60,8 @@ const listarMetodos = async (req, res, next) => {
 const crearMetodo = async (req, res, next) => {
   try {
     const metodo = await pagosService.crearMetodo(req.usuario, req.body);
+    await cache.eliminar(cacheKeys.pagos.metodos(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(req.usuario.id));
     res.status(201).json(metodo);
   } catch (err) {
     next(err);
@@ -61,6 +71,8 @@ const crearMetodo = async (req, res, next) => {
 const actualizarMetodo = async (req, res, next) => {
   try {
     const metodo = await pagosService.actualizarMetodo(Number(req.params.metodoId), req.usuario, req.body);
+    await cache.eliminar(cacheKeys.pagos.metodos(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(metodo.entrenadorId));
     res.json(metodo);
   } catch (err) {
     next(err);
@@ -69,7 +81,9 @@ const actualizarMetodo = async (req, res, next) => {
 
 const eliminarMetodo = async (req, res, next) => {
   try {
-    await pagosService.eliminarMetodo(Number(req.params.metodoId), req.usuario);
+    const metodo = await pagosService.eliminarMetodo(Number(req.params.metodoId), req.usuario);
+    await cache.eliminar(cacheKeys.pagos.metodos(req.usuario.rol, req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(metodo.entrenadorId));
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -90,6 +104,8 @@ const obtenerConfiguracion = async (req, res, next) => {
 const actualizarConfiguracion = async (req, res, next) => {
   try {
     const config = await pagosService.actualizarTasa(req.usuario.id, req.body.tasaCambio);
+    await cache.eliminar(cacheKeys.pagos.configuracion(req.usuario.id));
+    await cache.eliminar(cacheKeys.pagos.catalogo(req.usuario.id));
     res.json(config);
   } catch (err) {
     next(err);
@@ -113,6 +129,11 @@ const obtenerCatalogo = async (req, res, next) => {
 const registrarPago = async (req, res, next) => {
   try {
     const pago = await pagosService.registrarPago(req.usuario.id, req.body);
+    const { entrenadorId, instruidoId } = pago;
+    await cache.eliminar(cacheKeys.pagos.misPagos(instruidoId));
+    await cache.eliminar(cacheKeys.pagos.miSuscripcion(instruidoId));
+    await cache.eliminarPorPatron(cacheKeys.pagos.patronHistorial('*', entrenadorId));
+    await cache.eliminarPorPatron(cacheKeys.pagos.patronHistorial('administrador', '*'));
     const { comprobante, ...pagoSinComprobante } = pago.toJSON();
     res.status(201).json(pagoSinComprobante);
   } catch (err) {
@@ -161,9 +182,18 @@ const obtenerComprobante = async (req, res, next) => {
   }
 };
 
+const invalidarPagos = async (req, pago) => {
+  await cache.eliminar(cacheKeys.pagos.misPagos(pago.instruidoId));
+  await cache.eliminar(cacheKeys.pagos.miSuscripcion(pago.instruidoId));
+  await cache.eliminarPorPatron(cacheKeys.pagos.patronHistorial(req.usuario.rol, req.usuario.id));
+  await cache.eliminarPorPatron(cacheKeys.pagos.patronHistorial('*', pago.entrenadorId));
+  await cache.eliminarPorPatron(cacheKeys.pagos.patronHistorial('administrador', '*'));
+};
+
 const verificarPago = async (req, res, next) => {
   try {
     const pago = await pagosService.verificarPago(Number(req.params.pagoId), req.usuario);
+    await invalidarPagos(req, pago);
     res.json(pago);
   } catch (err) {
     next(err);
@@ -173,6 +203,7 @@ const verificarPago = async (req, res, next) => {
 const rechazarPago = async (req, res, next) => {
   try {
     const pago = await pagosService.rechazarPago(Number(req.params.pagoId), req.usuario, req.body.comentario);
+    await invalidarPagos(req, pago);
     res.json(pago);
   } catch (err) {
     next(err);
