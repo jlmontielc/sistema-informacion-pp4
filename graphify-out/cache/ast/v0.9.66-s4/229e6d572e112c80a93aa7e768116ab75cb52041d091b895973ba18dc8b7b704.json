@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_database_migrations_009_migrate_json_camelcase_sql", "label": "009_migrate_json_camelcase.sql", "file_type": "code", "source_file": "database/migrations/009_migrate_json_camelcase.sql", "source_location": null}], "edges": []}
