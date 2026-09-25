@@ -34,16 +34,7 @@ export function ComprobanteModal({ isOpen, onClose, pagoId }) {
     <Modal isOpen={isOpen} onClose={onClose} title="Comprobante de pago" size="lg">
       {cargando && <Loading text="Cargando comprobante..." />}
       {error && (
-        <div
-          style={{
-            padding: 'var(--space-3) var(--space-4)',
-            backgroundColor: 'var(--color-error)',
-            color: 'var(--color-text-inverse)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--text-sm)',
-            textAlign: 'center',
-          }}
-        >
+        <div className="alerta alerta-error text-center">
           {error}
         </div>
       )}
@@ -51,7 +42,7 @@ export function ComprobanteModal({ isOpen, onClose, pagoId }) {
         <img
           src={urlImagen}
           alt="Comprobante de pago"
-          style={{ width: '100%', borderRadius: 'var(--radius-md)' }}
+          className="comprobante-imagen"
         />
       )}
     </Modal>

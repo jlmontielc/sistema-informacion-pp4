@@ -1,4 +1,5 @@
 import { useAuth } from '../context/AuthContext';
+import { Card } from '../components/common/Card';
 import { CalculadoraMetabolica } from '../components/metabolismo';
 
 export default function MetabolismoPage() {
@@ -9,30 +10,33 @@ export default function MetabolismoPage() {
   // pero por seguridad, mostramos un mensaje si llegan aqui.
   if (rol === 'instruido') {
     return (
-      <div>
-        <h1>Metabolismo</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-          Esta seccion no esta disponible para tu rol.
-        </p>
-        <div style={{
-          padding: 'var(--space-6)',
-          textAlign: 'center',
-          color: 'var(--color-text-secondary)',
-        }}>
-          <div style={{ fontSize: 48, lineHeight: 1 }}>🔒</div>
-          <h3 style={{ marginTop: 'var(--space-4)' }}>Acceso restringido</h3>
-          <p>La seccion de metabolismo esta disponible solo para administradores y entrenadores.</p>
+      <div className="page">
+        <div className="page-header">
+          <div className="page-header-text">
+            <h1 className="page-title">Metabolismo</h1>
+            <p className="page-subtitle">Esta seccion no esta disponible para tu rol.</p>
+          </div>
         </div>
+
+        <Card>
+          <div className="empty-state">
+            <p className="empty-state-icono" aria-hidden="true">🔒</p>
+            <h3 className="card-titulo card-titulo-md">Acceso restringido</h3>
+            <p className="text-sm text-muted">
+              La seccion de metabolismo esta disponible solo para administradores y entrenadores.
+            </p>
+          </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-        <div>
-          <h1>Metabolismo</h1>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 0 }}>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Metabolismo</h1>
+          <p className="page-subtitle">
             Calculo de tasa metabolica basal y gasto calorico total
           </p>
         </div>

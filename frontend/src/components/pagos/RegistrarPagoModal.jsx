@@ -94,30 +94,19 @@ export function RegistrarPagoModal({ isOpen, onClose, plan, metodos, tasaCambio,
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registrar pago" size="md">
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div
-            style={{
-              padding: 'var(--space-3) var(--space-4)',
-              backgroundColor: 'var(--color-neutral-100)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 'var(--space-2)',
-            }}
-          >
+        <div className="stack">
+          <div className="nota-informativa row-between">
             <div>
               <strong>{plan.nombre}</strong>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+              <div className="text-sm text-muted">
                 Vigencia: {plan.diasVigencia} días
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>
+            <div className="text-right">
+              <div className="valor-destacado">
                 {formatUsd(plan.montoUsd)}
               </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+              <div className="text-sm text-muted">
                 ≈ {formatBs(plan.montoUsd, tasaCambio)}
               </div>
             </div>
@@ -155,18 +144,10 @@ export function RegistrarPagoModal({ isOpen, onClose, plan, metodos, tasaCambio,
           </div>
 
           {metodoSeleccionado && (
-            <div
-              style={{
-                padding: 'var(--space-3) var(--space-4)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              <strong style={{ display: 'block', marginBottom: 4, color: 'var(--color-text)' }}>
+            <div className="detalle-panel stack stack-sm">
+              <p className="field-label">
                 Realiza la transferencia a estos datos:
-              </strong>
+              </p>
               <DatosMetodo datos={metodoSeleccionado.datos} />
             </div>
           )}
@@ -209,30 +190,21 @@ export function RegistrarPagoModal({ isOpen, onClose, plan, metodos, tasaCambio,
               required
             />
             {archivo && (
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+              <span className="field-ayuda">
                 {archivo.name}
               </span>
             )}
           </div>
 
           {error && (
-            <div
-              style={{
-                padding: 'var(--space-3) var(--space-4)',
-                backgroundColor: 'var(--color-error)',
-                color: 'var(--color-text-inverse)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                textAlign: 'center',
-              }}
-            >
+            <div className="alerta alerta-error text-center">
               {error}
             </div>
           )}
-          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
+          <p className="field-ayuda">
             Tu entrenador revisará y verificará el pago para activar tu plan.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={onClose} disabled={guardando}>
               Cancelar
             </Button>

@@ -112,35 +112,20 @@ export function CalculadoraMetabolica({ rol }) {
     setError('');
   };
 
-  const selectEstilo = {
-    padding: 'var(--space-2) var(--space-3)',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--color-border)',
-    fontSize: 'var(--text-sm)',
-    background: 'var(--color-bg-alt)',
-    color: 'var(--color-text)',
-    width: '100%',
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div className="stack-lg">
       {/* Formulario de calculo */}
-      <Card
-        header={
-          <div className="card-header">
-            <h3 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>Datos para el calculo</h3>
-          </div>
-        }
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <Card header={<h3 className="card-titulo card-titulo-md">Datos para el calculo</h3>}>
+        <div className="stack">
           {/* Selector de instruido (solo admin/entrenador) */}
           {esAdminOEntrenador && (
             <div className="field">
-              <label className="field-label">Cliente</label>
+              <label className="field-label" htmlFor="cliente-metabolismo">Cliente</label>
               <select
+                id="cliente-metabolismo"
                 value={instruidoSeleccionado}
                 onChange={(e) => setInstruidoSeleccionado(e.target.value)}
-                style={selectEstilo}
+                className="field-input w-full"
               >
                 <option value="">Seleccionar cliente...</option>
                 {instruidos.map((i) => (
@@ -150,7 +135,7 @@ export function CalculadoraMetabolica({ rol }) {
                 ))}
               </select>
               {instruidos.length === 0 && (
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                <span className="text-xs text-muted">
                   No hay clientes registrados.
                 </span>
               )}
@@ -158,7 +143,7 @@ export function CalculadoraMetabolica({ rol }) {
           )}
 
           {/* Campos numericos */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-4)' }}>
+          <div className="grid grid-cols-3">
             <Input
               label="Peso (kg)"
               name="peso"
@@ -195,24 +180,14 @@ export function CalculadoraMetabolica({ rol }) {
 
           {/* Sexo */}
           <div className="field">
-            <label className="field-label">Sexo</label>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <span className="field-label">Sexo</span>
+            <div className="chip-group">
               {SEXOS.map((s) => (
                 <button
                   key={s.value}
                   type="button"
                   onClick={() => setSexo(s.value)}
-                  style={{
-                    padding: 'var(--space-2) var(--space-4)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border)',
-                    background: sexo === s.value ? 'var(--color-primary-500)' : 'transparent',
-                    color: sexo === s.value ? '#fff' : 'var(--color-text)',
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: sexo === s.value ? 600 : 400,
-                    transition: 'all var(--transition-fast)',
-                  }}
+                  className={`chip${sexo === s.value ? ' active' : ''}`}
                 >
                   {s.label}
                 </button>
@@ -222,11 +197,14 @@ export function CalculadoraMetabolica({ rol }) {
 
           {/* Nivel de actividad */}
           <div className="field">
-            <label className="field-label">Nivel de actividad fisica</label>
+            <label className="field-label" htmlFor="nivel-actividad-metabolismo">
+              Nivel de actividad fisica
+            </label>
             <select
+              id="nivel-actividad-metabolismo"
               value={nivelActividad}
               onChange={(e) => setNivelActividad(e.target.value)}
-              style={selectEstilo}
+              className="field-input w-full"
             >
               {NIVELES_ACTIVIDAD.map((n) => (
                 <option key={n.value} value={n.value}>
@@ -238,19 +216,13 @@ export function CalculadoraMetabolica({ rol }) {
 
           {/* Error */}
           {error && (
-            <div style={{
-              padding: 'var(--space-3)',
-              background: 'var(--color-error-bg, #f8d7da)',
-              color: 'var(--color-error, #721c24)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-            }}>
+            <div className="alerta alerta-error">
               {error}
             </div>
           )}
 
           {/* Botones de accion */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={limpiar}>
               Limpiar
             </Button>

@@ -31,8 +31,8 @@ export function ListaPerfiles() {
   if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+    <div className="page">
+      <div className="chip-group">
         <TabButton active={seccion === 'entrenadores'} onClick={() => setSeccion('entrenadores')}>
           Entrenadores ({entrenadores.length})
         </TabButton>
@@ -46,14 +46,14 @@ export function ListaPerfiles() {
           <EmptyState icon="🏋️" title="Sin entrenadores" description="No hay entrenadores registrados." />
         ) : (
           <Card header="Entrenadores">
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+            <div className="table-wrapper tabla-ajustada">
+              <table>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={thStyle}>Nombre</th>
-                    <th style={thStyle}>Email</th>
-                    <th style={thStyle}>Especialidad</th>
-                    <th style={thStyle}>Certificaciones</th>
+                  <tr>
+                    <th>Nombre</th>
+                    <th className="hide-mobile">Email</th>
+                    <th>Especialidad</th>
+                    <th>Certificaciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -61,14 +61,12 @@ export function ListaPerfiles() {
                     <tr
                       key={ent.id}
                       onClick={() => setSeleccionado({ ...ent, tipo: 'entrenador' })}
-                      style={{ borderBottom: '1px solid var(--color-border-light)', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-alt)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = ''}
+                      className="tabla-fila-clicable"
                     >
-                      <td style={tdStyle}>{ent.nombre}</td>
-                      <td style={tdStyle}>{ent.email}</td>
-                      <td style={tdStyle}>{ent.especialidad || '—'}</td>
-                      <td style={tdStyle}>{ent.certificaciones?.length || 0}</td>
+                      <td>{ent.nombre}</td>
+                      <td className="hide-mobile">{ent.email}</td>
+                      <td>{ent.especialidad || '—'}</td>
+                      <td>{ent.certificaciones?.length || 0}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -81,15 +79,15 @@ export function ListaPerfiles() {
           <EmptyState icon="👥" title="Sin instruidos" description="No hay instruidos registrados." />
         ) : (
           <Card header="Instruidos">
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+            <div className="table-wrapper tabla-ajustada">
+              <table>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={thStyle}>Nombre</th>
-                    <th style={thStyle}>Email</th>
-                    <th style={thStyle}>Edad</th>
-                    <th style={thStyle}>Peso</th>
-                    <th style={thStyle}>Nivel</th>
+                  <tr>
+                    <th>Nombre</th>
+                    <th className="hide-mobile">Email</th>
+                    <th>Edad</th>
+                    <th>Peso</th>
+                    <th>Nivel</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -97,15 +95,13 @@ export function ListaPerfiles() {
                     <tr
                       key={inst.id}
                       onClick={() => setSeleccionado({ ...inst, tipo: 'instruido' })}
-                      style={{ borderBottom: '1px solid var(--color-border-light)', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-alt)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = ''}
+                      className="tabla-fila-clicable"
                     >
-                      <td style={tdStyle}>{inst.nombre}</td>
-                      <td style={tdStyle}>{inst.email}</td>
-                      <td style={tdStyle}>{inst.edad}</td>
-                      <td style={tdStyle}>{inst.peso} kg</td>
-                      <td style={tdStyle}>{nivelLabels[inst.nivelActividad] || inst.nivelActividad}</td>
+                      <td>{inst.nombre}</td>
+                      <td className="hide-mobile">{inst.email}</td>
+                      <td>{inst.edad}</td>
+                      <td>{inst.peso} kg</td>
+                      <td>{nivelLabels[inst.nivelActividad] || inst.nivelActividad}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -117,20 +113,20 @@ export function ListaPerfiles() {
 
       <Modal isOpen={!!seleccionado} onClose={() => setSeleccionado(null)} title={seleccionado?.tipo === 'entrenador' ? 'Detalle Entrenador' : 'Detalle Instruido'}>
         {seleccionado && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="stack">
             <InfoField label="Nombre" value={seleccionado.nombre} />
             <InfoField label="Email" value={seleccionado.email} />
             {seleccionado.tipo === 'entrenador' ? (
               <>
                 <InfoField label="Especialidad" value={seleccionado.especialidad || '—'} />
                 {seleccionado.certificaciones?.length > 0 && (
-                  <div>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>Certificaciones</p>
+                  <div className="stack stack-sm">
+                    <p className="field-ayuda">Certificaciones</p>
                     {seleccionado.certificaciones.map((cert) => (
-                      <div key={cert.id} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                        <p style={{ fontWeight: 'var(--font-bold)' }}>{cert.nombre}</p>
-                        {cert.institucion && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{cert.institucion}</p>}
-                        {cert.imagenUrl && <a href={cert.imagenUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-500)' }}>Ver imagen</a>}
+                      <div key={cert.id} className="tarjeta-borde">
+                        <p className="text-bold">{cert.nombre}</p>
+                        {cert.institucion && <p className="text-sm text-muted">{cert.institucion}</p>}
+                        {cert.imagenUrl && <a href={cert.imagenUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primario">Ver imagen</a>}
                       </div>
                     ))}
                   </div>
@@ -160,23 +156,12 @@ const nivelLabels = {
   muy_activo: 'Muy activo',
 };
 
-const thStyle = { textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' };
-const tdStyle = { padding: 'var(--space-2) var(--space-3)' };
-
 function TabButton({ children, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: 'var(--space-2) var(--space-4)',
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--color-border)',
-        background: active ? 'var(--color-primary-500)' : 'var(--color-bg-card)',
-        color: active ? 'white' : 'var(--color-text)',
-        cursor: 'pointer',
-        fontWeight: 'var(--font-medium)',
-        fontSize: 'var(--text-sm)',
-      }}
+      className={`chip ${active ? 'active' : ''}`}
+      type="button"
     >
       {children}
     </button>
@@ -185,9 +170,9 @@ function TabButton({ children, active, onClick }) {
 
 function InfoField({ label, value }) {
   return (
-    <div>
-      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{label}</p>
-      <p style={{ fontWeight: 'var(--font-medium)' }}>{value}</p>
+    <div className="field">
+      <p className="dato-label">{label}</p>
+      <p className="dato-valor">{value}</p>
     </div>
   );
 }

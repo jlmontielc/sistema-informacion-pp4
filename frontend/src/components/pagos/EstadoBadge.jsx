@@ -1,25 +1,21 @@
-const ESTADOS = {
-  pendiente: { label: 'Pendiente', color: 'var(--color-warning)' },
-  verificado: { label: 'Verificado', color: 'var(--color-success)' },
-  rechazado: { label: 'Rechazado', color: 'var(--color-error)' },
+const ETIQUETAS = {
+  pendiente: 'Pendiente',
+  verificado: 'Verificado',
+  rechazado: 'Rechazado',
+};
+
+const CLASES_BADGE = {
+  pendiente: 'badge-warning',
+  verificado: 'badge-success',
+  rechazado: 'badge-danger',
 };
 
 export function EstadoBadge({ estado }) {
-  const cfg = ESTADOS[estado] || { label: estado, color: 'var(--color-text-secondary)' };
+  const clase = CLASES_BADGE[estado] || 'badge-neutral';
+  const etiqueta = ETIQUETAS[estado] || estado;
   return (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '2px 10px',
-        borderRadius: 999,
-        fontSize: 'var(--text-xs)',
-        fontWeight: 'var(--font-medium)',
-        color: '#fff',
-        backgroundColor: cfg.color,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {cfg.label}
+    <span className={`badge ${clase}`}>
+      {etiqueta}
     </span>
   );
 }

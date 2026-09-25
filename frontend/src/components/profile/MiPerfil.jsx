@@ -177,8 +177,8 @@ export function MiPerfil({ perfil, onActualizar }) {
   if (editando) {
     return (
       <Card header="Editar Mi Perfil">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        <div className="stack">
+          <div className="datos-grid">
             <Field label="Nombre" name="nombre" value={datos.nombre} onChange={handleChange} />
             <Field label="Email" name="email" type="email" value={datos.email} onChange={handleChange} />
             {perfil.rol === 'entrenador' && (
@@ -186,7 +186,7 @@ export function MiPerfil({ perfil, onActualizar }) {
             )}
           </div>
           {perfil.tipo === 'instruido' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+            <div className="datos-grid">
               <Field label="Edad" name="edad" type="number" value={datos.edad} onChange={handleChange} />
               <Field label="Peso (kg)" name="peso" type="number" step="0.01" value={datos.peso} onChange={handleChange} />
               <Field label="Altura (m)" name="altura" type="number" step="0.01" value={datos.altura} onChange={handleChange} />
@@ -194,28 +194,28 @@ export function MiPerfil({ perfil, onActualizar }) {
               <SelectField label="Nivel de actividad" name="nivelActividad" value={datos.nivelActividad} onChange={handleChange} options={nivelLabels} />
               <SelectField label="Propósito de entrenamiento" name="propositoEntrenamiento" value={datos.propositoEntrenamiento} onChange={handleChange} options={{ perdida_peso: 'Perder peso', ganancia_muscular: 'Ganar masa muscular', mantenimiento: 'Mantenimiento / Salud y bienestar', rendimiento: 'Rendimiento deportivo', rehabilitacion: 'Rehabilitación' }} />
               <SelectField label="Nivel de experiencia" name="nivelExperiencia" value={datos.nivelExperiencia} onChange={handleChange} options={{ principiante: 'Principiante', intermedio: 'Intermedio', avanzado: 'Avanzado' }} />
-              <div className="field" style={{ gridColumn: '1 / -1' }}>
-                <label className="field-label">Días disponibles para entrenar</label>
+              <div className="field grid-full">
+                <span className="field-label">Días disponibles para entrenar</span>
                 <DiaSelector seleccionados={datos.diasSemana || []} onToggle={handleToggleDia} />
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
+                <p className="text-xs text-muted">
                   Has seleccionado {(datos.diasSemana || []).length} {(datos.diasSemana || []).length === 1 ? 'día' : 'días'}
                 </p>
               </div>
             </div>
           )}
           {(perfil.tipo === 'instruido' || perfil.rol === 'entrenador') && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+            <div className="datos-grid seccion-dividida">
               <Field label="Nueva contraseña (opcional)" name="contrasena" type="password" value={datos.contrasena} onChange={handleChange} minLength="8" />
               {datos.contrasena && datos.contrasena.length < 8 && (
-                <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-xs)', marginTop: -8 }}>Mínimo 8 caracteres</p>
+                <p className="field-error">Mínimo 8 caracteres</p>
               )}
               {datos.contrasena && (
                 <Field label="Contraseña actual (requerida)" name="contrasenaActual" type="password" value={datos.contrasenaActual} onChange={handleChange} />
               )}
             </div>
           )}
-          {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }}>{error}</p>}
-          <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+          {error && <p className="text-sm text-error">{error}</p>}
+          <div className="form-acciones">
             <Button variant="secondary" onClick={cancelar}>Cancelar</Button>
             <Button variant="primary" loading={guardando} onClick={guardar}>Guardar</Button>
           </div>
@@ -227,42 +227,32 @@ export function MiPerfil({ perfil, onActualizar }) {
   return (
     <>
       {success && (
-        <div style={{
-          padding: 'var(--space-3) var(--space-4)',
-          backgroundColor: 'var(--color-success, #4caf50)',
-          color: 'var(--color-text-inverse, #fff)',
-          borderRadius: 'var(--radius-md)',
-          fontSize: 'var(--text-sm)',
-          fontWeight: 'var(--font-medium)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-2)',
-        }}>
-          <span>✅</span>
+        <div className="alerta alerta-success">
+          <span aria-hidden="true">✅</span>
           <span>{success}</span>
         </div>
       )}
     <Card header="Mi Perfil">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+      <div className="stack">
+        <div className="datos-grid">
           <InfoField label="Nombre" value={perfil.nombre} />
           <InfoField label="Email" value={perfil.email} />
           {perfil.rol && perfil.tipo !== 'instruido' && <InfoField label="Rol" value={perfil.rol} />}
           {perfil.especialidad && <InfoField label="Especialidad" value={perfil.especialidad} />}
         </div>
         {perfil.tipo === 'instruido' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+          <div className="datos-grid seccion-dividida">
             <InfoField label="Edad" value={perfil.edad ? `${perfil.edad} años` : '—'} />
             <InfoField label="Peso" value={perfil.peso ? `${perfil.peso} kg` : '—'} />
             <InfoField label="Altura" value={perfil.altura ? `${perfil.altura} m` : '—'} />
             <InfoField label="Sexo" value={sexoLabels[perfil.sexo] || '—'} />
             <InfoField label="Nivel de actividad" value={nivelLabels[perfil.nivelActividad] || '—'} />
-            <div>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>Días disponibles</p>
+            <div className="dato">
+              <p className="dato-label">Días disponibles</p>
               {Array.isArray(perfil.diasSemana) && perfil.diasSemana.length > 0 ? (
                 <DiaSelector modo="vista" seleccionados={perfil.diasSemana} />
               ) : (
-                <p style={{ fontWeight: 'var(--font-medium)' }}>{perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'}</p>
+                <p className="dato-valor">{perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'}</p>
               )}
             </div>
             <InfoField label="Propósito" value={perfil.propositoEntrenamiento ? labelObjetivo(perfil.propositoEntrenamiento) : '—'} />
@@ -270,7 +260,7 @@ export function MiPerfil({ perfil, onActualizar }) {
             <InfoField label="Fecha de registro" value={perfil.fechaRegistro || '—'} />
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="form-acciones">
           <Button variant="primary" onClick={iniciarEdicion}>Editar perfil</Button>
         </div>
       </div>
@@ -278,39 +268,24 @@ export function MiPerfil({ perfil, onActualizar }) {
 
       {perfil.tipo === 'instruido' && !editandoMedico && (
         <Card header="Datos Médicos">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-              padding: 'var(--space-2) var(--space-3)',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success-bg, #e8f5e9)' : 'var(--color-warning-bg, #fff3e0)',
-              color: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success, #2e7d32)' : 'var(--color-warning, #ef6c00)',
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--font-medium)',
-              width: 'fit-content',
-            }}>
-              <span>{perfilMedico?.perfilMedicoCompleto ? '✅' : '⏳'}</span>
+          <div className="stack">
+            <span className={`badge ${perfilMedico?.perfilMedicoCompleto ? 'badge-success' : 'badge-warning'}`}>
+              <span aria-hidden="true">{perfilMedico?.perfilMedicoCompleto ? '✅' : '⏳'}</span>
               <span>{perfilMedico?.perfilMedicoCompleto ? 'Perfil médico completo' : 'Perfil médico pendiente'}</span>
-            </div>
+            </span>
 
             {perfilMedico?.datosMedicosCorruptos && (
-              <div style={{
-                padding: 'var(--space-3) var(--space-4)',
-                backgroundColor: 'var(--color-error)',
-                color: 'var(--color-text-inverse)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-              }}>
-                <p style={{ margin: 0, marginBottom: 'var(--space-2)' }}>
-                  ⚠️ No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.
-                </p>
-                <p style={{ margin: 0 }}>Regístralos nuevamente para restaurar la información.</p>
+              <div className="alerta alerta-error">
+                <div className="stack stack-sm">
+                  <p>
+                    ⚠️ No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.
+                  </p>
+                  <p>Regístralos nuevamente para restaurar la información.</p>
+                </div>
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+            <div className="datos-grid">
               {CAMPOS_MEDICOS.map(({ name, label }) => (
                 <InfoField
                   key={name}
@@ -319,7 +294,7 @@ export function MiPerfil({ perfil, onActualizar }) {
                 />
               ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <Button variant="secondary" onClick={() => setMostrarMedicos((prev) => !prev)}>
                 {mostrarMedicos ? 'Ocultar datos médicos' : 'Ver datos médicos'}
               </Button>
@@ -333,23 +308,22 @@ export function MiPerfil({ perfil, onActualizar }) {
 
       {perfil.tipo === 'instruido' && editandoMedico && (
         <Card header="Editar Datos Médicos">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="stack">
             {CAMPOS_MEDICOS.map(({ name, label }) => (
               <div className="field" key={name}>
                 <label className="field-label" htmlFor={name}>{label}</label>
                 <textarea
                   id={name}
                   name={name}
-                  className="field-input"
+                  className="field-input field-textarea"
                   value={datosMedicos[name] || ''}
                   onChange={handleChangeMedico}
                   rows={2}
-                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
                 />
               </div>
             ))}
-            {errorMedico && <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }}>{errorMedico}</p>}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+            {errorMedico && <p className="text-sm text-error">{errorMedico}</p>}
+            <div className="form-acciones">
               <Button variant="secondary" onClick={cancelarEdicionMedico}>Cancelar</Button>
               <Button variant="primary" loading={guardandoMedico} onClick={guardarMedico}>Guardar</Button>
             </div>
@@ -385,9 +359,9 @@ function SelectField({ label, name, value, onChange, options }) {
 
 function InfoField({ label, value }) {
   return (
-    <div>
-      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{label}</p>
-      <p style={{ fontWeight: 'var(--font-medium)' }}>{value}</p>
+    <div className="dato">
+      <p className="dato-label">{label}</p>
+      <p className="dato-valor">{value}</p>
     </div>
   );
 }

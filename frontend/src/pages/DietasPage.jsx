@@ -20,13 +20,11 @@ const PROPUESTOS = [
   { value: 'mantener', label: 'Mantener' },
 ];
 
-const tablaEstilo = { width: '100%', borderCollapse: 'collapse' };
-const celdaEstilo = {
-  padding: 'var(--space-3)',
-  borderBottom: '1px solid var(--color-border)',
-  textAlign: 'left',
-  fontSize: 'var(--text-sm)',
-};
+const ACCIONES_DECISION = [
+  { valor: 'aceptada', chip: 'chip-success' },
+  { valor: 'modificada', chip: 'chip-warning' },
+  { valor: 'rechazada', chip: 'chip-danger' },
+];
 
 const formatearFecha = (fecha) => {
   if (!fecha) return '-';
@@ -35,11 +33,11 @@ const formatearFecha = (fecha) => {
 };
 
 const EstadoDieta = ({ decision, activo }) => {
-  const colores = {
-    pendiente: { bg: 'var(--color-warning-bg, #fff3cd)', color: 'var(--color-warning, #856404)' },
-    aprobada: { bg: 'var(--color-success-bg, #d4edda)', color: 'var(--color-success, #155724)' },
-    rechazada: { bg: 'var(--color-danger-bg, #f8d7da)', color: 'var(--color-danger, #721c24)' },
-    modificada: { bg: 'var(--color-info-bg, #d1ecf1)', color: 'var(--color-info, #0c5460)' },
+  const clases = {
+    pendiente: 'badge-warning',
+    aprobada: 'badge-success',
+    rechazada: 'badge-danger',
+    modificada: 'badge-info',
   };
   const etiquetas = {
     pendiente: 'Pendiente',
@@ -47,36 +45,16 @@ const EstadoDieta = ({ decision, activo }) => {
     rechazada: 'Rechazada',
     modificada: 'Modificada',
   };
-  const estilo = colores[decision] || colores.pendiente;
+  const clase = clases[decision] || 'badge-neutral';
   return (
-    <span
-      style={{
-        display: 'inline-block',
-        padding: '2px 8px',
-        borderRadius: '9999px',
-        fontSize: 'var(--text-xs)',
-        fontWeight: 600,
-        background: estilo.bg,
-        color: estilo.color,
-      }}
-    >
+    <span className={`badge ${clase}`}>
       {etiquetas[decision] || (activo ? 'Activa' : 'Borrador')}
     </span>
   );
 };
 
 const MacroBadge = ({ label, value, unit = 'g' }) => (
-  <span
-    style={{
-      display: 'inline-block',
-      padding: '2px 8px',
-      borderRadius: '6px',
-      fontSize: 'var(--text-xs)',
-      background: 'var(--color-bg-secondary, #f0f2f5)',
-      marginRight: 'var(--space-2)',
-      fontWeight: 500,
-    }}
-  >
+  <span className="badge badge-neutral">
     {label}: {value}{unit}
   </span>
 );
@@ -170,29 +148,23 @@ export default function DietasPage() {
   if (cargando) return <Loading />;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-        <div>
-          <h1>Dietas</h1>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 0 }}>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Dietas</h1>
+          <p className="page-subtitle">
             Planes alimenticios generados por IA y asignados a clientes
           </p>
         </div>
       </div>
 
       {error && (
-        <div style={{
-          padding: 'var(--space-3)',
-          background: 'var(--color-danger-bg, #f8d7da)',
-          color: 'var(--color-danger, #721c24)',
-          borderRadius: 'var(--radius)',
-          marginBottom: 'var(--space-4)',
-          fontSize: 'var(--text-sm)',
-        }}>
-          {error}
+        <div className="alerta alerta-error">
+          <span className="flex-1">{error}</span>
           <button
             onClick={() => setError('')}
-            style={{ marginLeft: 'var(--space-2)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+            className="alerta-cerrar"
+            aria-label="Cerrar aviso"
           >
             x
           </button>
@@ -200,22 +172,13 @@ export default function DietasPage() {
       )}
 
       <Card>
-        <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        <div className="toolbar">
+          <div className="tabs-container tabs-inline">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                style={{
-                  padding: 'var(--space-2) var(--space-3)',
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid var(--color-border)',
-                  background: tab === t.key ? 'var(--color-primary, #007bff)' : 'transparent',
-                  color: tab === t.key ? '#fff' : 'var(--color-text)',
-                  cursor: 'pointer',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: tab === t.key ? 600 : 400,
-                }}
+                className={`tab-button ${tab === t.key ? 'active' : ''}`}
               >
                 {t.label}
               </button>
@@ -226,13 +189,8 @@ export default function DietasPage() {
             <select
               value={filtroCliente}
               onChange={(e) => setFiltroCliente(e.target.value)}
-              style={{
-                padding: 'var(--space-2) var(--space-3)',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--color-border)',
-                fontSize: 'var(--text-sm)',
-                minWidth: 180,
-              }}
+              className="field-input select-filtro"
+              aria-label="Filtrar por cliente"
             >
               <option value="">Todos los clientes</option>
               {instruidos.map((i) => (
@@ -255,132 +213,132 @@ export default function DietasPage() {
             }
           />
         ) : (
-          <table style={tablaEstilo}>
-            <thead>
-              <tr>
-                {esAdminOEntrenador && <th style={celdaEstilo}>Cliente</th>}
-                <th style={celdaEstilo}>Calorias</th>
-                <th style={celdaEstilo}>Macros (P / C / G)</th>
-                <th style={celdaEstilo}>Estado</th>
-                <th style={celdaEstilo}>Fecha</th>
-                <th style={celdaEstilo}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dietasFiltradas.map((dieta) => {
-                const cliente = instruidos.find((i) => i.id === dieta.instruidoId);
-                return (
-                  <tr key={dieta.id}>
-                    {esAdminOEntrenador && (
-                      <td style={celdaEstilo}>
-                        {cliente?.nombre || `Cliente #${dieta.instruidoId}`}
-                      </td>
-                    )}
-                    <td style={celdaEstilo}>
-                      <strong>{dieta.objetivoCalorico}</strong> kcal
-                    </td>
-                    <td style={celdaEstilo}>
-                      <MacroBadge label="P" value={Number(dieta.proteinas).toFixed(0)} />
-                      <MacroBadge label="C" value={Number(dieta.carbohidratos).toFixed(0)} />
-                      <MacroBadge label="G" value={Number(dieta.grasas).toFixed(0)} />
-                    </td>
-                    <td style={celdaEstilo}>
-                      <EstadoDieta decision={dieta.decision} activo={dieta.activo} />
-                    </td>
-                    <td style={celdaEstilo}>
-                      {formatearFecha(dieta.fechaInicio || dieta.created_at)}
-                    </td>
-                    <td style={celdaEstilo}>
-                      {esAdminOEntrenador && dieta.decision === 'pendiente' && (
-                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                          <Button
-                            size="sm"
-                            variant="success"
-                            onClick={() => {
-                              setModalDecision(dieta);
-                              setDecisionForm({ accion: 'aceptada', comentario: '' });
-                            }}
-                          >
-                            Aceptar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="warning"
-                            onClick={() => {
-                              setModalDecision(dieta);
-                              setDecisionForm({ accion: 'modificada', comentario: '' });
-                            }}
-                          >
-                            Modificar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            onClick={() => {
-                              setModalDecision(dieta);
-                              setDecisionForm({ accion: 'rechazada', comentario: '' });
-                            }}
-                          >
-                            Rechazar
-                          </Button>
-                        </div>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  {esAdminOEntrenador && <th>Cliente</th>}
+                  <th>Calorias</th>
+                  <th>Macros (P / C / G)</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dietasFiltradas.map((dieta) => {
+                  const cliente = instruidos.find((i) => i.id === dieta.instruidoId);
+                  return (
+                    <tr key={dieta.id}>
+                      {esAdminOEntrenador && (
+                        <td>
+                          {cliente?.nombre || `Cliente #${dieta.instruidoId}`}
+                        </td>
                       )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <td>
+                        <strong>{dieta.objetivoCalorico}</strong> kcal
+                      </td>
+                      <td>
+                        <div className="row">
+                          <MacroBadge label="P" value={Number(dieta.proteinas).toFixed(0)} />
+                          <MacroBadge label="C" value={Number(dieta.carbohidratos).toFixed(0)} />
+                          <MacroBadge label="G" value={Number(dieta.grasas).toFixed(0)} />
+                        </div>
+                      </td>
+                      <td>
+                        <EstadoDieta decision={dieta.decision} activo={dieta.activo} />
+                      </td>
+                      <td>
+                        {formatearFecha(dieta.fechaInicio || dieta.created_at)}
+                      </td>
+                      <td>
+                        {esAdminOEntrenador && dieta.decision === 'pendiente' && (
+                          <div className="row">
+                            <Button
+                              size="sm"
+                              variant="success"
+                              onClick={() => {
+                                setModalDecision(dieta);
+                                setDecisionForm({ accion: 'aceptada', comentario: '' });
+                              }}
+                            >
+                              Aceptar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="warning"
+                              onClick={() => {
+                                setModalDecision(dieta);
+                                setDecisionForm({ accion: 'modificada', comentario: '' });
+                              }}
+                            >
+                              Modificar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => {
+                                setModalDecision(dieta);
+                                setDecisionForm({ accion: 'rechazada', comentario: '' });
+                              }}
+                            >
+                              Rechazar
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
 
       {esAdminOEntrenador && (
-        <Card style={{ marginTop: 'var(--space-4)' }}>
-        <div className="card-header">
-          <h3 style={{ margin: 0 }}>Generar dieta IA</h3>
-        </div>
-        <div className="card-body">
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)' }}>
-            Selecciona un cliente para generar automaticamente un plan de alimentacion basado en su perfil metabolico y datos medicos.
-          </p>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-3)', flexWrap: 'wrap' }}>
-            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>Proposito:</label>
-            <select
-              value={propositoSeleccionado}
-              onChange={(e) => setPropositoSeleccionado(e.target.value)}
-              style={{
-                padding: 'var(--space-2) var(--space-3)',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--color-border)',
-                fontSize: 'var(--text-sm)',
-              }}
-            >
-              {PROPUESTOS.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
-              ))}
-            </select>
+        <Card>
+          <div className="card-header">
+            <h3 className="card-titulo card-titulo-md">Generar dieta IA</h3>
           </div>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            {instruidos.map((i) => (
-              <Button
-                key={i.id}
-                variant="outline"
-                size="sm"
-                loading={generando && generandoClienteId === i.id}
-                disabled={generando}
-                onClick={() => handleGenerar(i.id)}
-              >
-                {i.nombre}
-              </Button>
-            ))}
-          </div>
-          {instruidos.length === 0 && (
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-              No hay clientes registrados.
+          <div className="card-body stack">
+            <p className="text-sm text-muted">
+              Selecciona un cliente para generar automaticamente un plan de alimentacion basado en su perfil metabolico y datos medicos.
             </p>
-          )}
-        </div>
-      </Card>
+            <div className="row">
+              <label className="field-label" htmlFor="proposito-dieta">Proposito:</label>
+              <select
+                id="proposito-dieta"
+                value={propositoSeleccionado}
+                onChange={(e) => setPropositoSeleccionado(e.target.value)}
+                className="field-input"
+              >
+                {PROPUESTOS.map((p) => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="row">
+              {instruidos.map((i) => (
+                <Button
+                  key={i.id}
+                  variant="outline"
+                  size="sm"
+                  loading={generando && generandoClienteId === i.id}
+                  disabled={generando}
+                  onClick={() => handleGenerar(i.id)}
+                >
+                  {i.nombre}
+                </Button>
+              ))}
+            </div>
+            {instruidos.length === 0 && (
+              <p className="text-sm text-muted">
+                No hay clientes registrados.
+              </p>
+            )}
+          </div>
+        </Card>
       )}
 
       <Modal
@@ -388,56 +346,38 @@ export default function DietasPage() {
         onClose={() => { setModalDecision(null); setDecisionForm({ accion: '', comentario: '' }); }}
         title={`Decision: Dieta #${modalDecision?.id || ''}`}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <div>
-            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 600, display: 'block', marginBottom: 'var(--space-1)' }}>
-              Accion
-            </label>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              {['aceptada', 'modificada', 'rechazada'].map((accion) => (
+        <div className="stack">
+          <div className="field">
+            <span className="field-label">Accion</span>
+            <div className="chip-group">
+              {ACCIONES_DECISION.map(({ valor, chip }) => (
                 <button
-                  key={accion}
-                  onClick={() => setDecisionForm((prev) => ({ ...prev, accion }))}
-                  style={{
-                    padding: 'var(--space-2) var(--space-3)',
-                    borderRadius: 'var(--radius)',
-                    border: '1px solid var(--color-border)',
-                    background: decisionForm.accion === accion
-                      ? accion === 'aceptada' ? '#28a745' : accion === 'modificada' ? '#ffc107' : '#dc3545'
-                      : 'transparent',
-                    color: decisionForm.accion === accion ? '#fff' : 'var(--color-text)',
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: decisionForm.accion === accion ? 600 : 400,
-                  }}
+                  key={valor}
+                  type="button"
+                  onClick={() => setDecisionForm((prev) => ({ ...prev, accion: valor }))}
+                  className={`chip ${chip}${decisionForm.accion === valor ? ' active' : ''}`}
                 >
-                  {accion.charAt(0).toUpperCase() + accion.slice(1)}
+                  {valor.charAt(0).toUpperCase() + valor.slice(1)}
                 </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 600, display: 'block', marginBottom: 'var(--space-1)' }}>
+          <div className="field">
+            <label className="field-label" htmlFor="comentario-decision">
               Comentario (opcional)
             </label>
             <textarea
+              id="comentario-decision"
               value={decisionForm.comentario}
               onChange={(e) => setDecisionForm((prev) => ({ ...prev, comentario: e.target.value }))}
               rows={3}
-              style={{
-                width: '100%',
-                padding: 'var(--space-2)',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--color-border)',
-                fontSize: 'var(--text-sm)',
-                resize: 'vertical',
-              }}
+              className="field-input field-textarea"
               placeholder="Motivo de la decision..."
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="form-acciones">
             <Button
               variant="secondary"
               onClick={() => { setModalDecision(null); setDecisionForm({ accion: '', comentario: '' }); }}

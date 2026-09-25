@@ -22,12 +22,20 @@ const experienciaLabels = {
   avanzado: 'Avanzado',
 };
 
+const experienciaBadge = {
+  principiante: 'badge-success',
+  intermedio: 'badge-warning',
+  avanzado: 'badge-danger',
+};
+
 export default function ClientesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [instruidos, setInstruidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroExperiencia, setFiltroExperiencia] = useState('');
 
   useEffect(() => {
     if (user?.tipo === 'instruido') return;
@@ -45,15 +53,25 @@ export default function ClientesPage() {
   if (loading) return <Loading text="Cargando clientes..." />;
   if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
 
+  // Filtro local (busqueda por nombre/email y nivel de experiencia)
+  const instruidosFiltrados = instruidos.filter((inst) => {
+    const texto = `${inst.nombre || ''} ${inst.email || ''}`.toLowerCase();
+    const cumpleBusqueda = texto.includes(busqueda.trim().toLowerCase());
+    const cumpleExperiencia = !filtroExperiencia || inst.nivelExperiencia === filtroExperiencia;
+    return cumpleBusqueda && cumpleExperiencia;
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1>Clientes</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>
-          {user?.rol === 'administrador'
-            ? 'Listado de todos los clientes registrados'
-            : 'Clientes asignados a tu supervisión'}
-        </p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Clientes</h1>
+          <p className="page-subtitle">
+            {user?.rol === 'administrador'
+              ? 'Listado de todos los clientes registrados'
+              : 'Clientes asignados a tu supervisión'}
+          </p>
+        </div>
       </div>
 
       {instruidos.length === 0 ? (
@@ -67,55 +85,79 @@ export default function ClientesPage() {
           }
         />
       ) : (
-        <Card header={`Clientes (${instruidos.length})`}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={thStyle}>Nombre</th>
-                  <th style={thStyle}>Email</th>
-                  <th style={thStyle}>Edad</th>
-                  <th style={thStyle}>Peso</th>
-                  <th style={thStyle}>Nivel actividad</th>
-                  <th style={thStyle}>Experiencia</th>
-                  <th style={thStyle}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {instruidos.map((inst) => (
-                  <tr
-                    key={inst.id}
-                    style={{ borderBottom: '1px solid var(--color-border-light)' }}
-                  >
-                    <td style={tdStyle}>{inst.nombre}</td>
-                    <td style={tdStyle}>{inst.email}</td>
-                    <td style={tdStyle}>{inst.edad || '—'}</td>
-                    <td style={tdStyle}>{inst.peso ? `${inst.peso} kg` : '—'}</td>
-                    <td style={tdStyle}>{nivelLabels[inst.nivelActividad] || inst.nivelActividad || '—'}</td>
-                    <td style={tdStyle}>
-                      <span className={`rutina-tipo-badge ${inst.nivelExperiencia || ''}`}>
-                        {experienciaLabels[inst.nivelExperiencia] || '—'}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => navigate(`/clientes/${inst.id}`)}
-                      >
-                        Ver perfil completo
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <Card header={`Clientes (${instruidosFiltrados.length})`}>
+          <div className="toolbar">
+            <input
+              type="text"
+              className="field-input flex-1"
+              placeholder="Buscar por nombre o email..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              aria-label="Buscar cliente"
+            />
+            <select
+              className="field-input select-filtro"
+              value={filtroExperiencia}
+              onChange={(e) => setFiltroExperiencia(e.target.value)}
+              aria-label="Filtrar por experiencia"
+            >
+              <option value="">Toda experiencia</option>
+              <option value="principiante">Principiante</option>
+              <option value="intermedio">Intermedio</option>
+              <option value="avanzado">Avanzado</option>
+            </select>
           </div>
+
+          {instruidosFiltrados.length === 0 ? (
+            <EmptyState
+              icon="🔍"
+              title="Sin resultados"
+              description="Ningún cliente coincide con la búsqueda o el filtro aplicado."
+            />
+          ) : (
+            <div className="table-wrapper tabla-ajustada">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th className="hide-mobile">Email</th>
+                    <th className="hide-mobile">Edad</th>
+                    <th>Peso</th>
+                    <th className="hide-mobile">Nivel actividad</th>
+                    <th>Experiencia</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {instruidosFiltrados.map((inst) => (
+                    <tr key={inst.id}>
+                      <td>{inst.nombre}</td>
+                      <td className="hide-mobile">{inst.email}</td>
+                      <td className="hide-mobile">{inst.edad || '—'}</td>
+                      <td>{inst.peso ? `${inst.peso} kg` : '—'}</td>
+                      <td className="hide-mobile">{nivelLabels[inst.nivelActividad] || inst.nivelActividad || '—'}</td>
+                      <td>
+                        <span className={`badge ${experienciaBadge[inst.nivelExperiencia] || 'badge-neutral'}`}>
+                          {experienciaLabels[inst.nivelExperiencia] || 'Sin definir'}
+                        </span>
+                      </td>
+                      <td>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => navigate(`/clientes/${inst.id}`)}
+                        >
+                          Ver perfil completo
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
       )}
     </div>
   );
 }
-
-const thStyle = { textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' };
-const tdStyle = { padding: 'var(--space-2) var(--space-3)' };

@@ -148,3 +148,660 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
+
+/* ============================================================
+   Extensiones del design system (Fase 2)
+   ============================================================ */
+
+/* ===== Badges / etiquetas de estado ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.badge-success { background: rgba(34, 197, 94, 0.14); color: #15803d; }
+.badge-warning { background: rgba(245, 158, 11, 0.16); color: #b45309; }
+.badge-danger  { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+.badge-info    { background: rgba(59, 130, 246, 0.14); color: var(--color-primary-700); }
+.badge-neutral { background: var(--color-neutral-100); color: var(--color-neutral-600); }
+
+[data-theme="dark"] .badge-success { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+[data-theme="dark"] .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+[data-theme="dark"] .badge-danger  { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+[data-theme="dark"] .badge-info    { background: rgba(59, 130, 246, 0.22); color: var(--color-primary-300); }
+[data-theme="dark"] .badge-neutral { background: var(--color-neutral-700); color: var(--color-neutral-200); }
+
+/* ===== Tarjeta de métrica / estadística ===== */
+.stat-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  min-width: 0;
+}
+
+.stat-card-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.stat-card-value {
+  font-size: var(--text-fluid-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  overflow-wrap: break-word;
+}
+
+.stat-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .stat-card-icon {
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--color-primary-300);
+}
+
+/* ===== Avatar circular ===== */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+[data-theme="dark"] .avatar {
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--color-primary-300);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-sm { width: 32px; height: 32px; font-size: var(--text-xs); }
+.avatar-lg { width: 48px; height: 48px; font-size: var(--text-base); }
+.avatar-xl { width: 64px; height: 64px; font-size: var(--text-lg); }
+
+/* ===== Barra de herramientas (filtros, acciones en línea) ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) 0;
+}
+
+.toolbar-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ===== Contenedor de tabla con scroll horizontal en móvil ===== */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.table-wrapper table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.table-wrapper th {
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  white-space: nowrap;
+}
+
+.table-wrapper tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== Modal (portal; usado por components/common/Modal.jsx) ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--space-4);
+}
+
+.modal-content {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modal-entrar var(--motion-duration-normal) var(--motion-ease);
+}
+
+@keyframes modal-entrar {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-sm { max-width: 480px; }
+.modal-md { max-width: 520px; }
+.modal-lg { max-width: 720px; }
+.modal-xl { max-width: 900px; }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-title {
+  font-size: var(--text-lg);
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.modal-body {
+  padding: var(--space-6);
+}
+
+/* En móvil el modal ocupa casi toda la pantalla, anclado abajo */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: var(--space-2);
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    max-height: 94vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  .modal-header {
+    padding: var(--space-4);
+  }
+
+  .modal-body {
+    padding: var(--space-4);
+  }
+
+  .card-header,
+  .card-body,
+  .card-footer {
+    padding: var(--space-4);
+  }
+
+  /* Targets táctiles cómodos en móvil, sin afectar botones pequeños */
+  .btn:not(.btn-sm) {
+    min-height: var(--touch-target);
+  }
+
+  .field-input {
+    min-height: var(--touch-target);
+  }
+}
+
+/* ============================================================
+   Extensiones del design system (Fase 3 - Lote A)
+   Vistas del instruido: dietas, plan, perfil, dashboard, metabolismo
+   ============================================================ */
+
+/* ===== Variantes de botón usadas por dietas / pagos ===== */
+.btn-success {
+  background: var(--color-success);
+  color: white;
+}
+.btn-success:hover:not(:disabled) { background: #16a34a; }
+
+.btn-warning {
+  background: var(--color-warning);
+  color: #78350f;
+}
+.btn-warning:hover:not(:disabled) { filter: brightness(0.96); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary-600);
+  border-color: var(--color-primary-500);
+}
+.btn-outline:hover:not(:disabled) { background: var(--color-primary-50); }
+
+[data-theme="dark"] .btn-outline {
+  color: var(--color-primary-300);
+}
+[data-theme="dark"] .btn-outline:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.btn-loading { opacity: 0.75; }
+
+/* Botón fantasma con tono de peligro (acciones destructivas) */
+.btn-ghost-peligroso { color: var(--color-error); }
+.btn-ghost-peligroso:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-error);
+}
+
+/* ===== Textarea dentro de .field ===== */
+.field-textarea {
+  resize: vertical;
+  font-family: inherit;
+  width: 100%;
+}
+
+/* ===== Selector con ancho mínimo (filtros) ===== */
+.select-filtro { min-width: 180px; }
+
+/* ===== Grupo de opciones tipo chip ===== */
+.chip-group {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  min-height: var(--touch-target);
+  transition: all var(--transition-fast);
+}
+
+.chip.active {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-semibold);
+}
+
+.chip-success.active {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+
+.chip-warning.active {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  color: #78350f;
+}
+
+.chip-danger.active {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: white;
+}
+
+/* ===== Alertas (mensajes de estado de página) ===== */
+.alerta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.alerta-entre {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.alerta-error   { background: rgba(239, 68, 68, 0.14);  color: #b91c1c; }
+.alerta-success { background: rgba(34, 197, 94, 0.14);  color: #15803d; }
+.alerta-warning { background: rgba(245, 158, 11, 0.16); color: #b45309; }
+
+[data-theme="dark"] .alerta-error   { color: #f87171; }
+[data-theme="dark"] .alerta-success { color: #4ade80; }
+[data-theme="dark"] .alerta-warning { color: #fbbf24; }
+
+/* Boton de descarte dentro de una alerta (area tactil 44px) */
+.alerta-cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  margin-right: calc(var(--touch-target) / -2 - var(--space-1));
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+/* ===== Acciones de formulario alineadas a la derecha ===== */
+.form-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* ===== Nota informativa (fondo suave) ===== */
+.nota-informativa {
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ===== Titulos de tarjeta ===== */
+.card-titulo {
+  margin: 0;
+  font-weight: var(--font-semibold);
+}
+
+.card-titulo-lg { font-size: var(--text-xl); }
+.card-titulo-md { font-size: var(--text-lg); }
+
+/* ===== Valores numericos destacados ===== */
+.valor-destacado {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+.valor-destacado-exito { color: #15803d; }
+[data-theme="dark"] .valor-destacado-exito { color: #4ade80; }
+
+/* ===== Iconos emoji de apoyo ===== */
+.icono-grande  { font-size: 48px; line-height: 1; }
+.icono-mediano { font-size: 32px; line-height: 1; }
+
+/* Icono dentro de un empty-state compuesto manualmente */
+.empty-state-icono {
+  font-size: 48px;
+  line-height: 1;
+}
+
+/* Variante compacta (mensajes breves dentro de paneles) */
+.empty-state-compacto {
+  padding: var(--space-4);
+  gap: var(--space-2);
+}
+
+/* ===== Variantes de stat-card ===== */
+.stat-card-primary {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+}
+.stat-card-primary .stat-card-value { color: var(--color-primary-700); }
+
+.stat-card-success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+.stat-card-success .stat-card-value { color: #15803d; }
+
+[data-theme="dark"] .stat-card-primary {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+[data-theme="dark"] .stat-card-primary .stat-card-value { color: var(--color-primary-300); }
+
+[data-theme="dark"] .stat-card-success {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+[data-theme="dark"] .stat-card-success .stat-card-value { color: #4ade80; }
+
+/* ===== Dato etiqueta + valor ===== */
+.dato-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.dato-valor {
+  font-weight: var(--font-medium);
+}
+
+/* ===== Seccion separada por linea superior ===== */
+.seccion-dividida {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+/* ===== Tabla expandible (filas clicables) ===== */
+.col-icono { width: 32px; }
+
+.tabla-fila-clicable { cursor: pointer; }
+
+.table-wrapper .tabla-fila-activa {
+  background: var(--color-bg);
+}
+
+.table-wrapper .tabla-detalle-celda {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.detalle-panel {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.detalle-titulo {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detalle-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  flex-wrap: wrap;
+}
+
+.detalle-item-nombre {
+  font-weight: var(--font-bold);
+  min-width: 180px;
+}
+
+.detalle-item-carga { color: var(--color-primary-600); }
+
+.detalle-item-nota {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ===== Notas dentro de celdas de tabla ===== */
+.tabla-subtexto {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Variante con ancho limitado (comentarios largos dentro de celdas) */
+.tabla-subtexto-estrecha {
+  max-width: 180px;
+}
+
+.tabla-nota-error {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-error);
+  max-width: 200px;
+}
+
+/* ===== Macro nutricional ===== */
+.macro-dato { text-align: center; }
+
+.macro-dato-valor {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+}
+
+/* ============================================================
+   Extensiones del design system (Fase 3 - Lote B)
+   Vistas entrenador/admin: clientes, perfil, pagos, dashboard
+   ============================================================ */
+
+/* ===== Grid de datos (fichas etiqueta + valor) ===== */
+.grid-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===== Grid de tarjetas autoajustable (planes, metodos) ===== */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ===== Cuerpo de stat-card: icono a la izquierda, textos a la derecha ===== */
+.stat-card-cuerpo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ===== Tablas: hover de filas clicables y tabla ajustada en movil ===== */
+.table-wrapper .tabla-fila-clicable:hover {
+  background: var(--color-bg);
+}
+
+/* Variante sin ancho minimo (columnas ocultas con .hide-mobile en movil) */
+.table-wrapper.tabla-ajustada table {
+  min-width: 0;
+}
+
+/* ===== Imagen de comprobante dentro de modal ===== */
+.comprobante-imagen {
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* ===== Enlace de red social (perfil del entrenador) ===== */
+.red-social-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  min-height: var(--touch-target);
+  transition: all var(--transition-fast);
+}
+
+.red-social-enlace:hover {
+  background: var(--color-bg);
+}
+
+.red-social-icono {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.red-social-nombre {
+  text-transform: capitalize;
+}
+
+/* ===== Tarjeta con borde (items anidados: certificaciones, plantillas) ===== */
+.tarjeta-borde {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Variante resaltada (item en edicion/seleccion) */
+.tarjeta-borde-activa {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
+}
+
+[data-theme="dark"] .tarjeta-borde-activa {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* ===== Texto de ayuda debajo de un campo ===== */
+.field-ayuda {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ===== Enlace sin subrayado (navegacion interna) ===== */
+.enlace-sin-subrayado {
+  text-decoration: none;
+}

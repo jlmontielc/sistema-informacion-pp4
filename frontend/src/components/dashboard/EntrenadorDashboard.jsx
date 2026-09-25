@@ -31,13 +31,15 @@ export default function EntrenadorDashboard() {
   const { totalClientes, rutinasActivas, dietasActivas, clientesNuevosMes, clientesRecientes } = data;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1>Dashboard</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Resumen de tu actividad como entrenador</p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Resumen de tu actividad como entrenador</p>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+      <div className="grid grid-cols-4">
         <KpiCard icon="👥" label="Mis Clientes" value={totalClientes} />
         <KpiCard icon="🏋️" label="Rutinas Activas" value={rutinasActivas} />
         <KpiCard icon="🥗" label="Dietas Activas" value={dietasActivas} />
@@ -46,23 +48,23 @@ export default function EntrenadorDashboard() {
 
       {clientesRecientes?.length > 0 ? (
         <Card header="Mis Clientes Recientes">
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+          <div className="table-wrapper tabla-ajustada">
+            <table>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Nombre</th>
-                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Peso</th>
-                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Nivel</th>
-                  <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Registro</th>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Peso</th>
+                  <th>Nivel</th>
+                  <th className="hide-mobile">Registro</th>
                 </tr>
               </thead>
               <tbody>
                 {clientesRecientes.map(c => (
-                  <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-                    <td style={{ padding: 'var(--space-2) var(--space-3)', fontWeight: 'var(--font-medium)' }}>{c.nombre}</td>
-                    <td style={{ padding: 'var(--space-2) var(--space-3)' }}>{c.peso} kg</td>
-                    <td style={{ padding: 'var(--space-2) var(--space-3)' }}>{nivelLabels[c.nivelActividad] || c.nivelActividad}</td>
-                    <td style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>{c.fechaRegistro}</td>
+                  <tr key={c.id}>
+                    <td className="text-medium">{c.nombre}</td>
+                    <td>{c.peso} kg</td>
+                    <td>{nivelLabels[c.nivelActividad] || c.nivelActividad}</td>
+                    <td className="hide-mobile text-muted">{c.fechaRegistro}</td>
                   </tr>
                 ))}
               </tbody>
@@ -84,14 +86,14 @@ export default function EntrenadorDashboard() {
 
 function KpiCard({ icon, label, value }) {
   return (
-    <Card>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-5)' }}>
-        <span style={{ fontSize: 28 }}>{icon}</span>
+    <div className="stat-card">
+      <div className="stat-card-cuerpo">
+        <span className="stat-card-icon" aria-hidden="true">{icon}</span>
         <div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{label}</p>
-          <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>{value}</p>
+          <p className="stat-card-label">{label}</p>
+          <p className="stat-card-value">{value}</p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

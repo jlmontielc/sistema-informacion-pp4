@@ -1,0 +1,193 @@
+/* ============================================================
+   Utilidades responsive del design system (Fase 2)
+   Breakpoints fijados en TODO el CSS nuevo: 640 / 768 / 1024 / 1280 px
+   ============================================================ */
+
+/* ===== Contenedor de página ===== */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--container-max);
+}
+
+/* Encabezado de página: título a la izquierda, acciones a la derecha */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.page-title {
+  font-size: var(--text-fluid-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  overflow-wrap: break-word;
+}
+
+.page-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ===== Grid responsivo =====
+   grid-cols-4: 4 → 2 (≤1024) → 1 (≤640)
+   grid-cols-3: 3 → 1 (≤768)
+   grid-cols-2: 2 → 1 (≤640) */
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1024px) {
+  .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    gap: var(--space-3);
+  }
+
+  .grid-cols-3 { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+  .grid-cols-4 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ===== Stack: apilado vertical con separación ===== */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stack-sm { gap: var(--space-2); }
+.stack-md { gap: var(--space-5); }
+.stack-lg { gap: var(--space-6); }
+
+/* ===== Row: fila flexible con wrap ===== */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Fila con separacion minima (acciones dentro de celdas de tabla) */
+.row-gap-sm { gap: var(--space-1); }
+
+/* ===== Utilidades de una sola regla ===== */
+.flex-1 {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* Margen izquierdo minimo (sufijos junto a valores destacados) */
+.ml-sm { margin-left: var(--space-2); }
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: var(--color-text-secondary); }
+.text-bold { font-weight: var(--font-bold); }
+.text-medium { font-weight: var(--font-medium); }
+.text-error { color: var(--color-error); }
+.text-primario { color: var(--color-primary-600); }
+
+/* Tamanos de texto de apoyo (complementan los tokens existentes) */
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-lg { font-size: var(--text-lg); }
+
+/* Área táctil mínima de 44px (accesibilidad en móvil) */
+.touch-target {
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+}
+
+/* ===== Visibilidad según punto de corte (≤768px = móvil) ===== */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* ===== Utilidades de Fase 3 ===== */
+
+/* Ocupa todas las columnas de una grid */
+.grid-full {
+  grid-column: 1 / -1;
+}
+
+/* Contenedor centrado verticalmente (formularios de pagina completa) */
+.contenedor-centrado {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: var(--space-6);
+  width: 100%;
+}
+
+/* Formulario angosto centrado */
+.form-estrecho {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* ===== Utilidades de Fase 3 - Lote C (paginas publicas) ===== */
+
+/* Anchuras de los formularios de autenticacion (combinar con .form-estrecho) */
+.form-estrecho-sm { max-width: 420px; }
+.form-estrecho-md { max-width: 480px; }
+
+/* Margenes superiores puntuales */
+.mt-sm { margin-top: var(--space-2); }
+.mt-lg { margin-top: var(--space-6); }
+
+/* Titulo dentro de un empty-state a pagina completa */
+.empty-state-titulo {
+  color: var(--color-text);
+  margin: 0;
+}

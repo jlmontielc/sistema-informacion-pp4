@@ -90,12 +90,12 @@ export function InstruidoRutinasView() {
 
   if (!rutina) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div>
-          <h2>Mi Rutina</h2>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            Tu plan de entrenamiento personalizado
-          </p>
+      <div className="page">
+        <div className="page-header">
+          <div className="page-header-text">
+            <h2 className="page-title">Mi Rutina</h2>
+            <p className="page-subtitle">Tu plan de entrenamiento personalizado</p>
+          </div>
         </div>
         <Card>
           <EmptyState
@@ -109,12 +109,14 @@ export function InstruidoRutinasView() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h2>Mi Rutina</h2>
-        <p style={{ color: 'var(--color-text-secondary)' }}>
-          {rutina.nombre} · {rutina.frecuenciaSemanal}x/semana
-        </p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h2 className="page-title">Mi Rutina</h2>
+          <p className="page-subtitle">
+            {rutina.nombre} · {rutina.frecuenciaSemanal}x/semana
+          </p>
+        </div>
       </div>
 
       <div className="tabs-container">
@@ -142,65 +144,59 @@ export function InstruidoRutinasView() {
       </div>
 
       {tab === 'hoy' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <Card>
-            <div style={{ padding: 'var(--space-5)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 'var(--text-xl)' }}>
-                    {obtenerNombreDia(diaActual)}
-                  </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', margin: 0 }}>
-                    {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                </div>
-                <span className={`rutina-tipo-badge ${rutina.tipo}`}>
-                  {rutina.tipo}
-                </span>
+        <Card>
+          <div className="card-body stack">
+            <div className="row-between">
+              <div>
+                <h3 className="card-titulo card-titulo-lg">
+                  {obtenerNombreDia(diaActual)}
+                </h3>
+                <p className="text-sm text-muted">
+                  {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
               </div>
-
-              {ejerciciosDelDia.length === 0 ? (
-                <div style={{
-                  padding: 'var(--space-8)',
-                  textAlign: 'center',
-                  color: 'var(--color-text-secondary)',
-                }}>
-                  <p style={{ fontSize: 48, margin: 0 }}>😴</p>
-                  <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
-                    Dia de descanso
-                  </p>
-                  <p style={{ fontSize: 'var(--text-sm)' }}>
-                    No hay ejercicios programados para hoy
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    {ejerciciosDelDia
-                      .sort((a, b) => a.orden - b.orden)
-                      .map((ej, idx) => (
-                        <EjercicioCard
-                          key={`${ej.ejercicioId}-${idx}`}
-                          ejercicio={ej}
-                          nombreEjercicio={ej.nombre}
-                          showActions={false}
-                        />
-                      ))}
-                  </div>
-                  <div style={{ marginTop: 'var(--space-4)', display: 'flex', justifyContent: 'center' }}>
-                    <Button
-                      onClick={handleRegistrarEntrenamiento}
-                      loading={registrando}
-                      size="lg"
-                    >
-                      Registrar Entrenamiento
-                    </Button>
-                  </div>
-                </>
-              )}
+              <span className={`rutina-tipo-badge ${rutina.tipo}`}>
+                {rutina.tipo}
+              </span>
             </div>
-          </Card>
-        </div>
+
+            {ejerciciosDelDia.length === 0 ? (
+              <div className="empty-state">
+                <p className="empty-state-icono" aria-hidden="true">😴</p>
+                <p className="text-lg text-bold">
+                  Dia de descanso
+                </p>
+                <p className="text-sm text-muted">
+                  No hay ejercicios programados para hoy
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="stack stack-sm">
+                  {ejerciciosDelDia
+                    .sort((a, b) => a.orden - b.orden)
+                    .map((ej, idx) => (
+                      <EjercicioCard
+                        key={`${ej.ejercicioId}-${idx}`}
+                        ejercicio={ej}
+                        nombreEjercicio={ej.nombre}
+                        showActions={false}
+                      />
+                    ))}
+                </div>
+                <div className="text-center">
+                  <Button
+                    onClick={handleRegistrarEntrenamiento}
+                    loading={registrando}
+                    size="lg"
+                  >
+                    Registrar Entrenamiento
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
       )}
 
       {tab === 'semana' && (
@@ -236,7 +232,7 @@ export function InstruidoRutinasView() {
       )}
 
       {tab === 'historial' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="stack">
           {cargandoHistorial ? (
             <Loading text="Cargando historial..." />
           ) : historial.length === 0 ? (
@@ -252,13 +248,13 @@ export function InstruidoRutinasView() {
               const volumen = extraerVolumen(reg.observaciones);
               return (
                 <Card key={reg.id}>
-                  <div style={{ padding: 'var(--space-5)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
+                  <div className="card-body stack">
+                    <div className="row-between">
                       <div>
-                        <h4 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>
+                        <h4 className="card-titulo card-titulo-md">
                           {formatearFecha(reg.fecha)}
                         </h4>
-                        <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                        <p className="text-sm text-muted">
                           {reg.estado === 'completado' ? 'Entrenamiento completado' : 'Sesion cancelada'}
                         </p>
                       </div>

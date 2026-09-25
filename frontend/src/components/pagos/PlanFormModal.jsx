@@ -71,7 +71,7 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={editando ? 'Editar plan' : 'Nuevo plan'}>
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="stack">
           <Input
             label="Nombre del plan"
             name="nombre"
@@ -96,7 +96,7 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
               maxLength={2000}
             />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+          <div className="grid grid-cols-2">
             <Input
               label="Monto (USD)"
               name="montoUsd"
@@ -138,20 +138,11 @@ export function PlanFormModal({ isOpen, onClose, plan, onGuardado }) {
             </select>
           </div>
           {error && (
-            <div
-              style={{
-                padding: 'var(--space-3) var(--space-4)',
-                backgroundColor: 'var(--color-error)',
-                color: 'var(--color-text-inverse)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                textAlign: 'center',
-              }}
-            >
+            <div className="alerta alerta-error text-center">
               {error}
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={onClose} disabled={guardando}>
               Cancelar
             </Button>

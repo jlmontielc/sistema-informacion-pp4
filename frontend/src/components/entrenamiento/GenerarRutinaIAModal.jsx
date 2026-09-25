@@ -73,15 +73,9 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Obtener recomendación de plantilla" size="lg">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="stack">
         {error && (
-          <div style={{
-            padding: 'var(--space-3)',
-            background: '#fef2f2',
-            color: '#991b1b',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--text-sm)',
-          }}>
+          <div className="alerta alerta-error">
             {error}
           </div>
         )}
@@ -125,24 +119,18 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
                     placeholder="Nombres separados por coma..."
                     disabled={generando}
                   />
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
+                  <p className="field-ayuda">
                     Indica nombres de ejercicios que no quieres en las plantillas
                   </p>
                 </div>
 
                 {clienteSeleccionado && (
-                  <div style={{
-                    padding: 'var(--space-3)',
-                    background: 'var(--color-neutral-50)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--color-text-secondary)',
-                  }}>
+                  <div className="nota-informativa">
                     La IA analizará el perfil de <strong>{clienteSeleccionado.nombre}</strong>, su historial de entrenamiento, lesiones y condiciones médicas para recomendar las mejores plantillas del entrenador.
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                <div className="form-acciones">
                   <button className="btn btn-secondary" onClick={onClose} disabled={generando}>
                     Cancelar
                   </button>
@@ -156,83 +144,56 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
         )}
 
         {generando && (
-          <div style={{ textAlign: 'center', padding: 'var(--space-6)' }}>
+          <div className="stack text-center">
             <Loading text="La IA está analizando el perfil y evaluando plantillas..." />
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-3)' }}>
+            <p className="field-ayuda">
               Esto puede tomar unos segundos mientras se procesan las plantillas disponibles
             </p>
           </div>
         )}
 
         {resultado && !generando && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{
-              padding: 'var(--space-4)',
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              borderRadius: 'var(--radius-md)',
-            }}>
-              <h4 style={{ margin: 0, color: '#166534', fontSize: 'var(--text-base)' }}>
-                Recomendación generada exitosamente
-              </h4>
+          <div className="stack">
+            <div className="ia-panel ia-panel-exito">
+              <h4>Recomendación generada exitosamente</h4>
               {resultado.plantilla_id == null && (
-                <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#991b1b' }}>
+                <p className="ia-panel-texto">
                   No se encontró una plantilla viable: todas fueron descartadas por lesiones o restricciones de seguridad.
                 </p>
               )}
               {resultado.explicacion && (
-                <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#166534' }}>
+                <p className="ia-panel-texto">
                   {resultado.explicacion}
                 </p>
               )}
             </div>
 
             {resultado.confianza != null && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Confianza IA:</span>
-                <div style={{
-                  padding: 'var(--space-1) var(--space-3)',
-                  borderRadius: 'var(--radius-full)',
-                  background: resultado.confianza >= 70 ? '#dcfce7' : '#fef9c3',
-                  color: resultado.confianza >= 70 ? '#166534' : '#854d0e',
-                  fontSize: 'var(--text-sm)',
-                  fontWeight: 'var(--font-medium)',
-                }}>
+              <div className="row">
+                <span className="text-sm text-muted">Confianza IA:</span>
+                <span className={`badge ${resultado.confianza >= 70 ? 'badge-success' : 'badge-warning'}`}>
                   {Math.round(resultado.confianza)}%
-                </div>
+                </span>
               </div>
             )}
 
             {resultado.plantilla_id != null && (() => {
               const p = plantillasMap[resultado.plantilla_id];
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--color-text-primary)' }}>
+                <div className="stack stack-sm">
+                  <span className="text-sm text-medium">
                     Plantilla recomendada:
                   </span>
-                  <div style={{
-                    padding: 'var(--space-3)',
-                    background: '#f0f9ff',
-                    border: '1px solid #bae6fd',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ margin: 0, fontWeight: 'var(--font-medium)' }}>
+                  <div className="ia-panel ia-panel-info">
+                    <div className="row-between">
+                      <p className="text-medium">
                         {p?.nombre || `Plantilla #${resultado.plantilla_id}`}
                       </p>
-                      <span style={{
-                        padding: 'var(--space-1) var(--space-2)',
-                        borderRadius: 'var(--radius-full)',
-                        background: '#dcfce7',
-                        color: '#166534',
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 'var(--font-medium)',
-                      }}>
+                      <span className="badge badge-success">
                         {Math.round(resultado.confianza)}%
                       </span>
                     </div>
-                    <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
+                    <p className="ia-panel-texto text-xs text-muted">
                       {p?.tipo || '—'} · {p?.nivelDificultad || p?.nivel_dificultad || '—'} · {p?.frecuenciaSemanal || p?.dias_semana || '?'} días/semana
                     </p>
                   </div>
@@ -241,29 +202,19 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
             })()}
 
             {resultado.advertencia && (
-              <div style={{
-                padding: 'var(--space-3)',
-                background: '#fffbeb',
-                border: '1px solid #fde68a',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                color: '#92400e',
-              }}>
-                <strong>Advertencia:</strong> {resultado.advertencia}
+              <div className="ia-panel ia-panel-aviso">
+                <p>
+                  <strong>Advertencia:</strong> {resultado.advertencia}
+                </p>
               </div>
             )}
 
             {resultado.alertas_seguridad && resultado.alertas_seguridad.length > 0 && (
-              <div style={{
-                padding: 'var(--space-3)',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                color: '#991b1b',
-              }}>
-                <strong>Alertas de seguridad:</strong>
-                <ul style={{ margin: 'var(--space-2) 0 0', paddingLeft: 'var(--space-5)' }}>
+              <div className="ia-panel ia-panel-peligro">
+                <p>
+                  <strong>Alertas de seguridad:</strong>
+                </p>
+                <ul className="ia-lista">
                   {resultado.alertas_seguridad.map((a, i) => (
                     <li key={i}>{typeof a === 'string' ? a : a.mensaje || JSON.stringify(a)}</li>
                   ))}
@@ -281,21 +232,13 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
                 : 'Revísalos en el perfil médico antes de asignar la rutina.';
 
               return (
-                <div style={{
-                  padding: 'var(--space-4)',
-                  background: '#fff7ed',
-                  border: '1px solid #fb923c',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  gap: 'var(--space-3)',
-                  alignItems: 'flex-start',
-                }}>
-                  <span style={{ fontSize: 22, lineHeight: 1 }}>⚠️</span>
+                <div className="ia-panel ia-panel-aviso row">
+                  <span className="ia-panel-icono" aria-hidden="true">⚠️</span>
                   <div>
-                    <p style={{ margin: 0, fontWeight: 'var(--font-semibold)', color: '#9a3412', fontSize: 'var(--text-base)' }}>
+                    <p className="text-medium">
                       {titulo}
                     </p>
-                    <p style={{ margin: 'var(--space-2) 0 0', fontSize: 'var(--text-sm)', color: '#9a3412' }}>
+                    <p className="ia-panel-texto">
                       {mensaje}
                     </p>
                   </div>
@@ -303,18 +246,13 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
               );
             })()}
 
-            <div style={{
-              padding: 'var(--space-3)',
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-              color: '#1e40af',
-            }}>
-              La recomendación ha sido guardada como <strong>pendiente de revisión</strong>. Ve al tab &quot;Recomendadas IA&quot; para aprobarla, modificarla o rechazarla.
+            <div className="ia-panel ia-panel-info">
+              <p>
+                La recomendación ha sido guardada como <strong>pendiente de revisión</strong>. Ve al tab &quot;Recomendadas IA&quot; para aprobarla, modificarla o rechazarla.
+              </p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <button className="btn btn-secondary" onClick={onClose}>
                 Cerrar
               </button>

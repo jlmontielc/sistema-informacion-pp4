@@ -73,19 +73,21 @@ export function ClienteDetalle() {
   if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-        <Link to="/clientes" style={{ textDecoration: 'none' }}>
-          <Button variant="secondary" size="sm">← Volver</Button>
-        </Link>
-        <div>
-          <h1>{instruido?.nombre || 'Cliente'}</h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Detalle completo del cliente</p>
+    <div className="page">
+      <div className="page-header">
+        <div className="row">
+          <Link to="/clientes" className="enlace-sin-subrayado">
+            <Button variant="secondary" size="sm">← Volver</Button>
+          </Link>
+          <div className="page-header-text">
+            <h1 className="page-title">{instruido?.nombre || 'Cliente'}</h1>
+            <p className="page-subtitle">Detalle completo del cliente</p>
+          </div>
         </div>
       </div>
 
       <Card header="Información General">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+        <div className="grid-datos">
           <InfoField label="Nombre" value={instruido?.nombre || '—'} />
           <InfoField label="Email" value={instruido?.email || '—'} />
           <InfoField label="Edad" value={instruido?.edad ? `${instruido.edad} años` : '—'} />
@@ -101,38 +103,21 @@ export function ClienteDetalle() {
       </Card>
 
       <Card header="Datos Médicos">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            padding: 'var(--space-2) var(--space-3)',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success-bg, #e8f5e9)' : 'var(--color-warning-bg, #fff3e0)',
-            color: perfilMedico?.perfilMedicoCompleto ? 'var(--color-success, #2e7d32)' : 'var(--color-warning, #ef6c00)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--font-medium)',
-            width: 'fit-content',
-          }}>
+        <div className="stack">
+          <span className={`badge ${perfilMedico?.perfilMedicoCompleto ? 'badge-success' : 'badge-warning'}`}>
             <span>{perfilMedico?.perfilMedicoCompleto ? '✅' : '⏳'}</span>
             <span>{perfilMedico?.perfilMedicoCompleto ? 'Perfil médico completo' : 'Perfil médico pendiente'}</span>
-          </div>
+          </span>
 
           {perfilMedico?.datosMedicosCorruptos && (
-            <div style={{
-              padding: 'var(--space-3) var(--space-4)',
-              backgroundColor: 'var(--color-error)',
-              color: 'var(--color-text-inverse)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-            }}>
-              <p style={{ margin: 0 }}>
+            <div className="alerta alerta-error">
+              <p>
                 ⚠️ No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.
               </p>
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
+          <div className="grid-datos">
             {CAMPOS_MEDICOS.map(({ name, label }) => (
               <InfoField
                 key={name}
@@ -141,7 +126,7 @@ export function ClienteDetalle() {
               />
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={() => setMostrarMedicos((prev) => !prev)}>
               {mostrarMedicos ? 'Ocultar datos médicos' : 'Ver datos médicos'}
             </Button>
@@ -154,9 +139,9 @@ export function ClienteDetalle() {
 
 function InfoField({ label, value }) {
   return (
-    <div>
-      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{label}</p>
-      <p style={{ fontWeight: 'var(--font-medium)' }}>{value}</p>
+    <div className="field">
+      <p className="dato-label">{label}</p>
+      <p className="dato-valor">{value}</p>
     </div>
   );
 }

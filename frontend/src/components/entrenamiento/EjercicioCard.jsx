@@ -25,7 +25,7 @@ export function EjercicioCard({
               </button>
             )}
             {onEliminar && (
-              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-error)' }} onClick={onEliminar}>
+              <button className="btn btn-ghost btn-sm btn-ghost-peligroso" onClick={onEliminar}>
                 Eliminar
               </button>
             )}

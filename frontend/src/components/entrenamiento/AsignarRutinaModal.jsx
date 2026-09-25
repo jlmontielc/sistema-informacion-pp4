@@ -94,15 +94,9 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
       onClose={onClose}
       title={plantilla ? `Asignar: ${plantilla.nombre}` : 'Asignar Rutina'}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="stack">
         {error && (
-          <div style={{
-            padding: 'var(--space-3)',
-            background: '#fef2f2',
-            color: '#991b1b',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--text-sm)',
-          }}>
+          <div className="alerta alerta-error">
             {error}
           </div>
         )}
@@ -110,11 +104,7 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
         {loadingClientes ? (
           <Loading text="Cargando clientes..." />
         ) : errorClientes ? (
-          <div style={{
-            padding: 'var(--space-4)',
-            textAlign: 'center',
-            color: 'var(--color-error)',
-          }}>
+          <div className="text-center text-error">
             <p>{errorClientes}</p>
           </div>
         ) : clientes.length === 0 ? (
@@ -160,28 +150,21 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
             <div className="field">
               <label className="field-label">Observaciones</label>
               <textarea
-                className="field-input"
+                className="field-input field-textarea"
                 rows={3}
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 placeholder="Notas adicionales sobre la rutina..."
-                style={{ resize: 'vertical' }}
               />
             </div>
 
             {plantilla && (
-              <div style={{
-                padding: 'var(--space-3)',
-                background: 'var(--color-neutral-50)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--color-text-secondary)',
-              }}>
+              <div className="nota-informativa">
                 Se clonara la plantilla <strong>{plantilla.nombre}</strong> con todos sus ejercicios y dias configurados.
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
               <Button onClick={handleGuardar} loading={saving}>
                 Asignar Rutina

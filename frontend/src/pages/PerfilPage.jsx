@@ -9,10 +9,12 @@ export default function PerfilPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1>Mi Perfil</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Gestiona tu información personal</p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Mi Perfil</h1>
+          <p className="page-subtitle">Gestiona tu información personal</p>
+        </div>
       </div>
 
       {user?.rol === 'administrador' ? (

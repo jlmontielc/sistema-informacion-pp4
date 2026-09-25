@@ -32,31 +32,19 @@ export default function LandingPage() {
   };
 
   return (
-    <div>
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        background: 'rgba(255,255,255,0.9)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--color-border)',
-      }}>
-        <div style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: 'var(--space-3) var(--space-6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>
-            <span style={{ fontSize: 24 }}>🏋️</span>
+    <div className="landing">
+      <header className="landing-header">
+        <div className="landing-header-inner">
+          <div className="landing-logo">
+            <span className="landing-logo-icono landing-gradiente">
+              <Icon name="dumbbell" size={20} color="white" />
+            </span>
             {APP_NAME}
           </div>
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <button onClick={() => scrollTo('planes')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Planes</button>
-            <button onClick={() => scrollTo('dietas')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Dietas</button>
-            <button onClick={() => scrollTo('galeria')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>Galería</button>
+          <nav className="landing-nav">
+            <button type="button" onClick={() => scrollTo('planes')} className="landing-nav-enlace hide-mobile">Planes</button>
+            <button type="button" onClick={() => scrollTo('dietas')} className="landing-nav-enlace hide-mobile">Dietas</button>
+            <button type="button" onClick={() => scrollTo('galeria')} className="landing-nav-enlace hide-mobile">Galería</button>
             {isAuthenticated ? (
               <Button size="sm" onClick={() => navigate('/dashboard')}>Ir al Dashboard</Button>
             ) : (
@@ -67,46 +55,18 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: 'var(--space-16) var(--space-6)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 'var(--space-6)',
-        }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            color: 'white',
-            padding: 'var(--space-3) var(--space-6)',
-            borderRadius: 'var(--radius-full)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--font-medium)',
-          }}>
+        <section className="landing-hero">
+          <div className="landing-hero-chip landing-gradiente">
             Transforma tu cuerpo, transforma tu vida
           </div>
-          <h1 style={{
-            fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-            fontWeight: 'var(--font-bold)',
-            lineHeight: 1.15,
-            maxWidth: 720,
-          }}>
+          <h1 className="landing-hero-titulo">
             Tu entrenador personal{' '}
-            <span style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              inteligente
-            </span>
+            <span className="landing-texto-gradiente">inteligente</span>
           </h1>
-          <p style={{
-            fontSize: 'var(--text-lg)',
-            color: 'var(--color-text-secondary)',
-            maxWidth: 560,
-            lineHeight: 'var(--line-height-relaxed)',
-          }}>
+          <p className="landing-hero-subtitulo">
             Planes de entrenamiento, dietas personalizadas y análisis metabólico con inteligencia artificial para alcanzar tus objetivos más rápido.
           </p>
-          <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="landing-acciones">
             {isAuthenticated ? (
               <Button size="lg" onClick={() => navigate('/dashboard')}>Ir al Dashboard</Button>
             ) : (
@@ -118,174 +78,103 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" style={{ background: 'var(--color-neutral-50)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            padding: 'var(--space-12) var(--space-6)',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: 'var(--space-8)',
-          }}>
-            {features.map((f) => (
-              <div key={f.titulo} style={{ textAlign: 'center' }}>
-                <div style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 'var(--radius-xl)',
-                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto var(--space-4)',
-                }}>
-                  <Icon name={f.icon} size={28} color="white" />
-                </div>
-                <h3 style={{ marginBottom: 'var(--space-2)' }}>{f.titulo}</h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{f.descripcion}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="planes" style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-12) var(--space-6)' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-            <h2>Planes de Entrenamiento</h2>
-            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-              Elige el plan que se adapte a tu nivel y objetivos
-            </p>
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 'var(--space-6)',
-          }}>
-            {planes.map((plan) => (
-              <div key={plan.nombre} style={{
-                background: 'var(--color-bg-card)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-xl)',
-                padding: 'var(--space-8)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--space-4)',
-                transition: 'box-shadow var(--transition-normal), transform var(--transition-normal)',
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-              >
-                <div style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 'var(--radius-lg)',
-                  background: plan.color + '20',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Icon name={plan.icon} size={24} color={plan.color} />
-                </div>
-                <h3>{plan.nombre}</h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
-                  {plan.descripcion}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="dietas" style={{
-          background: 'var(--color-neutral-50)',
-          borderTop: '1px solid var(--color-border)',
-          borderBottom: '1px solid var(--color-border)',
-        }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-12) var(--space-6)' }}>
-            <div style={{ textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-              <h2>Planes de Alimentación</h2>
-              <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-                Dietas personalizadas según tu objetivo
-              </p>
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: 'var(--space-6)',
-            }}>
-              {dietas.map((dieta) => (
-                <div key={dieta.nombre} style={{
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-xl)',
-                  padding: 'var(--space-8)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--space-4)',
-                  transition: 'box-shadow var(--transition-normal), transform var(--transition-normal)',
-                }}
-                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  <div style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 'var(--radius-lg)',
-                    background: dieta.color + '20',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <Icon name={dieta.icon} size={24} color={dieta.color} />
+        <section id="features" className="landing-seccion landing-seccion-fondo">
+          <div className="landing-contenedor">
+            <div className="landing-grid-feature">
+              {features.map((f) => (
+                <div key={f.titulo} className="landing-feature">
+                  <div className="landing-feature-icono landing-gradiente">
+                    <Icon name={f.icon} size={28} color="white" />
                   </div>
-                  <h3>{dieta.nombre}</h3>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--line-height-relaxed)' }}>
-                    {dieta.descripcion}
-                  </p>
+                  <h3 className="landing-feature-titulo">{f.titulo}</h3>
+                  <p className="landing-feature-desc">{f.descripcion}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="galeria" style={{ maxWidth: 1200, margin: '0 auto', padding: 'var(--space-12) var(--space-6)' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-10)' }}>
-            <h2>Galería de Resultados</h2>
-            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-              Conoce nuestro trabajo a través de imágenes
-            </p>
+        <section id="planes" className="landing-seccion">
+          <div className="landing-contenedor">
+            <div className="landing-seccion-encabezado">
+              <h2 className="landing-seccion-titulo">Planes de Entrenamiento</h2>
+              <p className="landing-seccion-sub">
+                Elige el plan que se adapte a tu nivel y objetivos
+              </p>
+            </div>
+            <div className="landing-grid-tarjetas">
+              {planes.map((plan) => (
+                <article key={plan.nombre} className="landing-tarjeta">
+                  <div
+                    className="landing-tarjeta-icono"
+                    style={{ background: `${plan.color}20` }}
+                  >
+                    <Icon name={plan.icon} size={24} color={plan.color} />
+                  </div>
+                  <h3>{plan.nombre}</h3>
+                  <p className="landing-tarjeta-desc">{plan.descripcion}</p>
+                </article>
+              ))}
+            </div>
           </div>
-          <Carousel />
         </section>
 
-        <section style={{
-          background: 'linear-gradient(135deg, #1e3a8a, #312e81)',
-          color: 'white',
-          textAlign: 'center',
-          padding: 'var(--space-16) var(--space-6)',
-        }}>
-          <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', alignItems: 'center' }}>
-            <h2 style={{ color: 'white' }}>¿Listo para empezar tu transformación?</h2>
-            <p style={{ color: 'rgba(255,255,255,0.8)', lineHeight: 'var(--line-height-relaxed)' }}>
+        <section id="dietas" className="landing-seccion landing-seccion-fondo">
+          <div className="landing-contenedor">
+            <div className="landing-seccion-encabezado">
+              <h2 className="landing-seccion-titulo">Planes de Alimentación</h2>
+              <p className="landing-seccion-sub">
+                Dietas personalizadas según tu objetivo
+              </p>
+            </div>
+            <div className="landing-grid-tarjetas">
+              {dietas.map((dieta) => (
+                <article key={dieta.nombre} className="landing-tarjeta">
+                  <div
+                    className="landing-tarjeta-icono"
+                    style={{ background: `${dieta.color}20` }}
+                  >
+                    <Icon name={dieta.icon} size={24} color={dieta.color} />
+                  </div>
+                  <h3>{dieta.nombre}</h3>
+                  <p className="landing-tarjeta-desc">{dieta.descripcion}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="galeria" className="landing-seccion">
+          <div className="landing-contenedor">
+            <div className="landing-seccion-encabezado">
+              <h2 className="landing-seccion-titulo">Galería de Resultados</h2>
+              <p className="landing-seccion-sub">
+                Conoce nuestro trabajo a través de imágenes
+              </p>
+            </div>
+            <Carousel />
+          </div>
+        </section>
+
+        <section className="landing-cta">
+          <div className="landing-cta-contenido">
+            <h2 className="landing-cta-titulo">¿Listo para empezar tu transformación?</h2>
+            <p className="landing-cta-texto">
               Regístrate gratis y comienza a entrenar con planes personalizados impulsados por inteligencia artificial.
             </p>
-            <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className="landing-acciones">
               {isAuthenticated ? (
-                <Button size="lg" onClick={() => navigate('/dashboard')}
-                  style={{ background: 'white', color: '#1e3a8a', fontWeight: 'var(--font-bold)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                >Ir al Dashboard</Button>
+                <Button size="lg" className="btn-claro" onClick={() => navigate('/dashboard')}>
+                  Ir al Dashboard
+                </Button>
               ) : (
                 <>
-                  <Button size="lg" onClick={() => navigate('/register')}
-                    style={{ background: 'white', color: '#1e3a8a', fontWeight: 'var(--font-bold)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#e2e8f0'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                  >Crear Cuenta Gratis</Button>
-                  <Button size="lg" variant="secondary" onClick={() => navigate('/login')}
-                    style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >Iniciar Sesión</Button>
+                  <Button size="lg" className="btn-claro" onClick={() => navigate('/register')}>
+                    Crear Cuenta Gratis
+                  </Button>
+                  <Button size="lg" variant="secondary" className="btn-claro-contorno" onClick={() => navigate('/login')}>
+                    Iniciar Sesión
+                  </Button>
                 </>
               )}
             </div>
@@ -293,13 +182,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer style={{
-        background: 'var(--color-neutral-900)',
-        color: 'var(--color-neutral-400)',
-        padding: 'var(--space-8) var(--space-6)',
-        textAlign: 'center',
-        fontSize: 'var(--text-sm)',
-      }}>
+      <footer className="landing-footer">
         <p>&copy; {new Date().getFullYear()} {APP_NAME}. Todos los derechos reservados.</p>
       </footer>
     </div>

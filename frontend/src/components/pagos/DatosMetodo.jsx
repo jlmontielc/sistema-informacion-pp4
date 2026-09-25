@@ -17,10 +17,10 @@ export function DatosMetodo({ datos }) {
   if (entradas.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="stack stack-sm">
       {entradas.map(([clave, valor]) => (
-        <span key={clave} style={{ fontSize: 'var(--text-sm)' }}>
-          <strong style={{ color: 'var(--color-text-secondary)' }}>
+        <span key={clave} className="text-sm">
+          <strong className="text-muted">
             {ETIQUETAS[clave] || clave}:
           </strong>{' '}
           {String(valor)}

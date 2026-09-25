@@ -85,7 +85,7 @@ export function EjercicioRegistroCard({
 
       <div className="ejercicio-registro-footer">
         <Button variant="secondary" size="sm" onClick={handleAgregarFila}>
-          <Icon name="arrow" size={16} style={{ transform: 'rotate(90deg)' }} /> Añadir serie
+          <Icon name="arrow" size={16} className="icono-rotado" /> Añadir serie
         </Button>
       </div>
     </div>

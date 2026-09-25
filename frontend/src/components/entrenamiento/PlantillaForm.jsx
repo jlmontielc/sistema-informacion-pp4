@@ -302,15 +302,9 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
       onClose={onClose}
       title={plantillaEditandoId ? 'Editar Plantilla' : 'Crear Plantilla'}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="stack">
         {error && (
-          <div style={{
-            padding: 'var(--space-3)',
-            background: '#fef2f2',
-            color: '#991b1b',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 'var(--text-sm)',
-          }}>
+          <div className="alerta alerta-error">
             {error}
           </div>
         )}
@@ -341,7 +335,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         </div>
 
         {paso === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="stack">
             <Input
               label="Nombre de la plantilla"
               name="nombre"
@@ -353,16 +347,15 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             <div className="field">
               <label className="field-label">Descripcion</label>
               <textarea
-                className="field-input"
+                className="field-input field-textarea"
                 rows={2}
                 value={form.descripcion}
                 onChange={(e) => handleChange('descripcion', e.target.value)}
                 placeholder="Descripcion breve de la plantilla..."
-                style={{ resize: 'vertical' }}
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <div className="grid grid-cols-2">
               <div className="field">
                 <label className="field-label">Tipo</label>
                 <select
@@ -391,7 +384,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
+            <div className="grid grid-cols-3">
               <div className="field">
                 <label className="field-label">Nivel</label>
                 <select
@@ -435,7 +428,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
               <button
                 className="btn btn-primary"
@@ -449,9 +442,9 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         )}
 
         {paso === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+          <div className="stack">
+            <div className="row-between">
+              <span className="text-sm text-muted">
                 {totalEjercicios} ejercicio{totalEjercicios !== 1 ? 's' : ''} configurado{totalEjercicios !== 1 ? 's' : ''}
               </span>
               <button
@@ -468,14 +461,9 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             />
 
             {diaActivo != null && (
-              <div style={{
-                padding: 'var(--space-4)',
-                background: 'var(--color-neutral-50)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--color-border)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
-                  <h4 style={{ margin: 0, fontSize: 'var(--text-base)' }}>
+              <div className="tarjeta-borde">
+                <div className="row-between">
+                  <h4 className="card-titulo">
                     Ejercicios del {obtenerNombreDia(diaActivo)}
                   </h4>
                   <button
@@ -487,11 +475,11 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                 </div>
 
                 {(ejerciciosPorDia[diaActivo] || []).length === 0 ? (
-                  <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', padding: 'var(--space-4)' }}>
+                  <p className="empty-state empty-state-compacto text-sm">
                     No hay ejercicios para este dia. Haz clic en "Agregar Ejercicio" para comenzar.
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  <div className="stack stack-sm">
                     {ejerciciosPorDia[diaActivo].map((ej, idx) => (
                       <EjercicioCard
                         key={`${ej.ejercicioId}-${idx}`}
@@ -508,12 +496,12 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             )}
 
             {diaActivo == null && (
-              <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', padding: 'var(--space-6)' }}>
+              <p className="empty-state empty-state-compacto text-sm">
                 Selecciona un dia para configurar sus ejercicios
               </p>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
               <Button onClick={handleGuardar} loading={saving}>
                 {plantillaEditandoId ? 'Guardar Cambios' : 'Crear Plantilla'}
@@ -523,9 +511,9 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         )}
 
         {paso === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+          <div className="stack">
+            <div className="row-between">
+              <p className="text-sm text-muted">
                 Selecciona una plantilla para editarla o crea una nueva
               </p>
               <Button onClick={handleNuevaPlantilla} size="sm">
@@ -536,21 +524,17 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             {cargandoPlantillas ? (
               <Loading text="Cargando plantillas..." />
             ) : plantillasExistentes.length === 0 ? (
-              <div style={{
-                padding: 'var(--space-8)',
-                textAlign: 'center',
-                color: 'var(--color-text-secondary)',
-              }}>
-                <p style={{ fontSize: 48, margin: 0 }}>📋</p>
-                <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
+              <div className="empty-state">
+                <p className="empty-state-icono" aria-hidden="true">📋</p>
+                <p className="text-lg text-medium">
                   Sin plantillas creadas
                 </p>
-                <p style={{ fontSize: 'var(--text-sm)' }}>
+                <p className="text-sm">
                   Crea tu primera plantilla en el paso 1
                 </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: 400, overflowY: 'auto' }}>
+              <div className="lista-scroll">
                 {plantillasExistentes.map((p) => {
                   const diasNombres = p.diasSemana
                     ? Object.keys(p.diasSemana).map(Number).map(obtenerNombreDia).join(', ')
@@ -561,39 +545,29 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                   return (
                     <div
                       key={p.id}
-                      style={{
-                        padding: 'var(--space-4)',
-                        background: estaSiendoEditada ? 'var(--color-primary-50)' : 'var(--color-bg-card)',
-                        border: `1px solid ${estaSiendoEditada ? 'var(--color-primary-500)' : 'var(--color-border)'}`,
-                        borderRadius: 'var(--radius-lg)',
-                        transition: 'all var(--transition-fast)',
-                      }}
+                      className={`tarjeta-borde ${estaSiendoEditada ? 'tarjeta-borde-activa' : ''}`}
                     >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                            <h4 style={{ margin: 0, fontSize: 'var(--text-base)' }}>{p.nombre}</h4>
+                      <div className="row-between">
+                        <div className="flex-1">
+                          <div className="row row-gap-sm">
+                            <h4 className="card-titulo">{p.nombre}</h4>
                             <span className={`rutina-tipo-badge ${p.tipo}`}>
                               {TIPO_LABELS[p.tipo] || p.tipo}
                             </span>
                             {estaSiendoEditada && (
-                              <span style={{
-                                fontSize: 'var(--text-xs)',
-                                color: 'var(--color-primary-600)',
-                                fontWeight: 'var(--font-medium)',
-                              }}>
+                              <span className="text-xs text-medium text-primario">
                                 (Editando)
                               </span>
                             )}
                           </div>
-                          <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                          <div className="row text-xs text-muted">
                             <span>📅 {diasNombres}</span>
                             <span>🏋️ {totalEjs} ejercicio{totalEjs !== 1 ? 's' : ''}</span>
                             {p.frecuenciaSemanal && <span>🔄 {p.frecuenciaSemanal}x/semana</span>}
                             {p.duracionSemanas && <span>⏱ {p.duracionSemanas} semanas</span>}
                           </div>
                           {p.descripcion && (
-                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)', margin: 'var(--space-2) 0 0' }}>
+                            <p className="tabla-subtexto">
                               {p.descripcion}
                             </p>
                           )}

@@ -21,6 +21,12 @@ const experienciaLabels = {
   avanzado: 'Avanzado',
 };
 
+const experienciaBadge = {
+  principiante: 'badge-success',
+  intermedio: 'badge-warning',
+  avanzado: 'badge-danger',
+};
+
 export function ListaInstruidos() {
   const [instruidos, setInstruidos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,17 +79,17 @@ export function ListaInstruidos() {
   return (
     <>
       <Card header={`Mis Instruidos (${instruidos.length})`}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+        <div className="table-wrapper tabla-ajustada">
+          <table>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <th style={thStyle}>Nombre</th>
-                <th style={thStyle}>Email</th>
-                <th style={thStyle}>Edad</th>
-                <th style={thStyle}>Peso</th>
-                <th style={thStyle}>Nivel Act.</th>
-                <th style={thStyle}>Experiencia</th>
-                <th style={thStyle}>Registro</th>
+              <tr>
+                <th>Nombre</th>
+                <th className="hide-mobile">Email</th>
+                <th>Edad</th>
+                <th>Peso</th>
+                <th className="hide-mobile">Nivel Act.</th>
+                <th>Experiencia</th>
+                <th className="hide-mobile">Registro</th>
               </tr>
             </thead>
             <tbody>
@@ -91,21 +97,19 @@ export function ListaInstruidos() {
                 <tr
                   key={inst.id}
                   onClick={() => abrirDetalle(inst)}
-                  style={{ borderBottom: '1px solid var(--color-border-light)', cursor: 'pointer' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-alt)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = ''}
+                  className="tabla-fila-clicable"
                 >
-                  <td style={tdStyle}>{inst.nombre}</td>
-                  <td style={tdStyle}>{inst.email}</td>
-                  <td style={tdStyle}>{inst.edad}</td>
-                  <td style={tdStyle}>{inst.peso} kg</td>
-                  <td style={tdStyle}>{nivelLabels[inst.nivelActividad] || inst.nivelActividad}</td>
-                  <td style={tdStyle}>
-                    <span className={`rutina-tipo-badge ${inst.nivelExperiencia || ''}`}>
+                  <td>{inst.nombre}</td>
+                  <td className="hide-mobile">{inst.email}</td>
+                  <td>{inst.edad}</td>
+                  <td>{inst.peso} kg</td>
+                  <td className="hide-mobile">{nivelLabels[inst.nivelActividad] || inst.nivelActividad}</td>
+                  <td>
+                    <span className={`badge ${experienciaBadge[inst.nivelExperiencia] || 'badge-neutral'}`}>
                       {experienciaLabels[inst.nivelExperiencia] || '—'}
                     </span>
                   </td>
-                  <td style={tdStyle}>{inst.fechaRegistro}</td>
+                  <td className="hide-mobile">{inst.fechaRegistro}</td>
                 </tr>
               ))}
             </tbody>
@@ -115,7 +119,7 @@ export function ListaInstruidos() {
 
       <Modal isOpen={!!seleccionado} onClose={() => setSeleccionado(null)} title="Detalle del Instruido">
         {seleccionado && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="stack">
             <InfoField label="Nombre" value={seleccionado.nombre} />
             <InfoField label="Email" value={seleccionado.email} />
             <InfoField label="Edad" value={`${seleccionado.edad} años`} />
@@ -139,16 +143,16 @@ export function ListaInstruidos() {
                 <option value="intermedio">Intermedio</option>
                 <option value="avanzado">Avanzado</option>
               </select>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 4 }}>
+              <p className="field-ayuda">
                 Usado por la IA para generar rutinas acordes a su nivel
               </p>
             </div>
 
             {saveError && (
-              <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }}>{saveError}</p>
+              <p className="text-sm text-error">{saveError}</p>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+            <div className="form-acciones">
               <button className="btn btn-secondary" onClick={() => setSeleccionado(null)}>Cerrar</button>
               <Button onClick={handleGuardarExperiencia} loading={saving}>
                 Guardar Cambios
@@ -161,14 +165,11 @@ export function ListaInstruidos() {
   );
 }
 
-const thStyle = { textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' };
-const tdStyle = { padding: 'var(--space-2) var(--space-3)' };
-
 function InfoField({ label, value }) {
   return (
-    <div>
-      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{label}</p>
-      <p style={{ fontWeight: 'var(--font-medium)' }}>{value}</p>
+    <div className="field">
+      <p className="dato-label">{label}</p>
+      <p className="dato-valor">{value}</p>
     </div>
   );
 }
