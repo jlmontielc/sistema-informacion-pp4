@@ -201,7 +201,7 @@ export default function ReportesPage() {
         <div className="reportes-encabezado-fila">
           <div className="reportes-titulo">
             <h1>{tituloInstruido}</h1>
-            <p style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="reportes-subtitulo">
               Analiza el rendimiento y la evolución del entrenamiento.
             </p>
           </div>

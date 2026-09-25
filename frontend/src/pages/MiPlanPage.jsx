@@ -10,20 +10,6 @@ import { pagosApi } from '../services/pagosApi';
 import { formatUsd, formatBs } from '../utils/formatters';
 import { RegistrarPagoModal, ComprobanteModal, EstadoBadge, TIPOS_METODO } from '../components/pagos';
 
-const gridCardsStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-  gap: 'var(--space-4)',
-};
-
-const tablaEstilo = { width: '100%', borderCollapse: 'collapse' };
-const celdaEstilo = {
-  padding: 'var(--space-3)',
-  borderBottom: '1px solid var(--color-border)',
-  textAlign: 'left',
-  fontSize: 'var(--text-sm)',
-};
-
 const formatearFechaISO = (fecha) => {
   if (!fecha) return '-';
   const partes = String(fecha).split('T')[0].split('-');
@@ -136,21 +122,19 @@ export default function MiPlanPage() {
   const suscripcionVencida = suscripcion?.vencida === true;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h2>Mi Plan</h2>
-        <p style={{ color: 'var(--color-text-secondary)' }}>
-          Consulta tu mensualidad y realiza tus pagos
-        </p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h2 className="page-title">Mi Plan</h2>
+          <p className="page-subtitle">Consulta tu mensualidad y realiza tus pagos</p>
+        </div>
       </div>
 
       {error && (
         <Card>
-          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-error)' }}>
-            <p style={{ fontSize: 48, margin: 0 }}>⚠️</p>
-            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
-              {error}
-            </p>
+          <div className="empty-state">
+            <p className="empty-state-icono" aria-hidden="true">⚠️</p>
+            <p className="text-lg text-error text-medium">{error}</p>
           </div>
         </Card>
       )}
@@ -166,14 +150,16 @@ export default function MiPlanPage() {
       ) : (
         <>
           <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <span style={{ fontSize: 32 }}>{suscripcionActiva ? '✅' : suscripcionVencida ? '⏰' : '📭'}</span>
+            <div className="row-between">
+              <div className="row">
+                <span className="icono-mediano" aria-hidden="true">
+                  {suscripcionActiva ? '✅' : suscripcionVencida ? '⏰' : '📭'}
+                </span>
                 <div>
-                  <h3 style={{ margin: 0 }}>
+                  <h3 className="card-titulo card-titulo-md">
                     {suscripcionActiva ? 'Mensualidad activa' : suscripcionVencida ? 'Mensualidad vencida' : 'Sin mensualidad'}
                   </h3>
-                  <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                  <p className="page-subtitle">
                     {suscripcionActiva &&
                       `Plan ${suscripcion.plan || ''} · hasta el ${formatearFechaISO(suscripcion.fechaFin)}`}
                     {suscripcionVencida && (suscripcion.mensaje || `Venció el ${formatearFechaISO(suscripcion.fechaFin)}`)}
@@ -182,11 +168,11 @@ export default function MiPlanPage() {
                 </div>
               </div>
               {suscripcionActiva && (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-success)' }}>
+                <div className="text-center">
+                  <div className="valor-destacado valor-destacado-exito">
                     {suscripcion.diasRestantes}
                   </div>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                  <div className="text-xs text-muted">
                     {suscripcion.diasRestantes === 1 ? 'día restante' : 'días restantes'}
                   </div>
                 </div>
@@ -194,8 +180,8 @@ export default function MiPlanPage() {
             </div>
           </Card>
 
-          <div>
-            <h3>Planes disponibles</h3>
+          <div className="stack">
+            <h3 className="card-titulo card-titulo-md">Planes disponibles</h3>
             {error && planes.length === 0 ? null : planes.length === 0 ? (
               <Card>
                 <EmptyState
@@ -205,41 +191,30 @@ export default function MiPlanPage() {
                 />
               </Card>
             ) : (
-              <div style={gridCardsStyle}>
+              <div className="grid grid-cols-2">
                 {planes.map((plan) => (
                   <Card key={plan.id}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', height: '100%' }}>
+                    <div className="card-body stack w-full">
                       <strong>{plan.nombre}</strong>
                       {plan.ofrecimiento && (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '2px 8px',
-                          borderRadius: '9999px',
-                          fontSize: 'var(--text-xs)',
-                          fontWeight: 600,
-                          background: 'var(--color-info-bg, #d1ecf1)',
-                          color: 'var(--color-info, #0c5460)',
-                          alignSelf: 'flex-start',
-                        }}>
+                        <span className="badge badge-info">
                           {iconoOfrecimiento(plan.ofrecimiento)} {labelOfrecimiento(plan.ofrecimiento)}
                         </span>
                       )}
                       <div>
-                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
+                        <div className="valor-destacado">
                           {formatUsd(plan.montoUsd)}
                         </div>
-                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                        <div className="text-sm text-muted">
                           ≈ {tasaCambio ? formatBs(plan.montoUsd, tasaCambio) : '—'} · {plan.diasVigencia} días
                         </div>
                       </div>
                       {plan.descripcion && (
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0, flexGrow: 1 }}>
+                        <p className="text-sm text-muted flex-1">
                           {plan.descripcion}
                         </p>
                       )}
-                      <Button onClick={() => setPlanAPagar(plan)} disabled={metodos.length === 0}>
+                      <Button className="w-full" onClick={() => setPlanAPagar(plan)} disabled={metodos.length === 0}>
                         Pagar este plan
                       </Button>
                     </div>
@@ -250,66 +225,62 @@ export default function MiPlanPage() {
           </div>
 
           <Card>
-            <h3 style={{ marginTop: 0 }}>Mis pagos</h3>
-            {misPagos.length === 0 ? (
-              <EmptyState
-                icon="🧾"
-                title="Sin pagos registrados"
-                description="Cuando realices un pago aparecerá aquí con su estado."
-              />
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={tablaEstilo}>
-                  <thead>
-                    <tr>
-                      <th style={celdaEstilo}>Fecha</th>
-                      <th style={celdaEstilo}>Plan</th>
-                      <th style={celdaEstilo}>Método</th>
-                      <th style={celdaEstilo}>Monto</th>
-                      <th style={celdaEstilo}>Estado</th>
-                      <th style={celdaEstilo}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {misPagos.map((pago) => (
-                      <tr key={pago.id}>
-                        <td style={celdaEstilo}>{formatearFechaISO(pago.fechaPago)}</td>
-                        <td style={celdaEstilo}>{pago.plan?.nombre || '-'}</td>
-                        <td style={celdaEstilo}>{labelTipo(pago.metodo?.tipo)}</td>
-                        <td style={celdaEstilo}>
-                          {formatUsd(pago.montoUsd)}
-                          <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                            {formatBs(pago.montoUsd, pago.tasaAplicada)}
-                          </span>
-                        </td>
-                        <td style={celdaEstilo}>
-                          <EstadoBadge estado={pago.estado} />
-                          {pago.estado === 'rechazado' && pago.comentarioRechazo && (
-                            <span
-                              style={{
-                                display: 'block',
-                                marginTop: 4,
-                                fontSize: 'var(--text-xs)',
-                                color: 'var(--color-error)',
-                                maxWidth: 200,
-                              }}
-                              title={pago.comentarioRechazo}
-                            >
-                              Motivo: {pago.comentarioRechazo}
-                            </span>
-                          )}
-                        </td>
-                        <td style={celdaEstilo}>
-                          <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
-                            Ver comprobante
-                          </Button>
-                        </td>
+            <div className="card-body stack">
+              <h3 className="card-titulo card-titulo-md">Mis pagos</h3>
+              {misPagos.length === 0 ? (
+                <EmptyState
+                  icon="🧾"
+                  title="Sin pagos registrados"
+                  description="Cuando realices un pago aparecerá aquí con su estado."
+                />
+              ) : (
+                <div className="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>Plan</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {misPagos.map((pago) => (
+                        <tr key={pago.id}>
+                          <td>{formatearFechaISO(pago.fechaPago)}</td>
+                          <td>{pago.plan?.nombre || '-'}</td>
+                          <td>{labelTipo(pago.metodo?.tipo)}</td>
+                          <td>
+                            {formatUsd(pago.montoUsd)}
+                            <span className="tabla-subtexto">
+                              {formatBs(pago.montoUsd, pago.tasaAplicada)}
+                            </span>
+                          </td>
+                          <td>
+                            <EstadoBadge estado={pago.estado} />
+                            {pago.estado === 'rechazado' && pago.comentarioRechazo && (
+                              <span
+                                className="tabla-nota-error"
+                                title={pago.comentarioRechazo}
+                              >
+                                Motivo: {pago.comentarioRechazo}
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
+                              Ver comprobante
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </Card>
 
           <RegistrarPagoModal

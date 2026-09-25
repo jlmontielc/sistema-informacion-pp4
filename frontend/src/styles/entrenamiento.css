@@ -783,3 +783,199 @@
     flex-direction: column;
   }
 }
+
+/* =============================================================
+   Refinamientos responsive (Fase 3 - Lote A)
+   No reemplazan las clases anteriores; solo las complementan.
+   ============================================================= */
+
+/* Tabs usados dentro de una barra de herramientas (sin margen extra) */
+.tabs-inline { margin-bottom: 0; }
+
+/* Separacion interna del placeholder sin imagen del catalogo */
+.catalogo-sidebar-no-img {
+  gap: var(--space-2);
+}
+
+/* Flecha rotada para "Anadir serie" (apunta hacia abajo/plus) */
+.icono-rotado {
+  transform: rotate(90deg);
+}
+
+/* Nombre del cliente en tarjetas de rutina asignada */
+.rutina-cliente-nombre {
+  font-size: var(--text-sm);
+  color: var(--color-primary-600);
+  font-weight: var(--font-medium);
+}
+
+/* ===== Catálogo de ejercicios: layout y responsive ===== */
+.catalogo-contenido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.catalogo-busqueda {
+  flex: 1;
+  max-width: 300px;
+}
+
+.catalogo-panel {
+  display: flex;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.catalogo-listado {
+  flex: 1;
+  min-width: 0;
+}
+
+.catalogo-listado .catalogo-grid {
+  max-height: 450px;
+}
+
+.catalogo-cargando-mas {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.catalogo-cargar-mas {
+  grid-column: 1 / -1;
+  margin-top: var(--space-2);
+}
+
+.catalogo-sentinel {
+  grid-column: 1 / -1;
+  height: 1px;
+}
+
+.catalogo-seleccionados {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.catalogo-seleccionados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* En tablet/movil el panel del catalogo se apila: listado arriba, vista previa abajo */
+@media (max-width: 768px) {
+  .catalogo-panel {
+    flex-direction: column;
+  }
+
+  .catalogo-listado .catalogo-grid {
+    max-height: 320px;
+  }
+}
+
+/* =============================================================
+   Refinamientos (Fase 3 - Lote B)
+   Paneles de resultados IA y formularios de plantillas
+   ============================================================= */
+
+/* ===== Panel informativo del modal de IA (estructura base) ===== */
+.ia-panel {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.ia-panel h4,
+.ia-panel p {
+  margin: 0;
+}
+
+.ia-panel .ia-panel-texto {
+  margin-top: var(--space-2);
+}
+
+.ia-panel-icono {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Variantes semanticas (mismos tonos que .alerta-*) */
+.ia-panel-exito {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #15803d;
+}
+
+.ia-panel-aviso {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #92400e;
+}
+
+.ia-panel-peligro {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #b91c1c;
+}
+
+.ia-panel-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: var(--color-primary-700);
+}
+
+[data-theme="dark"] .ia-panel-exito   { color: #4ade80; }
+[data-theme="dark"] .ia-panel-aviso   { color: #fbbf24; }
+[data-theme="dark"] .ia-panel-peligro { color: #f87171; }
+[data-theme="dark"] .ia-panel-info    { color: var(--color-primary-300); }
+
+/* Lista de alertas de seguridad dentro de un panel IA */
+.ia-lista {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+}
+
+/* ===== Panel de plantilla evaluada / recomendada ===== */
+.ia-plantilla-panel {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  background: var(--color-bg);
+}
+
+.ia-plantilla-panel-activa {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-50);
+}
+
+[data-theme="dark"] .ia-plantilla-panel-activa {
+  background: rgba(59, 130, 246, 0.14);
+}
+
+/* ===== Valor de estadistica con tono de error (ejercicios bloqueados) ===== */
+.rutina-resumen-stat-value-error {
+  color: var(--color-error);
+}
+
+/* ===== Listado con scroll interno (paso "Mis Plantillas") ===== */
+.lista-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 400px;
+  overflow-y: auto;
+}

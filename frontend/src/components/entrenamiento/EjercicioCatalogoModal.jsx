@@ -285,15 +285,14 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Catálogo de Ejercicios" size="xl">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+      <div className="catalogo-contenido">
         <div className="filtros-bar">
           <input
             type="text"
-            className="field-input"
+            className="field-input catalogo-busqueda"
             placeholder="Buscar ejercicio..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{ flex: 1, maxWidth: 300 }}
           />
           <select
             className="field-input"
@@ -305,16 +304,16 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
               <option key={g} value={g}>{g}</option>
             ))}
           </select>
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+          <span className="text-xs text-muted">
             {filtrados.length} resultado{filtrados.length !== 1 ? 's' : ''}
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-4)', minHeight: 0 }}>
+        <div className="catalogo-panel">
           {loading ? (
-            <div style={{ flex: 1 }}><Loading text="Cargando ejercicios..." /></div>
+            <div className="catalogo-listado"><Loading text="Cargando ejercicios..." /></div>
           ) : filtrados.length === 0 ? (
-            <div style={{ flex: 1 }}>
+            <div className="catalogo-listado">
               <EmptyState
                 icon="🔍"
                 title="Sin resultados"
@@ -322,54 +321,46 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
               />
             </div>
           ) : (
-            <div className="catalogo-grid" style={{ flex: 1, maxHeight: 450 }}>
-              {filtrados.map((ej) => {
-                const seleccionado = seleccionIds.has(ej.id);
-                const estaEnPreview = preview?.id === ej.id;
-                return (
-                  <div
-                    key={ej.id}
-                    className={`catalogo-item ${seleccionado ? 'seleccionado' : ''} ${estaEnPreview ? 'catalogo-item-preview' : ''}`}
-                    onClick={() => toggleSeleccion(ej)}
-                    onMouseEnter={() => handlePreview(ej)}
-                  >
-                    <div className="catalogo-item-name">
-                      {seleccionado && '✓ '}{ej.nombreTraducido}
+            <div className="catalogo-listado">
+              <div className="catalogo-grid">
+                {filtrados.map((ej) => {
+                  const seleccionado = seleccionIds.has(ej.id);
+                  const estaEnPreview = preview?.id === ej.id;
+                  return (
+                    <div
+                      key={ej.id}
+                      className={`catalogo-item ${seleccionado ? 'seleccionado' : ''} ${estaEnPreview ? 'catalogo-item-preview' : ''}`}
+                      onClick={() => toggleSeleccion(ej)}
+                      onMouseEnter={() => handlePreview(ej)}
+                    >
+                      <div className="catalogo-item-name">
+                        {seleccionado && '✓ '}{ej.nombreTraducido}
+                      </div>
+                      <div className="catalogo-item-info">
+                        {ej.grupoMuscular && <span>{ej.grupoMuscular}</span>}
+                        {ej.targetTraducido && <span>{ej.targetTraducido}</span>}
+                        {ej.equipoNecesario && <span>{ej.equipoNecesario}</span>}
+                      </div>
                     </div>
-                    <div className="catalogo-item-info">
-                      {ej.grupoMuscular && <span>{ej.grupoMuscular}</span>}
-                      {ej.targetTraducido && <span>{ej.targetTraducido}</span>}
-                      {ej.equipoNecesario && <span>{ej.equipoNecesario}</span>}
-                    </div>
+                  );
+                })}
+                {cargandoMas && (
+                  <div className="catalogo-cargando-mas">
+                    Cargando más ejercicios...
                   </div>
-                );
-              })}
-              {cargandoMas && (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--space-2)',
-                  padding: 'var(--space-3)',
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--color-text-secondary)',
-                }}>
-                  Cargando más ejercicios...
-                </div>
-              )}
-              {!cargandoMas && hayMasPaginas && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={cargarMas}
-                  style={{ gridColumn: '1 / -1', marginTop: 'var(--space-2)' }}
-                >
-                  Cargar mas ({Math.max(totalServer - filtrados.length, 0)} restantes)
-                </button>
-              )}
-              {!cargandoMas && hayMasPaginas && (
-                <div ref={sentinelRef} aria-hidden="true" style={{ gridColumn: '1 / -1', height: 1 }} />
-              )}
+                )}
+                {!cargandoMas && hayMasPaginas && (
+                  <button
+                    className="btn btn-secondary catalogo-cargar-mas"
+                    onClick={cargarMas}
+                  >
+                    Cargar mas ({Math.max(totalServer - filtrados.length, 0)} restantes)
+                  </button>
+                )}
+                {!cargandoMas && hayMasPaginas && (
+                  <div ref={sentinelRef} aria-hidden="true" className="catalogo-sentinel" />
+                )}
+              </div>
             </div>
           )}
 
@@ -386,8 +377,8 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                   />
                 ) : (
                   <div className="catalogo-sidebar-no-img">
-                    <span style={{ fontSize: 48 }}>{GRUPO_EMOJI[preview.grupoMuscular] || '🏋️'}</span>
-                    <span style={{ fontSize: 'var(--text-xs)', marginTop: 'var(--space-2)' }}>Sin imagen</span>
+                    <span className="icono-grande" aria-hidden="true">{GRUPO_EMOJI[preview.grupoMuscular] || '🏋️'}</span>
+                    <span className="text-xs">Sin imagen</span>
                   </div>
                 )}
                 <div className="catalogo-sidebar-info">
@@ -402,8 +393,8 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
               </>
             ) : (
               <div className="catalogo-sidebar-empty">
-                <span style={{ fontSize: 48, opacity: 0.3 }}>🏋️</span>
-                <p style={{ fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
+                <span className="icono-grande" aria-hidden="true">🏋️</span>
+                <p className="text-sm">
                   Pasa el mouse sobre un ejercicio para ver su GIF
                 </p>
               </div>
@@ -412,19 +403,11 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
         </div>
 
         {seleccionLocal.length > 0 && (
-          <div style={{
-            borderTop: '1px solid var(--color-border)',
-            paddingTop: 'var(--space-4)',
-          }}>
-            <p style={{
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--font-semibold)',
-              marginBottom: 'var(--space-3)',
-              color: 'var(--color-text)',
-            }}>
+          <div className="catalogo-seleccionados">
+            <p className="text-sm text-bold">
               Ejercicios seleccionados ({seleccionLocal.length})
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: 200, overflowY: 'auto' }}>
+            <div className="catalogo-seleccionados-lista">
               {seleccionLocal.map((ej, idx) => (
                 <div key={ej.ejercicioId} className="ejercicio-edit-row">
                   <span className="ejercicio-edit-nombre">{traducirNombre(ej.nombre)}</span>
@@ -468,7 +451,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+        <div className="form-acciones">
           <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
           <button
             className="btn btn-primary"

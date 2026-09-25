@@ -20,6 +20,99 @@
   width: var(--sidebar-collapsed-width);
 }
 
+/* ===== Marca (brand) del sidebar ===== */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: var(--header-height);
+}
+
+.sidebar-brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: var(--color-text-sidebar-active);
+}
+
+.sidebar-brand-name {
+  color: var(--color-text-sidebar-active);
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  white-space: nowrap;
+}
+
+/* ===== Navegación del sidebar ===== */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* Área táctil mínima de 44px de alto (accesibilidad móvil) */
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-sidebar);
+  font-size: var(--text-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-sidebar-active);
+}
+
+.sidebar-nav-link.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-text-sidebar-active);
+  font-weight: var(--font-medium);
+}
+
+.sidebar-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Sidebar colapsado (solo escritorio): únicamente iconos ===== */
+.app-sidebar.collapsed .sidebar-brand {
+  justify-content: center;
+  padding: var(--space-4) var(--space-2);
+}
+
+.app-sidebar.collapsed .sidebar-brand-name,
+.app-sidebar.collapsed .sidebar-nav-label {
+  display: none;
+}
+
+.app-sidebar.collapsed .sidebar-nav {
+  padding: var(--space-3) var(--space-2);
+}
+
+.app-sidebar.collapsed .sidebar-nav-link {
+  justify-content: center;
+  padding: var(--space-2);
+}
+
 .app-main {
   flex: 1;
   margin-left: var(--sidebar-width);
@@ -42,8 +135,59 @@
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-6);
-  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  gap: var(--space-2);
+}
+
+/* Título de la sección actual en el header */
+.header-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-fluid-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Espaciador flexible entre el título y las acciones */
+.header-spacer {
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Botón cuadrado del header, área táctil de 44px */
+.header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.header-button:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .header-button:hover {
+  background: var(--color-neutral-700);
+}
+
+/* ===== Backdrop del drawer móvil (solo ≤768px) ===== */
+.sidebar-backdrop {
+  display: none;
 }
 
 .app-content {
@@ -59,13 +203,51 @@
 }
 
 @media (max-width: 768px) {
+  /* En móvil el sidebar es un drawer oculto a la izquierda */
   .app-sidebar {
     transform: translateX(-100%);
     width: var(--sidebar-width);
   }
 
+  /* El drawer móvil ignora el estado colapsado: siempre extendido */
   .app-sidebar.mobile-open {
     transform: translateX(0);
+    width: var(--sidebar-width);
+  }
+
+  /* Anula los estilos del colapsado dentro del drawer móvil */
+  .app-sidebar.mobile-open .sidebar-brand {
+    justify-content: flex-start;
+    padding: var(--space-4) var(--space-5);
+  }
+
+  .app-sidebar.mobile-open .sidebar-brand-name,
+  .app-sidebar.mobile-open .sidebar-nav-label {
+    display: block;
+  }
+
+  .app-sidebar.mobile-open .sidebar-nav {
+    padding: var(--space-3);
+  }
+
+  .app-sidebar.mobile-open .sidebar-nav-link {
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* Backdrop detrás del drawer (z 90) pero sobre el contenido */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: var(--color-bg-overlay);
+    z-index: var(--z-backdrop);
+    animation: aparecer var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  @keyframes aparecer {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .app-main {
@@ -76,7 +258,19 @@
     margin-left: 0;
   }
 
+  .app-header {
+    padding: 0 var(--space-3);
+  }
+
   .app-content {
     padding: var(--space-4);
+  }
+}
+
+/* Título del header oculto solo en pantallas muy angostas, donde los
+   botones de acción ya no dejan espacio útil */
+@media (max-width: 360px) {
+  .header-title {
+    display: none;
   }
 }

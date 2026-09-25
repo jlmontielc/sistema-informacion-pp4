@@ -33,46 +33,26 @@ export default function InstruidoDashboard() {
   const altura = medicion?.altura || user?.altura;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1>Mi Dashboard</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Resumen de tu progreso</p>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h1 className="page-title">Mi Dashboard</h1>
+          <p className="page-subtitle">Resumen de tu progreso</p>
+        </div>
       </div>
 
       {user?.tipo === 'instruido' && user?.perfilMedicoCompleto !== true && (
-        <div style={{
-          padding: 'var(--space-3) var(--space-4)',
-          backgroundColor: 'var(--color-warning-light, #fff3e0)',
-          border: '1px solid var(--color-warning, #ff9800)',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 'var(--space-3)',
-          flexWrap: 'wrap',
-        }}>
-          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-warning, #e65100)' }}>
+        <div className="alerta alerta-warning alerta-entre">
+          <span>
             Completa tu perfil médico para que tu entrenador pueda generar rutinas personalizadas y seguras.
           </span>
-          <Link
-            to="/complete-profile"
-            style={{
-              padding: 'var(--space-1) var(--space-3)',
-              backgroundColor: 'var(--color-warning, #ff9800)',
-              color: '#fff',
-              borderRadius: 'var(--radius-sm)',
-              textDecoration: 'none',
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--font-medium)',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <Link to="/complete-profile" className="btn btn-sm btn-warning">
             Completar perfil
           </Link>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+      <div className="grid grid-cols-2">
         <KpiCard icon="⚖️" label="Peso" value={(medicion?.peso || user?.peso) ? `${medicion?.peso || user?.peso} kg` : '—'} />
         <KpiCard icon="📏" label="Altura" value={altura ? `${altura} m` : '—'} />
       </div>
@@ -80,82 +60,60 @@ export default function InstruidoDashboard() {
       {registrosRecientes?.length > 0 && (
         <>
           <Card header="Historial de Entrenamientos">
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
+            <div className="table-wrapper">
+              <table>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)', width: 32 }}></th>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Fecha</th>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Rutina</th>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Duración</th>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Esfuerzo</th>
-                    <th style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>Observaciones</th>
+                  <tr>
+                    <th className="col-icono"></th>
+                    <th>Fecha</th>
+                    <th>Rutina</th>
+                    <th>Duración</th>
+                    <th>Esfuerzo</th>
+                    <th>Observaciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {registrosRecientes.map((s) => (
                     <Fragment key={s.id}>
                       <tr
+                        className={`tabla-fila-clicable${expandedRow === s.id ? ' tabla-fila-activa' : ''}`}
                         onClick={() => setExpandedRow(expandedRow === s.id ? null : s.id)}
-                        style={{
-                          borderBottom: '1px solid var(--color-border-light)',
-                          cursor: 'pointer',
-                          backgroundColor: expandedRow === s.id ? 'var(--color-bg-secondary, #f8f9fa)' : 'transparent',
-                        }}
                       >
-                        <td style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)', fontSize: 12 }}>
+                        <td className="col-icono text-muted">
                           {expandedRow === s.id ? '▼' : '▶'}
                         </td>
-                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontWeight: 'var(--font-medium)' }}>{s.fecha}</td>
-                        <td style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>{s.rutina_nombre || '—'}</td>
-                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>{s.duracion_minutos ? `${s.duracion_minutos} min` : '—'}</td>
-                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                        <td className="text-medium">{s.fecha}</td>
+                        <td className="text-muted">{s.rutina_nombre || '—'}</td>
+                        <td>{s.duracion_minutos ? `${s.duracion_minutos} min` : '—'}</td>
+                        <td>
                           {s.percepcion_esfuerzo ? (
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              fontWeight: 'var(--font-bold)',
-                              fontSize: 'var(--text-xs)',
-                              background: s.percepcion_esfuerzo >= 7 ? 'var(--color-error-light, #fce4ec)' : s.percepcion_esfuerzo >= 4 ? 'var(--color-warning-light, #fff3e0)' : 'var(--color-success-light, #e8f5e9)',
-                              color: s.percepcion_esfuerzo >= 7 ? 'var(--color-error)' : s.percepcion_esfuerzo >= 4 ? 'var(--color-warning)' : 'var(--color-success)',
-                            }}>
+                            <span
+                              className={`badge ${
+                                s.percepcion_esfuerzo >= 7
+                                  ? 'badge-danger'
+                                  : s.percepcion_esfuerzo >= 4
+                                    ? 'badge-warning'
+                                    : 'badge-success'
+                              }`}
+                            >
                               {s.percepcion_esfuerzo}/10
                             </span>
                           ) : '—'}
                         </td>
-                        <td style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--color-text-secondary)' }}>{s.observaciones || '—'}</td>
+                        <td className="text-muted">{s.observaciones || '—'}</td>
                       </tr>
                       {expandedRow === s.id && s.ejercicios_realizados?.length > 0 && (
                         <tr>
-                          <td colSpan={6} style={{ padding: '0 var(--space-3) var(--space-3)' }}>
-                            <div style={{
-                              marginTop: 'var(--space-2)',
-                              padding: 'var(--space-3)',
-                              backgroundColor: 'var(--color-bg-secondary, #f8f9fa)',
-                              borderRadius: 'var(--radius-md)',
-                              border: '1px solid var(--color-border-light)',
-                            }}>
-                              <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Ejercicios realizados
-                              </p>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                          <td colSpan={6} className="tabla-detalle-celda">
+                            <div className="detalle-panel">
+                              <p className="detalle-titulo">Ejercicios realizados</p>
+                              <div className="stack stack-sm">
                                 {s.ejercicios_realizados.map((ej, idx) => (
-                                  <div key={idx} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 'var(--space-3)',
-                                    padding: 'var(--space-2) var(--space-3)',
-                                    backgroundColor: '#fff',
-                                    borderRadius: 'var(--radius-sm)',
-                                    border: '1px solid var(--color-border-light)',
-                                    fontSize: 'var(--text-sm)',
-                                    flexWrap: 'wrap',
-                                  }}>
-                                    <span style={{ fontWeight: 'var(--font-bold)', minWidth: 180 }}>{ej.nombre}</span>
-                                    <span style={{ color: 'var(--color-text-secondary)' }}>{ej.series_realizadas}×{ej.repeticiones}</span>
-                                    {ej.carga_kg != null && <span style={{ color: 'var(--color-primary)' }}>{ej.carga_kg} kg</span>}
-                                    {ej.notas && <span style={{ color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>- {ej.notas}</span>}
+                                  <div key={idx} className="detalle-item">
+                                    <span className="detalle-item-nombre">{ej.nombre}</span>
+                                    <span className="text-muted">{ej.series_realizadas}×{ej.repeticiones}</span>
+                                    {ej.carga_kg != null && <span className="detalle-item-carga">{ej.carga_kg} kg</span>}
+                                    {ej.notas && <span className="detalle-item-nota">- {ej.notas}</span>}
                                   </div>
                                 ))}
                               </div>
@@ -184,18 +142,20 @@ export default function InstruidoDashboard() {
         </>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+      <div className="grid grid-cols-2">
         {rutinaActiva ? (
           <Card header="Mi Rutina">
-            <p style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>{rutinaActiva.nombre}</p>
-            <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-              Tipo: {rutinaActiva.tipo} · {rutinaActiva.frecuencia_semanal}x/semana
-            </p>
-            {rutinaActiva.fecha_inicio && (
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)' }}>
-                {rutinaActiva.fecha_inicio} → {rutinaActiva.fecha_fin || 'Sin fin'}
+            <div className="stack">
+              <p className="text-lg text-bold">{rutinaActiva.nombre}</p>
+              <p className="text-muted">
+                Tipo: {rutinaActiva.tipo} · {rutinaActiva.frecuencia_semanal}x/semana
               </p>
-            )}
+              {rutinaActiva.fecha_inicio && (
+                <p className="text-sm text-muted">
+                  {rutinaActiva.fecha_inicio} → {rutinaActiva.fecha_fin || 'Sin fin'}
+                </p>
+              )}
+            </div>
           </Card>
         ) : (
           <Card>
@@ -205,11 +165,13 @@ export default function InstruidoDashboard() {
 
         {dietaActiva ? (
           <Card header="Mi Dieta">
-            <p style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>{dietaActiva.objetivo_calorico} kcal/dia</p>
-            <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-3)', flexWrap: 'wrap' }}>
-              <MacroBadge label="Proteinas" value={dietaActiva.proteinas_gramos} unit="g" color="var(--color-error)" />
-              <MacroBadge label="Carbos" value={dietaActiva.carbohidratos_gramos} unit="g" color="var(--color-warning)" />
-              <MacroBadge label="Grasas" value={dietaActiva.grasas_gramos} unit="g" color="var(--color-success)" />
+            <div className="stack">
+              <p className="text-lg text-bold">{dietaActiva.objetivo_calorico} kcal/dia</p>
+              <div className="row">
+                <MacroBadge label="Proteinas" value={dietaActiva.proteinas_gramos} unit="g" color="var(--color-error)" />
+                <MacroBadge label="Carbos" value={dietaActiva.carbohidratos_gramos} unit="g" color="var(--color-warning)" />
+                <MacroBadge label="Grasas" value={dietaActiva.grasas_gramos} unit="g" color="var(--color-success)" />
+              </div>
             </div>
           </Card>
         ) : (
@@ -224,23 +186,21 @@ export default function InstruidoDashboard() {
 
 function KpiCard({ icon, label, value }) {
   return (
-    <Card>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-5)' }}>
-        <span style={{ fontSize: 28 }}>{icon}</span>
-        <div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>{label}</p>
-          <p style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>{value}</p>
-        </div>
+    <div className="stat-card">
+      <span className="stat-card-icon" aria-hidden="true">{icon}</span>
+      <div>
+        <p className="stat-card-label">{label}</p>
+        <p className="stat-card-value">{value}</p>
       </div>
-    </Card>
+    </div>
   );
 }
 
 function MacroBadge({ label, value, unit, color }) {
   return (
-    <div style={{ textAlign: 'center' }}>
-      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>{label}</p>
-      <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color }}>
+    <div className="macro-dato">
+      <p className="dato-label">{label}</p>
+      <p className="macro-dato-valor" style={color ? { color } : undefined}>
         {value != null ? `${value}${unit}` : '—'}
       </p>
     </div>

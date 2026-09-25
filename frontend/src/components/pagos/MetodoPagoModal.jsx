@@ -112,7 +112,7 @@ export function MetodoPagoModal({ isOpen, onClose, metodo, onGuardado }) {
       title={editando ? 'Editar método de pago' : 'Nuevo método de pago'}
     >
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="stack">
           <div className="field">
             <label className="field-label" htmlFor="tipo">
               Tipo
@@ -142,20 +142,11 @@ export function MetodoPagoModal({ isOpen, onClose, metodo, onGuardado }) {
             />
           ))}
           {error && (
-            <div
-              style={{
-                padding: 'var(--space-3) var(--space-4)',
-                backgroundColor: 'var(--color-error)',
-                color: 'var(--color-text-inverse)',
-                borderRadius: 'var(--radius-md)',
-                fontSize: 'var(--text-sm)',
-                textAlign: 'center',
-              }}
-            >
+            <div className="alerta alerta-error text-center">
               {error}
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={onClose} disabled={guardando}>
               Cancelar
             </Button>

@@ -30,20 +30,6 @@ const ESTADOS_FILTRO = [
   { value: 'rechazado', label: 'Rechazados' },
 ];
 
-const gridCardsStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-  gap: 'var(--space-4)',
-};
-
-const tablaEstilo = { width: '100%', borderCollapse: 'collapse' };
-const celdaEstilo = {
-  padding: 'var(--space-3)',
-  borderBottom: '1px solid var(--color-border)',
-  textAlign: 'left',
-  fontSize: 'var(--text-sm)',
-};
-
 const formatearFechaISO = (fecha) => {
   if (!fecha) return '-';
   const partes = String(fecha).split('T')[0].split('-');
@@ -216,15 +202,17 @@ export default function PlanesPage() {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <h2>Planes y Mensualidades</h2>
+      <div className="page">
+        <div className="page-header">
+          <div className="page-header-text">
+            <h2 className="page-title">Planes y Mensualidades</h2>
+          </div>
+        </div>
         <Card>
-          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--color-error)' }}>
-            <p style={{ fontSize: 48, margin: 0 }}>⚠️</p>
-            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
-              {error}
-            </p>
-            <Button onClick={cargarDatos} style={{ marginTop: 'var(--space-4)' }}>
+          <div className="empty-state">
+            <p className="empty-state-icono" aria-hidden="true">⚠️</p>
+            <p className="text-lg text-medium text-error">{error}</p>
+            <Button onClick={cargarDatos}>
               Reintentar
             </Button>
           </div>
@@ -234,28 +222,30 @@ export default function PlanesPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-        <div>
-          <h2>Planes y Mensualidades</h2>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h2 className="page-title">Planes y Mensualidades</h2>
+          <p className="page-subtitle">
             Define tus planes, métodos de pago y verifica los pagos de tus clientes
           </p>
         </div>
         {(tab === 'planes' || tab === 'metodos') && (
-          <Button
-            onClick={() => {
-              if (tab === 'planes') {
-                setPlanEdit(null);
-                setFormPlanOpen(true);
-              } else {
-                setMetodoEdit(null);
-                setFormMetodoOpen(true);
-              }
-            }}
-          >
-            {tab === 'planes' ? '+ Nuevo Plan' : '+ Nuevo Método'}
-          </Button>
+          <div className="page-actions">
+            <Button
+              onClick={() => {
+                if (tab === 'planes') {
+                  setPlanEdit(null);
+                  setFormPlanOpen(true);
+                } else {
+                  setMetodoEdit(null);
+                  setFormMetodoOpen(true);
+                }
+              }}
+            >
+              {tab === 'planes' ? '+ Nuevo Plan' : '+ Nuevo Método'}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -294,43 +284,33 @@ export default function PlanesPage() {
             />
           </Card>
         ) : (
-          <div style={gridCardsStyle}>
+          <div className="grid-auto">
             {planes.map((plan) => (
               <Card key={plan.id}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
+                <div className="stack">
+                  <div className="row-between">
                     <strong>{plan.nombre}</strong>
-                    <span
-                      style={{
-                        padding: '2px 10px',
-                        borderRadius: 999,
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 'var(--font-medium)',
-                        color: '#fff',
-                        backgroundColor: plan.activo ? 'var(--color-success)' : 'var(--color-neutral-400)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                    <span className={`badge ${plan.activo ? 'badge-success' : 'badge-neutral'}`}>
                       {plan.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                   <div>
-                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
+                    <div className="valor-destacado">
                       {formatUsd(plan.montoUsd)}
-                      <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginLeft: 'var(--space-2)' }}>
+                      <span className="text-sm text-muted ml-sm">
                         / mes aprox.
                       </span>
                     </div>
-                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                    <div className="text-sm text-muted">
                       ≈ {formatBs(plan.montoUsd, tasaCambio)} · {plan.diasVigencia} días de vigencia
                     </div>
                   </div>
                   {plan.descripcion && (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                    <p className="text-sm text-muted">
                       {plan.descripcion}
                     </p>
                   )}
-                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <div className="row">
                     <Button variant="secondary" size="sm" onClick={() => { setPlanEdit(plan); setFormPlanOpen(true); }}>
                       Editar
                     </Button>
@@ -371,28 +351,19 @@ export default function PlanesPage() {
             />
           </Card>
         ) : (
-          <div style={gridCardsStyle}>
+          <div className="grid-auto">
             {metodos.map((metodo) => (
               <Card key={metodo.id}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div className="stack">
+                  <div className="row-between">
                     <strong>{labelTipo(metodo.tipo)}</strong>
-                    <span
-                      style={{
-                        padding: '2px 10px',
-                        borderRadius: 999,
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 'var(--font-medium)',
-                        color: '#fff',
-                        backgroundColor: metodo.activo ? 'var(--color-success)' : 'var(--color-neutral-400)',
-                      }}
-                    >
+                    <span className={`badge ${metodo.activo ? 'badge-success' : 'badge-neutral'}`}>
                       {metodo.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                   <DatosMetodo datos={metodo.datos} />
                   {metodo.activo && (
-                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <div className="row">
                       <Button variant="secondary" size="sm" onClick={() => { setMetodoEdit(metodo); setFormMetodoOpen(true); }}>
                         Editar
                       </Button>
@@ -409,16 +380,16 @@ export default function PlanesPage() {
       )}
 
       {tab === 'tasa' && (
-        <Card style={{ maxWidth: 480 }}>
+        <Card className="form-estrecho">
           <form onSubmit={handleGuardarTasa}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div className="stack">
               <div>
-                <h3 style={{ margin: 0 }}>Tasa de cambio ($ → Bs)</h3>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+                <h3 className="card-titulo card-titulo-md">Tasa de cambio ($ → Bs)</h3>
+                <p className="text-sm text-muted">
                   Bolívares por cada 1 USD. Se usa para calcular los montos en Bs de tus planes y pagos.
                 </p>
               </div>
-              <div style={{ fontSize: 'var(--text-lg)' }}>
+              <div className="text-lg">
                 Tasa actual:{' '}
                 <strong>{tasaCambio !== null ? formatBs(1, tasaCambio).replace('Bs ', '') : '-'} Bs/USD</strong>
               </div>
@@ -438,30 +409,12 @@ export default function PlanesPage() {
                 required
               />
               {mensajeTasa && (
-                <div
-                  style={{
-                    padding: 'var(--space-3) var(--space-4)',
-                    backgroundColor: 'var(--color-success)',
-                    color: 'var(--color-text-inverse)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                    textAlign: 'center',
-                  }}
-                >
+                <div className="alerta alerta-success text-center">
                   {mensajeTasa}
                 </div>
               )}
               {errorTasa && (
-                <div
-                  style={{
-                    padding: 'var(--space-3) var(--space-4)',
-                    backgroundColor: 'var(--color-error)',
-                    color: 'var(--color-text-inverse)',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: 'var(--text-sm)',
-                    textAlign: 'center',
-                  }}
-                >
+                <div className="alerta alerta-error text-center">
                   {errorTasa}
                 </div>
               )}
@@ -477,11 +430,10 @@ export default function PlanesPage() {
 
       {tab === 'pagos' && (
         <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-            <h3 style={{ margin: 0 }}>Historial de pagos</h3>
+          <div className="toolbar row-between">
+            <h3 className="card-titulo card-titulo-md">Historial de pagos</h3>
             <select
-              className="field-input"
-              style={{ width: 'auto' }}
+              className="field-input select-filtro"
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
               aria-label="Filtrar por estado"
@@ -509,42 +461,42 @@ export default function PlanesPage() {
               }
             />
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={tablaEstilo}>
+            <div className="table-wrapper">
+              <table>
                 <thead>
                   <tr>
-                    <th style={celdaEstilo}>Fecha</th>
-                    <th style={celdaEstilo}>Cliente</th>
-                    <th style={celdaEstilo}>Plan</th>
-                    <th style={celdaEstilo}>Monto</th>
-                    <th style={celdaEstilo}>Referencia</th>
-                    <th style={celdaEstilo}>Estado</th>
-                    <th style={celdaEstilo}>Acciones</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Plan</th>
+                    <th>Monto</th>
+                    <th>Referencia</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historial.map((pago) => (
                     <tr key={pago.id}>
-                      <td style={celdaEstilo}>{formatearFechaISO(pago.fechaPago)}</td>
-                      <td style={celdaEstilo}>{pago.Instruido?.nombre || '-'}</td>
-                      <td style={celdaEstilo}>{pago.plan?.nombre || '-'}</td>
-                      <td style={celdaEstilo}>
+                      <td>{formatearFechaISO(pago.fechaPago)}</td>
+                      <td>{pago.Instruido?.nombre || '-'}</td>
+                      <td>{pago.plan?.nombre || '-'}</td>
+                      <td>
                         {formatUsd(pago.montoUsd)}
-                        <span style={{ display: 'block', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                        <span className="tabla-subtexto">
                           {formatBs(pago.montoUsd, pago.tasaAplicada)}
                         </span>
                       </td>
-                      <td style={celdaEstilo}>{pago.referencia}</td>
-                      <td style={celdaEstilo}>
+                      <td>{pago.referencia}</td>
+                      <td>
                         <EstadoBadge estado={pago.estado} />
                         {pago.estado === 'rechazado' && pago.comentarioRechazo && (
-                          <span style={{ display: 'block', marginTop: 4, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', maxWidth: 180 }}>
+                          <span className="tabla-subtexto tabla-subtexto-estrecha">
                             {pago.comentarioRechazo}
                           </span>
                         )}
                       </td>
-                      <td style={celdaEstilo}>
-                        <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap' }}>
+                      <td>
+                        <div className="row row-gap-sm">
                           <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
                             Ver
                           </Button>
@@ -598,8 +550,8 @@ export default function PlanesPage() {
       />
 
       <Modal isOpen={rechazarPago !== null} onClose={() => setRechazarPago(null)} title="Rechazar pago">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+        <div className="stack">
+          <p className="text-sm text-muted">
             Pago de <strong>{rechazarPago?.Instruido?.nombre}</strong> por{' '}
             <strong>{formatUsd(rechazarPago?.montoUsd)}</strong>. El cliente verá el motivo del rechazo.
           </p>
@@ -610,7 +562,7 @@ export default function PlanesPage() {
             <textarea
               id="comentarioRechazo"
               name="comentarioRechazo"
-              className="field-input"
+              className="field-input field-textarea"
               rows={3}
               maxLength={255}
               value={comentarioRechazo}
@@ -618,7 +570,7 @@ export default function PlanesPage() {
               placeholder="Ej. La referencia no corresponde al monto indicado"
             />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+          <div className="form-acciones">
             <Button variant="secondary" onClick={() => setRechazarPago(null)} disabled={procesandoId !== null}>
               Cancelar
             </Button>

@@ -28,6 +28,12 @@
   gap: var(--space-1);
 }
 
+.reportes-subtitulo {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
 .reportes-subtitulo-instruido {
   display: inline-flex;
   align-items: center;

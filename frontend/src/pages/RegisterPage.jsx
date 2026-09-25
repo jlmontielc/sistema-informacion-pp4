@@ -95,201 +95,184 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '80vh',
-      padding: 'var(--space-6)',
-    }}>
-      <Card style={{ width: '100%', maxWidth: 480 }}>
-        <div style={{ padding: 'var(--space-8)' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>Crear Cuenta</h1>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-              Regístrate para empezar a usar el sistema
-            </p>
-          </div>
-
-          {error && (
-            <div style={{
-              padding: 'var(--space-3) var(--space-4)',
-              marginBottom: 'var(--space-6)',
-              backgroundColor: 'var(--color-error)',
-              color: 'var(--color-text-inverse)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-              textAlign: 'center',
-            }}>
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-            <Input
-              label="Nombre completo"
-              name="nombre"
-              placeholder="Juan Pérez"
-              value={form.nombre}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              label="Email"
-              name="email"
-              type="email"
-              placeholder="tu@email.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              label="Contraseña"
-              name="contrasena"
-              type="password"
-              placeholder="Mínimo 8 caracteres"
-              value={form.contrasena}
-              onChange={handleChange}
-              minLength={8}
-              required
-            />
-            <Input
-              label="Confirmar contraseña"
-              name="confirmarContrasena"
-              type="password"
-              placeholder="Repite tu contraseña"
-              value={form.confirmarContrasena}
-              onChange={handleChange}
-              minLength={8}
-              required
-            />
-
-            <Input
-              label="Edad"
-              name="edad"
-              type="number"
-              min={1}
-              max={120}
-              placeholder="25"
-              value={form.edad}
-              onChange={handleChange}
-              required
-            />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-              <Input
-                label="Peso (kg)"
-                name="peso"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="70.5"
-                value={form.peso}
-                onChange={handleChange}
-                required
-              />
-              <Input
-                label="Altura (m)"
-                name="altura"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="1.75"
-                value={form.altura}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="field">
-              <label className="field-label" htmlFor="sexo">Sexo</label>
-              <select
-                id="sexo"
-                name="sexo"
-                className="field-input"
-                value={form.sexo}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar...</option>
-                {OPCIONES_SEXO.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label className="field-label" htmlFor="nivelActividad">Nivel de actividad</label>
-              <select
-                id="nivelActividad"
-                name="nivelActividad"
-                className="field-input"
-                value={form.nivelActividad}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar...</option>
-                {OPCIONES_NIVEL.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="field-label" htmlFor="propositoEntrenamiento">Propósito de entrenamiento</label>
-              <select
-                id="propositoEntrenamiento"
-                name="propositoEntrenamiento"
-                className="field-input"
-                value={form.propositoEntrenamiento}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Seleccionar...</option>
-                {OPCIONES_PROPOSTO.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="field-label" htmlFor="nivelExperiencia">Nivel de experiencia</label>
-              <select
-                id="nivelExperiencia"
-                name="nivelExperiencia"
-                className="field-input"
-                value={form.nivelExperiencia}
-                onChange={handleChange}
-              >
-                <option value="">Seleccionar...</option>
-                {NIVELES_EXPERIENCIA.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="field-label">Días disponibles para entrenar</label>
-              <DiaSelector seleccionados={diasSemana} onToggle={toggleDia} />
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-                Has seleccionado {diasSemana.length} {diasSemana.length === 1 ? 'día' : 'días'}
+    <div className="contenedor-centrado">
+      <Card className="form-estrecho form-estrecho-md">
+        <Card.Body>
+          <div className="stack stack-md">
+            <div className="stack stack-sm text-center">
+              <h1 className="page-title">Crear Cuenta</h1>
+              <p className="page-subtitle">
+                Regístrate para empezar a usar el sistema
               </p>
             </div>
 
-            <Button type="submit" loading={loading} style={{ marginTop: 'var(--space-2)' }}>
-              Crear Cuenta
-            </Button>
-          </form>
+            {error && (
+              <div className="alerta alerta-error text-center" role="alert">
+                {error}
+              </div>
+            )}
 
-          <p style={{
-            textAlign: 'center',
-            marginTop: 'var(--space-6)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--color-text-secondary)',
-          }}>
-            ¿Ya tienes cuenta?{' '}
-            <Link to="/login" style={{ color: 'var(--color-primary-500)', textDecoration: 'none' }}>
-              Inicia sesión
-            </Link>
-          </p>
-        </div>
+            <form onSubmit={handleSubmit} className="stack stack-md">
+              <Input
+                label="Nombre completo"
+                name="nombre"
+                placeholder="Juan Pérez"
+                value={form.nombre}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Email"
+                name="email"
+                type="email"
+                placeholder="tu@email.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Contraseña"
+                name="contrasena"
+                type="password"
+                placeholder="Mínimo 8 caracteres"
+                value={form.contrasena}
+                onChange={handleChange}
+                minLength={8}
+                required
+              />
+              <Input
+                label="Confirmar contraseña"
+                name="confirmarContrasena"
+                type="password"
+                placeholder="Repite tu contraseña"
+                value={form.confirmarContrasena}
+                onChange={handleChange}
+                minLength={8}
+                required
+              />
+
+              <Input
+                label="Edad"
+                name="edad"
+                type="number"
+                min={1}
+                max={120}
+                placeholder="25"
+                value={form.edad}
+                onChange={handleChange}
+                required
+              />
+              <div className="grid grid-cols-2">
+                <Input
+                  label="Peso (kg)"
+                  name="peso"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="70.5"
+                  value={form.peso}
+                  onChange={handleChange}
+                  required
+                />
+                <Input
+                  label="Altura (m)"
+                  name="altura"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="1.75"
+                  value={form.altura}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="sexo">Sexo</label>
+                <select
+                  id="sexo"
+                  name="sexo"
+                  className="field-input"
+                  value={form.sexo}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar...</option>
+                  {OPCIONES_SEXO.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="nivelActividad">Nivel de actividad</label>
+                <select
+                  id="nivelActividad"
+                  name="nivelActividad"
+                  className="field-input"
+                  value={form.nivelActividad}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar...</option>
+                  {OPCIONES_NIVEL.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label className="field-label" htmlFor="propositoEntrenamiento">Propósito de entrenamiento</label>
+                <select
+                  id="propositoEntrenamiento"
+                  name="propositoEntrenamiento"
+                  className="field-input"
+                  value={form.propositoEntrenamiento}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccionar...</option>
+                  {OPCIONES_PROPOSTO.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label className="field-label" htmlFor="nivelExperiencia">Nivel de experiencia</label>
+                <select
+                  id="nivelExperiencia"
+                  name="nivelExperiencia"
+                  className="field-input"
+                  value={form.nivelExperiencia}
+                  onChange={handleChange}
+                >
+                  <option value="">Seleccionar...</option>
+                  {NIVELES_EXPERIENCIA.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label className="field-label">Días disponibles para entrenar</label>
+                <DiaSelector seleccionados={diasSemana} onToggle={toggleDia} />
+                <p className="text-xs text-muted mt-sm">
+                  Has seleccionado {diasSemana.length} {diasSemana.length === 1 ? 'día' : 'días'}
+                </p>
+              </div>
+
+              <Button type="submit" loading={loading} className="w-full">
+                Crear Cuenta
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" className="enlace-sin-subrayado text-primario">
+                Inicia sesión
+              </Link>
+            </p>
+          </div>
+        </Card.Body>
       </Card>
     </div>
   );

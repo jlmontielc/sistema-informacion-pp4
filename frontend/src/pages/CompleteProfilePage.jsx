@@ -82,69 +82,46 @@ export default function CompleteProfilePage() {
   if (cargando) return <Loading text="Cargando..." />;
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '80vh',
-      padding: 'var(--space-6)',
-    }}>
-      <Card style={{ width: '100%', maxWidth: 600 }}>
-        <div style={{ padding: 'var(--space-8)' }}>
-          <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-            <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)' }}>Datos Médicos</h1>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+    <div className="contenedor-centrado">
+      <Card className="form-estrecho">
+        <div className="card-body stack-md">
+          <div className="text-center stack-sm">
+            <h1 className="page-title">Datos Médicos</h1>
+            <p className="page-subtitle">
               Completa tu perfil médico para que podamos generar rutinas seguras y personalizadas.
               Separa los valores con coma.
             </p>
           </div>
 
           {perfilMedicoCompleto && (
-            <div style={{
-              padding: 'var(--space-3) var(--space-4)',
-              marginBottom: 'var(--space-6)',
-              backgroundColor: 'var(--color-success)',
-              color: 'var(--color-text-inverse)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-              textAlign: 'center',
-            }}>
+            <div className="alerta alerta-success text-center">
               Perfil médico ya registrado. Puedes actualizarlo si es necesario.
             </div>
           )}
 
           {error && (
-            <div style={{
-              padding: 'var(--space-3) var(--space-4)',
-              marginBottom: 'var(--space-6)',
-              backgroundColor: 'var(--color-error)',
-              color: 'var(--color-text-inverse)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-              textAlign: 'center',
-            }}>
+            <div className="alerta alerta-error text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+          <form onSubmit={handleSubmit} className="stack">
             {CAMPOS_MEDICOS.map(({ name, label, placeholder }) => (
               <div className="field" key={name}>
                 <label className="field-label" htmlFor={name}>{label}</label>
                 <textarea
                   id={name}
                   name={name}
-                  className="field-input"
+                  className="field-input field-textarea"
                   placeholder={placeholder}
                   value={form[name] || ''}
                   onChange={handleChange}
                   rows={3}
-                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
                 />
               </div>
             ))}
 
-            <Button type="submit" loading={guardando} style={{ marginTop: 'var(--space-2)' }}>
+            <Button type="submit" loading={guardando} className="w-full">
               Guardar y continuar
             </Button>
           </form>

@@ -49,22 +49,9 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
   };
 
   return (
-    <div style={{
-      marginTop: 'var(--space-4)',
-      borderTop: '1px solid var(--color-border-light)',
-      paddingTop: 'var(--space-4)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 'var(--space-4)',
-    }}>
+    <div className="seccion-dividida stack">
       {explicacion && (
-        <div style={{
-          padding: 'var(--space-3)',
-          background: 'var(--color-neutral-50)',
-          borderRadius: 'var(--radius-md)',
-          fontSize: 'var(--text-sm)',
-          color: 'var(--color-text-secondary)',
-        }}>
+        <div className="nota-informativa">
           <strong>Explicacion IA:</strong> {explicacion}
         </div>
       )}
@@ -80,7 +67,7 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
         </div>
         {totalEjerciciosBloqueados > 0 && (
           <div className="rutina-resumen-stat">
-            <div className="rutina-resumen-stat-value" style={{ color: '#991b1b' }}>{totalEjerciciosBloqueados}</div>
+            <div className="rutina-resumen-stat-value rutina-resumen-stat-value-error">{totalEjerciciosBloqueados}</div>
             <div className="rutina-resumen-stat-label">ej. bloqueados</div>
           </div>
         )}
@@ -93,53 +80,33 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
       </div>
 
       {plantillas.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
+        <div className="stack stack-sm">
+          <span className="text-sm text-medium">
             Plantillas evaluadas ({plantillas.length}):
           </span>
           {plantillas.map((p, i) => (
-            <div key={p.plantilla_id || i} style={{
-              padding: 'var(--space-3)',
-              background: i === 0 ? '#f0f9ff' : 'var(--color-neutral-50)',
-              border: i === 0 ? '1px solid #bae6fd' : '1px solid var(--color-border-light)',
-              borderRadius: 'var(--radius-md)',
-              fontSize: 'var(--text-sm)',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ margin: 0, fontWeight: 'var(--font-medium)' }}>
+            <div key={p.plantilla_id || i} className={`ia-plantilla-panel ${i === 0 ? 'ia-plantilla-panel-activa' : ''}`}>
+              <div className="row-between">
+                <p className="text-medium">
                   {i + 1}. {p.nombre}
                 </p>
-                <span style={{
-                  padding: 'var(--space-1) var(--space-2)',
-                  borderRadius: 'var(--radius-full)',
-                  background: i === 0 ? '#dcfce7' : '#f3f4f6',
-                  color: i === 0 ? '#166534' : '#6b7280',
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 'var(--font-medium)',
-                }}>
+                <span className={`badge ${i === 0 ? 'badge-success' : 'badge-neutral'}`}>
                   {Math.round(p.score * 100)}%
                 </span>
               </div>
-              <div style={{
-                marginTop: 'var(--space-1)',
-                display: 'flex',
-                gap: 'var(--space-2)',
-                flexWrap: 'wrap',
-                fontSize: 'var(--text-xs)',
-                color: 'var(--color-text-secondary)',
-              }}>
+              <div className="tabla-subtexto row row-gap-sm">
                 {p.tipo && <span>{TIPO_LABELS[p.tipo] || p.tipo}</span>}
                 {p.nivel_dificultad && <span>· {NIVEL_LABELS[p.nivel_dificultad] || p.nivel_dificultad}</span>}
                 {(p.dias_semana || p.frecuencia_semanal) && <span>· {p.dias_semana || p.frecuencia_semanal} días/semana</span>}
                 {p.objetivo && <span>· {OBJETIVO_LABELS[p.objetivo] || p.objetivo}</span>}
               </div>
               {p.explicacion && (
-                <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                <p className="tabla-subtexto">
                   {p.explicacion}
                 </p>
               )}
               {p.ejercicios_bloqueados_count > 0 && (
-                <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--text-xs)', color: '#991b1b' }}>
+                <p className="tabla-subtexto text-error">
                   {p.ejercicios_bloqueados_count} ejercicio(s) bloqueado(s) por restricciones médicas
                 </p>
               )}
@@ -148,48 +115,42 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
         </div>
       )}
 
-      <div style={{
-        borderTop: '1px solid var(--color-border-light)',
-        paddingTop: 'var(--space-4)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--space-3)',
-      }}>
+      <div className="seccion-dividida stack">
         <div className="field">
           <label className="field-label">Observaciones (opcional)</label>
           <textarea
-            className="field-input"
+            className="field-input field-textarea"
             rows={2}
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
             placeholder="Notas sobre la decision..."
-            style={{ resize: 'vertical' }}
             disabled={procesando}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          <button
-            className={`btn btn-sm ${decision === 'aprobada' ? 'btn-success' : 'btn-ghost'}`}
-            onClick={() => handleDecision('aprobada')}
-            disabled={procesando}
-          >
-            Aprobar
-          </button>
-          <button
-            className={`btn btn-sm ${decision === 'rechazada' ? 'btn-danger' : 'btn-ghost'}`}
-            onClick={() => handleDecision('rechazada')}
-            disabled={procesando}
-          >
-            Rechazar
-          </button>
+        <div className="row-between">
+          <div className="row">
+            <button
+              className={`btn btn-sm ${decision === 'aprobada' ? 'btn-success' : 'btn-ghost'}`}
+              onClick={() => handleDecision('aprobada')}
+              disabled={procesando}
+            >
+              Aprobar
+            </button>
+            <button
+              className={`btn btn-sm ${decision === 'rechazada' ? 'btn-danger' : 'btn-ghost'}`}
+              onClick={() => handleDecision('rechazada')}
+              disabled={procesando}
+            >
+              Rechazar
+            </button>
+          </div>
           {decision && (
             <Button
               size="sm"
               variant={decision === 'aprobada' ? 'success' : 'danger'}
               onClick={handleConfirmar}
               loading={procesando}
-              style={{ marginLeft: 'auto' }}
             >
               Confirmar {decision === 'aprobada' ? 'Aprobacion' : 'Rechazo'}
             </Button>

@@ -84,21 +84,17 @@ export function GestionRutinasView() {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div>
-          <h2>{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
+      <div className="page">
+        <div className="page-header">
+          <div className="page-header-text">
+            <h2 className="page-title">{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
+          </div>
         </div>
         <Card>
-          <div style={{
-            padding: 'var(--space-6)',
-            textAlign: 'center',
-            color: 'var(--color-error)',
-          }}>
-            <p style={{ fontSize: 48, margin: 0 }}>⚠️</p>
-            <p style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-3)' }}>
-              {error}
-            </p>
-            <Button onClick={cargarDatos} style={{ marginTop: 'var(--space-4)' }}>
+          <div className="empty-state">
+            <p className="empty-state-icono" aria-hidden="true">⚠️</p>
+            <p className="text-lg text-error text-medium">{error}</p>
+            <Button onClick={cargarDatos}>
               Reintentar
             </Button>
           </div>
@@ -108,19 +104,21 @@ export function GestionRutinasView() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2>{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
+    <div className="page">
+      <div className="page-header">
+        <div className="page-header-text">
+          <h2 className="page-title">{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
+          <p className="page-subtitle">
             {isAdmin
               ? 'Administra plantillas y rutinas asignadas a todos los clientes'
               : 'Crea plantillas y asigna rutinas a tus clientes'}
           </p>
         </div>
-        <Button onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}>
-          + Crear Plantilla
-        </Button>
+        <div className="page-actions">
+          <Button onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}>
+            + Crear Plantilla
+          </Button>
+        </div>
       </div>
 
       <div className="tabs-container">
@@ -162,19 +160,19 @@ export function GestionRutinasView() {
             <div className="rutinas-grid">
               {plantillas.map((p) => (
                 <Card key={p.id}>
-                  <div style={{ padding: 'var(--space-5)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
-                      <h3 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>{p.nombre}</h3>
+                  <div className="card-body stack">
+                    <div className="row-between">
+                      <h3 className="card-titulo card-titulo-md">{p.nombre}</h3>
                       <span className={`rutina-tipo-badge ${p.tipo}`}>
                         {TIPO_LABELS[p.tipo] || p.tipo}
                       </span>
                     </div>
                     {p.descripcion && (
-                      <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-3)' }}>
+                      <p className="text-sm text-muted">
                         {p.descripcion}
                       </p>
                     )}
-                    <div className="rutina-resumen-stats" style={{ marginTop: 'var(--space-3)' }}>
+                    <div className="rutina-resumen-stats">
                       <div className="rutina-resumen-stat">
                         <div className="rutina-resumen-stat-value">{p.frecuenciaSemanal || '?'}</div>
                         <div className="rutina-resumen-stat-label">x/semana</div>
@@ -190,7 +188,7 @@ export function GestionRutinasView() {
                         <div className="rutina-resumen-stat-label">ejercicios</div>
                       </div>
                     </div>
-                    <div style={{ marginTop: 'var(--space-3)' }}>
+                    <div>
                       <DiaSelector
                         seleccionados={p.diasSemana ? Object.keys(p.diasSemana).map(Number) : []}
                         modo="vista"
@@ -210,8 +208,7 @@ export function GestionRutinasView() {
                         Asignar
                       </button>
                       <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--color-error)' }}
+                        className="btn btn-ghost btn-sm btn-ghost-peligroso"
                         onClick={() => handleEliminarPlantilla(p.id)}
                       >
                         Eliminar
@@ -244,10 +241,10 @@ export function GestionRutinasView() {
             <div className="rutinas-grid">
               {rutinas.map((r) => (
                 <Card key={r.id}>
-                  <div style={{ padding: 'var(--space-5)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
-                      <h3 style={{ margin: 0, fontSize: 'var(--text-lg)' }}>{r.nombre}</h3>
-                      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <div className="card-body stack">
+                    <div className="row-between">
+                      <h3 className="card-titulo card-titulo-md">{r.nombre}</h3>
+                      <div className="row">
                         <span className={`rutina-tipo-badge ${r.tipo}`}>
                           {TIPO_LABELS[r.tipo] || r.tipo}
                         </span>
@@ -258,12 +255,12 @@ export function GestionRutinasView() {
                     </div>
 
                     {r.Instruido && (
-                      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-2)' }}>
+                      <p className="rutina-cliente-nombre">
                         Cliente: {r.Instruido.nombre}
                       </p>
                     )}
 
-                    <div className="rutina-resumen-stats" style={{ marginTop: 'var(--space-2)' }}>
+                    <div className="rutina-resumen-stats">
                       <div className="rutina-resumen-stat">
                         <div className="rutina-resumen-stat-value">{r.frecuenciaSemanal || '?'}</div>
                         <div className="rutina-resumen-stat-label">x/semana</div>
@@ -277,7 +274,7 @@ export function GestionRutinasView() {
                     </div>
 
                     {r.fechaInicio && (
-                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
+                      <p className="text-xs text-muted">
                         Inicio: {r.fechaInicio}{r.fechaFin ? ` → ${r.fechaFin}` : ''}
                       </p>
                     )}
@@ -290,8 +287,7 @@ export function GestionRutinasView() {
                         {verRutina === r.id ? 'Ocultar' : 'Ver Detalle'}
                       </button>
                       <button
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--color-error)' }}
+                        className="btn btn-ghost btn-sm btn-ghost-peligroso"
                         onClick={() => handleEliminarRutina(r.id)}
                       >
                         Eliminar
@@ -299,23 +295,23 @@ export function GestionRutinasView() {
                     </div>
 
                     {verRutina === r.id && (
-                      <div style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border-light)', paddingTop: 'var(--space-4)' }}>
+                      <div className="seccion-dividida stack">
                         <DiaSelector
                           seleccionados={r.diasSemana ? Object.keys(r.diasSemana).map(Number) : []}
                           onToggle={(d) => setDiaVer(diaVer === d ? null : d)}
                           modo="vista"
                         />
                         {diaVer != null && (
-                          <div style={{ marginTop: 'var(--space-3)' }}>
-                            <h4 style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)' }}>
+                          <div className="stack stack-sm">
+                            <h4 className="text-sm text-bold">
                               {obtenerNombreDia(diaVer)}
                             </h4>
                             {(r.ejercicios || []).filter((e) => e.dia === diaVer).length === 0 ? (
-                              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
+                              <p className="text-sm text-muted">
                                 Sin ejercicios para este dia
                               </p>
                             ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                              <div className="stack stack-sm">
                                 {(r.ejercicios || [])
                                   .filter((e) => e.dia === diaVer)
                                   .sort((a, b) => a.orden - b.orden)
