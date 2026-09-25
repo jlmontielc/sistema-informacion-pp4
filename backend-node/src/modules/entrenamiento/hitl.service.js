@@ -12,6 +12,8 @@ const {
   limpiarArrayMedico,
   CAMPOS_SENSIBLES,
 } = require('../../shared/utils/flask-client');
+const cache = require('../../shared/cache/cache');
+const cacheKeys = require('../../shared/cache/cacheKeys');
 
 const descifrarCampos = (registro) => {
   if (!registro) return registro;
@@ -32,11 +34,6 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
   const plantilla = await PlantillaEntrenamiento.findByPk(plantillaId);
   if (!plantilla) return null;
 
-  await RutinaAsignada.update(
-    { activa: false },
-    { where: { instruidoId: clienteId, activa: true } },
-  );
-
   const metadataRecomendacion = {
     plantillaId,
     confianza: resultado.confianza,
@@ -46,7 +43,7 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     metadata: resultado.metadata || {},
   };
 
-  return RutinaAsignada.create({
+  const borradorIa = await RutinaAsignada.create({
     instruidoId: clienteId,
     entrenadorId,
     plantillaOrigenId: plantillaId,
@@ -61,6 +58,8 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
     decision: 'pendiente',
     activa: false,
   });
+  await cache.eliminarPorPatron(cacheKeys.rutinas.patronListado());
+  return borradorIa;
 };
 
 const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = { persistir: true }) => {
@@ -205,16 +204,11 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
 
   const { Dieta } = require('../dietas/dietas.model');
 
-  await Dieta.update(
-    { activo: false },
-    { where: { instruidoId: clienteId, activo: true } },
-  );
-
   const hoy = new Date();
   const fechaFin = new Date(hoy);
   fechaFin.setDate(fechaFin.getDate() + 30);
 
-  return Dieta.create({
+  const borradorDieta = await Dieta.create({
     instruidoId: clienteId,
     entrenadorId,
     objetivoCalorico: resultado.objetivoCalorico,
@@ -227,6 +221,8 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
     fechaInicio: hoy.toISOString().split('T')[0],
     fechaFin: fechaFin.toISOString().split('T')[0],
   });
+  await cache.eliminarPorPatron(cacheKeys.dietas.patronListado());
+  return borradorDieta;
 };
 
 const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {}) => {

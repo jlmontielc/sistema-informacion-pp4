@@ -38,14 +38,10 @@ export function RecomendacionesIAView({ onRecargar }) {
   const handleAprobar = async (rutinaId, datos = {}) => {
     setProcesando(true);
     try {
-      await hitlApi.registrarFeedback({
-        clienteId: rutinas.find((r) => r.id === rutinaId)?.instruidoId,
-        rutinaSugeridaId: rutinaId,
-        accion: 'aprobada',
-        observaciones: datos.observaciones || null,
-        tipo: 'rutina',
+      await hitlApi.decidir(rutinaId, {
+        accion: 'aceptada',
+        comentario: datos.observaciones || null,
       });
-      await rutinasAsignadasApi.actualizar(rutinaId, { activa: true });
       setVerRutina(null);
       await cargarRutinas();
       onRecargar?.();
@@ -59,14 +55,10 @@ export function RecomendacionesIAView({ onRecargar }) {
   const handleRechazar = async (rutinaId, datos = {}) => {
     setProcesando(true);
     try {
-      await hitlApi.registrarFeedback({
-        clienteId: rutinas.find((r) => r.id === rutinaId)?.instruidoId,
-        rutinaSugeridaId: rutinaId,
+      await hitlApi.decidir(rutinaId, {
         accion: 'rechazada',
-        observaciones: datos.observaciones || null,
-        tipo: 'rutina',
+        comentario: datos.observaciones || null,
       });
-      await rutinasAsignadasApi.eliminar(rutinaId);
       setVerRutina(null);
       await cargarRutinas();
       onRecargar?.();
