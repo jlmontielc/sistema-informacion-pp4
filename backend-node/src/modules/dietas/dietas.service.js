@@ -218,13 +218,20 @@ const generarDieta = async (usuario, instruidoId, { proposito }) => {
     throw err;
   }
 
+  if (!resultado.objetivoCalorico) {
+    const err = new Error('Respuesta inválida del servicio de IA');
+    err.status = 502;
+    err.data = resultado;
+    throw err;
+  }
+
   const dieta = await Dieta.create({
     instruidoId,
     entrenadorId: usuario.id,
-    objetivoCalorico: resultado.objetivo_calorico,
-    proteinas: resultado.proteinas_gramos,
-    carbohidratos: resultado.carbohidratos_gramos,
-    grasas: resultado.grasas_gramos,
+    objetivoCalorico: resultado.objetivoCalorico,
+    proteinas: resultado.proteinasGramos,
+    carbohidratos: resultado.carbohidratosGramos,
+    grasas: resultado.grasasGramos,
     observaciones: resultado.justificacion || null,
     activo: false,
     decision: 'pendiente',

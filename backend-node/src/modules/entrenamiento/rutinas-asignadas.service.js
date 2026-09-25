@@ -24,6 +24,12 @@ const _obtenerTodos = async (entrenadorId, filtros = {}) => {
   if (filtros.ia === 'true' || filtros.ia === true) {
     where.activa = false;
     where.personalizadaPorEntrenador = false;
+  } else if (filtros.activa === undefined) {
+    where[Op.or] = [
+      { decision: { [Op.ne]: 'pendiente' } },
+      { activa: true },
+      { personalizadaPorEntrenador: true },
+    ];
   }
   return RutinaAsignada.findAll({
     where,

@@ -68,6 +68,7 @@ export const instruidosApi = {
 export const hitlApi = {
   sugerirRutina: (clienteId, preferencias = {}) =>
     api.post(`${BASE}/ia/rutina/${clienteId}`, { preferencias }),
+  decidir: (rutinaId, data) => api.post(`${BASE}/ia/rutinas/${rutinaId}/decision`, data),
   registrarFeedback: (data) => api.post(`${BASE}/ia/feedback`, data),
   listarFeedback: (params) => api.get(`${BASE}/ia/feedback`, { params }),
 };
