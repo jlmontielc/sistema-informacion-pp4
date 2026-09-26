@@ -28,14 +28,20 @@ const router = Router({ mergeParams: true });
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: No puede acceder al perfil médico de otro usuario
+ *         description: El rol no puede acceder a este subrouter (solo entrenadores y administradores)
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'No puedes acceder al perfil médico de otro usuario' }
+ *             examples:
+ *               rolInstruido:
+ *                 summary: Instruido intentando usar el subrouter de entrenador
+ *                 value: { error: 'Accede a tu perfil médico desde /api/instruidos/yo/perfil-medico' }
+ *               rolDesconocido:
+ *                 summary: Rol sin acceso
+ *                 value: { error: 'Acceso denegado' }
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -44,7 +50,7 @@ const router = Router({ mergeParams: true });
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Instruidos]
  *     summary: Crear o actualizar perfil médico
@@ -69,11 +75,11 @@ const router = Router({ mergeParams: true });
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: Acceso denegado
+ *         description: El rol no puede acceder a este subrouter (solo entrenadores y administradores)
  *         content:
  *           application/json:
  *             schema:
@@ -87,7 +93,7 @@ const router = Router({ mergeParams: true });
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/', validar(esquemaInstruidoIdParam, 'params'), ctrl.obtenerPorInstruido);
 router.put('/', validar(esquemaInstruidoIdParam, 'params'), validar(esquemaPerfilMedico), ctrl.crearOActualizar);

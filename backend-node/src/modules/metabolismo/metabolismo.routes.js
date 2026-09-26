@@ -38,9 +38,9 @@ const router = Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'clienteId es requerido para calcular y guardar el histórico metabólico' }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post('/calcular', autenticar, validar(esquemaCalculoMetabolico), ctrl.calcular);
 

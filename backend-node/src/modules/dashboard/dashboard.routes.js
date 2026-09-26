@@ -80,9 +80,9 @@ router.use(autenticar);
  *                       duracion_minutos: 55
  *                       rutina_nombre: Full Body Fuerza
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/stats', ctrl.stats);
 

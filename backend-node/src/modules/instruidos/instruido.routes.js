@@ -27,7 +27,7 @@ router.use(autenticar);
  *             schema:
  *               $ref: '#/components/schemas/UserInstruido'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -36,25 +36,18 @@ router.use(autenticar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Instruidos]
  *     summary: Actualizar mi perfil de instruido
+ *     description: Actualiza los datos del instruido autenticado. Debe enviarse al menos un campo.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               nombre: { type: string, maxLength: 100 }
- *               peso: { type: number }
- *               altura: { type: number }
- *               nivelActividad: { type: string, enum: [sedentario, ligero, moderado, activo, muy_activo] }
- *               propositoEntrenamiento: { type: string }
- *               diasDisponibles: { type: integer, minimum: 1, maximum: 7 }
- *               diasSemana: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
+ *             $ref: '#/components/schemas/InstruidoUpdatePropioRequest'
  *     responses:
  *       200:
  *         description: Perfil actualizado
@@ -63,9 +56,9 @@ router.use(autenticar);
  *             schema:
  *               $ref: '#/components/schemas/UserInstruido'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -74,7 +67,7 @@ router.use(autenticar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/yo', autorizar('instruido'), ctrl.obtenerMiPerfil);
 router.put('/yo', autorizar('instruido'), validar(esquemaActualizarPropio), ctrl.actualizarMiPerfil);
@@ -95,9 +88,9 @@ router.put('/yo', autorizar('instruido'), validar(esquemaActualizarPropio), ctrl
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Instruidos]
  *     summary: Actualizar mi perfil médico
@@ -116,11 +109,11 @@ router.put('/yo', autorizar('instruido'), validar(esquemaActualizarPropio), ctrl
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/yo/perfil-medico', autorizar('instruido'), ctrl.obtenerMiPerfilMedico);
 router.put('/yo/perfil-medico', autorizar('instruido'), validar(esquemaPerfilMedico), ctrl.actualizarMiPerfilMedico);
@@ -143,22 +136,55 @@ router.put('/yo/perfil-medico', autorizar('instruido'), validar(esquemaPerfilMed
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/UserInstruido'
+ *             example:
+ *               - id: 2
+ *                 nombre: Ana Martínez
+ *                 email: ana@example.com
+ *                 edad: 28
+ *                 peso: 65.5
+ *                 altura: 1.65
+ *                 sexo: femenino
+ *                 nivelActividad: activo
+ *                 diasDisponibles: 4
+ *                 diasSemana: [1, 3, 5, 6]
+ *                 fechaRegistro: 2025-03-10
+ *                 activo: true
+ *                 entrenadorId: 1
+ *                 rol: instruido
+ *               - id: 6
+ *                 nombre: Pedro López
+ *                 email: pedro@example.com
+ *                 edad: 30
+ *                 peso: 82
+ *                 altura: 1.8
+ *                 sexo: masculino
+ *                 nivelActividad: moderado
+ *                 diasDisponibles: 3
+ *                 diasSemana: [2, 4, 6]
+ *                 fechaRegistro: 2025-07-01
+ *                 activo: true
+ *                 entrenadorId: 1
+ *                 rol: instruido
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   post:
  *     tags: [Instruidos]
  *     summary: Crear un instruido (entrenador/administrador)
+ *     description: >
+ *       Crea un instruido. Nota: si el email ya está registrado, la base de datos
+ *       lanza una excepción de unicidad que se reporta como error interno (500),
+ *       no como 409.
  *     security: [{ bearerAuth: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterInstruidoRequest'
+ *             $ref: '#/components/schemas/InstruidoCreateRequest'
  *     responses:
  *       201:
  *         description: Instruido creado exitosamente
@@ -167,20 +193,13 @@ router.put('/yo/perfil-medico', autorizar('instruido'), validar(esquemaPerfilMed
  *             schema:
  *               $ref: '#/components/schemas/UserInstruido'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
- *       409:
- *         description: El email ya está registrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'El email ya está registrado' }
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/', autorizar('administrador', 'entrenador'), ctrl.obtenerTodos);
 router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear), ctrl.crear);
@@ -205,9 +224,9 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *             schema:
  *               $ref: '#/components/schemas/UserInstruido'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -216,10 +235,13 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Instruidos]
  *     summary: Actualizar instruido
+ *     description: >
+ *       Actualiza un instruido por ID (entrenador solo sobre sus asignados).
+ *       Nota: un email duplicado se reporta como error interno (500), no como 409.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -231,7 +253,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterInstruidoRequest'
+ *             $ref: '#/components/schemas/InstruidoUpdateRequest'
  *     responses:
  *       200:
  *         description: Instruido actualizado
@@ -240,11 +262,11 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *             schema:
  *               $ref: '#/components/schemas/UserInstruido'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -252,18 +274,15 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
- *       409:
- *         description: El email ya está registrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'El email ya está registrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Instruidos]
- *     summary: Eliminar instruido (borrado lógico)
+ *     summary: Eliminar instruido (borrado físico)
+ *     description: >
+ *       Elimina definitivamente al instruido de la base de datos.
+ *       Nota: el endpoint responde 204 incluso si el ID no existe (el borrado
+ *       no verifica la existencia previa del registro).
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -272,20 +291,13 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *         schema: { type: integer }
  *     responses:
  *       204:
- *         description: Instruido eliminado exitosamente
+ *         description: Instruido eliminado (respuesta sin cuerpo, aplica incluso si no existía)
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
- *       404:
- *         description: Instruido no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Instruido no encontrado' }
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/:id', autorizar('administrador', 'entrenador'), ctrl.obtenerPorId);
 router.put('/:id', autorizar('administrador', 'entrenador'), validar(esquemaActualizar), ctrl.actualizar);
@@ -314,9 +326,9 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -325,7 +337,7 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Instruidos]
  *     summary: Actualizar perfil médico de un instruido
@@ -349,11 +361,11 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *             schema:
  *               $ref: '#/components/schemas/PerfilMedicoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado
  *         content:
@@ -362,7 +374,7 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.use('/:instruidoId/perfil-medico', (req, res, next) => {
   if (req.usuario.rol === 'instruido') {

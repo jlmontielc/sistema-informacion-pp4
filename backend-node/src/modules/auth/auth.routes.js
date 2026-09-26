@@ -114,6 +114,7 @@
  *                 email: ana@example.com
  *                 rol: instruido
  *                 tipo: instruido
+ *                 perfilMedicoCompleto: false
  *       400:
  *         description: Error de validación (Joi)
  *         content:
@@ -165,16 +166,31 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthSuccessResponse'
- *             example:
- *               accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTI2OTIxMDB9...
- *               refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTM1NTUyMDB9...
- *               user:
- *                 id: 1
- *                 nombre: Carlos López
- *                 email: carlos@example.com
- *                 rol: entrenador
- *                 tipo: entrenador
- *                 especialidad: Entrenamiento funcional
+ *             examples:
+ *               entrenador:
+ *                 summary: Login de entrenador
+ *                 value:
+ *                   accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTI2OTIxMDB9...
+ *                   refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTM1NTUyMDB9...
+ *                   user:
+ *                     id: 1
+ *                     nombre: Carlos López
+ *                     email: carlos@example.com
+ *                     rol: entrenador
+ *                     tipo: entrenador
+ *                     especialidad: Entrenamiento funcional
+ *               instruido:
+ *                 summary: Login de instruido (incluye flag de perfil médico)
+ *                 value:
+ *                   accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTI2OTIxMDB9...
+ *                   refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzUyNjkxMjAwLCJleHAiOjE3NTM1NTUyMDB9...
+ *                   user:
+ *                     id: 2
+ *                     nombre: Ana Martínez
+ *                     email: ana@example.com
+ *                     rol: instruido
+ *                     tipo: instruido
+ *                     perfilMedicoCompleto: true
  *       400:
  *         description: Error de validación (Joi)
  *         content:
@@ -520,12 +536,25 @@
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Certificacion'
+ *             example:
+ *               id: 1
+ *               nombre: Carlos López
+ *               email: carlos@example.com
+ *               especialidad: Entrenamiento funcional
+ *               rol: entrenador
+ *               certificaciones:
+ *                 - id: 1
+ *                   entrenadorId: 1
+ *                   nombre: CrossFit Level 2 Trainer
+ *                   institucion: CrossFit Inc.
+ *                   fechaObtencion: 2024-01-15
+ *                   fechaExpiracion: 2026-01-15
+ *                   descripcion: Certificación avanzada en entrenamiento funcional
+ *                   imagenUrl: https://ejemplo.com/cert-crossfit-l2.jpg
+ *               createdAt: 2025-01-15T10:30:00.000Z
+ *               updatedAt: 2025-06-20T14:22:00.000Z
  *       401:
- *         description: Token no proporcionado o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Instruido o entrenador no encontrado
  *         content:
@@ -540,11 +569,7 @@
  *                 summary: Entrenador no encontrado
  *                 value: { error: Entrenador no encontrado }
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/ErrorServidor'
  *
  * /api/auth/profiles:
  *   get:
@@ -569,24 +594,29 @@
  *                         type: array
  *                         items:
  *                           $ref: '#/components/schemas/Certificacion'
+ *             example:
+ *               - id: 1
+ *                 nombre: Carlos López
+ *                 email: carlos@example.com
+ *                 especialidad: Entrenamiento funcional
+ *                 rol: entrenador
+ *                 certificaciones:
+ *                   - id: 1
+ *                     entrenadorId: 1
+ *                     nombre: CrossFit Level 2 Trainer
+ *                     institucion: CrossFit Inc.
+ *               - id: 3
+ *                 nombre: Laura Sánchez
+ *                 email: laura@example.com
+ *                 especialidad: Nutrición deportiva
+ *                 rol: entrenador
+ *                 certificaciones: []
  *       401:
- *         description: Token no proporcionado o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: Acceso denegado (solo administradores)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/ErrorServidor'
  *
  * /api/auth/certifications:
  *   post:
@@ -609,29 +639,13 @@
  *             schema:
  *               $ref: '#/components/schemas/Certificacion'
  *       400:
- *         description: Error de validación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         description: Token no proporcionado o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: Acceso denegado (solo entrenadores)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/ErrorServidor'
  *
  * /api/auth/certifications/{id}:
  *   delete:
@@ -659,29 +673,13 @@
  *                   type: string
  *               example: { message: Certificación eliminada correctamente }
  *       401:
- *         description: Token no proporcionado o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: Acceso denegado (solo entrenadores)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Certificación no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/NoEncontrado'
  *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 
 const { Router } = require('express');

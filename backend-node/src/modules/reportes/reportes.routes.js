@@ -29,11 +29,11 @@ router.use(autenticar);
  *             schema:
  *               $ref: '#/components/schemas/ReporteGruposResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/grupos-musculares/yo',
@@ -66,15 +66,25 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ReporteGruposResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         description: El instruido no pertenece al entrenador autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'No puede consultar reportes de otro instruido' }
  *       404:
- *         $ref: '#/components/responses/Error'
+ *         description: Instruido no encontrado o no es cliente del entrenador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/grupos-musculares/:instruidoId',
@@ -108,11 +118,11 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ReporteEvolucionResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/evolucion/yo/:grupoMuscular',
@@ -150,15 +160,25 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ReporteEvolucionResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         description: El instruido no pertenece al entrenador autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'No puede consultar reportes de otro instruido' }
  *       404:
- *         $ref: '#/components/responses/Error'
+ *         description: Instruido no encontrado o no es cliente del entrenador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/grupos-musculares/:instruidoId/:grupoMuscular/evolucion',
@@ -188,11 +208,11 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ReporteComparativaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/comparativa/yo',
@@ -225,15 +245,25 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/ReporteComparativaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         description: El instruido no pertenece al entrenador autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'No puede consultar reportes de otro instruido' }
  *       404:
- *         $ref: '#/components/responses/Error'
+ *         description: Instruido no encontrado o no es cliente del entrenador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Instruido no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/comparativa/:instruidoId',
@@ -263,12 +293,25 @@ router.get(
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/InstruidoResumenReporte'
+ *             example:
+ *               instruidos:
+ *                 - id: 2
+ *                   nombre: Ana Martínez
+ *                   email: ana@example.com
+ *                   edad: 28
+ *                   peso: 65.5
+ *                   altura: 1.65
+ *                   sexo: femenino
+ *                   nivelActividad: activo
+ *                   fechaRegistro: 2025-03-10
+ *                   activo: true
+ *                   entrenadorId: 1
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/instruidos',

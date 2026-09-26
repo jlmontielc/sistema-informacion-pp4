@@ -18,7 +18,9 @@ const router = Router();
  *     description: >
  *       Llama a Flask para generar una recomendación de rutina basada en perfil del cliente,
  *       historial de entrenamiento, lesiones y preferencias. Valida con Guardian antes de persistir.
- *       Devuelve la rutina como borrador pendiente de decisión del entrenador.
+ *       Devuelve la rutina como borrador pendiente de decisión del entrenador (decision "pendiente",
+ *       activa=false). Los errores HTTP >= 400 de Flask se propagan con su estatus y el mensaje
+ *       "Flask API error: <status>" más la respuesta de Flask en el campo data.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -40,11 +42,11 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/HITLSugerenciaRutinaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado o no pertenece al entrenador
  *         content:
@@ -53,14 +55,21 @@ const router = Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado o no pertenece al entrenador' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *       503:
- *         description: Servicio de IA (Flask) no disponible
+ *         description: Servicio de IA (Flask) no disponible o conexión rechazada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Flask API error: 503' }
+ *             example: { error: 'Servicio de IA no disponible' }
+ *       504:
+ *         description: Tiempo de espera agotado al contactar el servicio de IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Timeout al conectar con servicio de IA' }
  */
 router.post(
   '/ia/rutina/:clienteId',
@@ -103,11 +112,11 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/RutinaAsignadaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Rutina no encontrada
  *         content:
@@ -116,7 +125,7 @@ router.post(
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Rutina no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post(
   '/ia/rutinas/:id/decision',
@@ -159,20 +168,27 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/HITLValidacionEjercicioResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *       503:
- *         description: Servicio de IA (Flask) no disponible
+ *         description: Servicio de IA (Flask) no disponible o conexión rechazada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Flask API error: 503' }
+ *             example: { error: 'Servicio de IA no disponible' }
+ *       504:
+ *         description: Tiempo de espera agotado al contactar el servicio de IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Timeout al conectar con servicio de IA' }
  */
 router.get(
   '/ia/validate/:ejercicioId/:clienteId',
@@ -204,13 +220,13 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/HITLFeedbackResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   get:
  *     tags: [HITL]
  *     summary: Listar feedback del entrenador (rutinas)
@@ -241,10 +257,21 @@ router.get(
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/HITLFeedbackResponse'
+ *             example:
+ *               - id: 1
+ *                 rutinaSugeridaId: 5
+ *                 entrenadorId: 1
+ *                 clienteId: 2
+ *                 accion: aprobada
+ *                 confianzaIa: 0.87
+ *                 tiempoRevisionSeg: 120
+ *                 observaciones: Rutina bien balanceada
+ *                 tipo: rutina
+ *                 createdAt: 2025-07-10T14:30:00.000Z
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post(
   '/ia/feedback',
@@ -298,9 +325,9 @@ router.get(
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'No existe cálculo metabólico para este cliente. Genere uno primero desde metabolismo.' }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado o no pertenece al entrenador
  *         content:
@@ -309,14 +336,21 @@ router.get(
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado o no pertenece al entrenador' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *       503:
- *         description: Servicio de IA (Flask) no disponible
+ *         description: Servicio de IA (Flask) no disponible o conexión rechazada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Flask API error: 503' }
+ *             example: { error: 'Servicio de IA no disponible' }
+ *       504:
+ *         description: Tiempo de espera agotado al contactar el servicio de IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Timeout al conectar con servicio de IA' }
  */
 router.post(
   '/ia/dieta/:clienteId',
@@ -354,10 +388,20 @@ router.post(
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/HITLFeedbackResponse'
+ *             example:
+ *               - id: 2
+ *                 entrenadorId: 1
+ *                 clienteId: 2
+ *                 accion: modificada
+ *                 rutinaOriginal: { objetivo_calorico: 2400, proteinas_gramos: 160 }
+ *                 rutinaFinal: { objetivo_calorico: 2600, proteinas_gramos: 175 }
+ *                 observaciones: Aumenté proteína para fase de volumen
+ *                 tipo: dieta
+ *                 createdAt: 2025-07-11T10:15:00.000Z
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get(
   '/ia/feedback/dietas',
