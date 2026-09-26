@@ -27,17 +27,30 @@ router.use(autenticar);
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Lista de dietas
+ *         description: Lista de dietas (caché 120s)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/DietaResponse'
+ *             example:
+ *               - id: 1
+ *                 instruidoId: 2
+ *                 entrenadorId: 1
+ *                 objetivoCalorico: 2200
+ *                 proteinas: 140
+ *                 carbohidratos: 250
+ *                 grasas: 75
+ *                 observaciones: Plan de mantenimiento
+ *                 fechaInicio: 2025-07-01
+ *                 fechaFin: 2025-07-31
+ *                 activo: true
+ *                 decision: aprobada
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   post:
  *     tags: [Dietas]
  *     summary: Crear dieta manualmente
@@ -56,11 +69,11 @@ router.use(autenticar);
  *             schema:
  *               $ref: '#/components/schemas/DietaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado o no pertenece al entrenador
  *         content:
@@ -69,7 +82,7 @@ router.use(autenticar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado o no pertenece al entrenador' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/', ctrl.getAll);
 router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrearDieta), ctrl.create);
@@ -110,9 +123,9 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrearD
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'No existe cálculo metabólico para este cliente. Genere uno primero desde metabolismo.' }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Instruido no encontrado o no pertenece al entrenador
  *         content:
@@ -121,21 +134,43 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrearD
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Instruido no encontrado o no pertenece al entrenador' }
  *       409:
- *         description: Guardian dietético bloqueó la generación
+ *         description: Guardian dietético bloqueó la generación (respuesta completa de Flask en data)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Guardian dietético bloqueó la generación' }
+ *               type: object
+ *               properties:
+ *                 error: { type: 'string' }
+ *                 data: { type: 'object', nullable: true }
+ *             example:
+ *               error: 'Guardian dietético bloqueó la generación'
+ *               data: { success: false, guardian: { aprobado: false, alertas: [{ tipo: 'alergia', nivelRiesgo: 'alto', mensaje: 'Alergia a mariscos' }] } }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
+ *       502:
+ *         description: El servicio de IA respondió con un formato inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: 'string' }
+ *                 data: { type: 'object', nullable: true }
+ *             example: { error: 'Respuesta inválida del servicio de IA', data: { success: true } }
  *       503:
- *         description: Servicio de IA (Flask) no disponible
+ *         description: Servicio de IA (Flask) no disponible o conexión rechazada
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Flask API error: 503' }
+ *             example: { error: 'Servicio de IA no disponible' }
+ *       504:
+ *         description: Tiempo de espera agotado al contactar el servicio de IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'Timeout al conectar con servicio de IA' }
  */
 router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), validar(esquemaGenerarDieta), ctrl.generar);
 
@@ -159,7 +194,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *             schema:
  *               $ref: '#/components/schemas/DietaResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Dieta no encontrada
  *         content:
@@ -168,10 +203,11 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Dieta no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Dietas]
  *     summary: Actualizar dieta
+ *     description: Debe enviarse al menos un campo de los editables (objetivoCalorico, proteinas, carbohidratos, grasas, observaciones, fechas, activo).
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -183,7 +219,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/DietaCreateRequest'
+ *             $ref: '#/components/schemas/DietaUpdateRequest'
  *     responses:
  *       200:
  *         description: Dieta actualizada
@@ -199,7 +235,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'No se proporcionaron campos para actualizar' }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Dieta no encontrada
  *         content:
@@ -208,7 +244,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Dieta no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Dietas]
  *     summary: Desactivar dieta (borrado lógico)
@@ -226,7 +262,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *             schema:
  *               $ref: '#/components/schemas/DietaResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Dieta no encontrada
  *         content:
@@ -235,7 +271,7 @@ router.post('/generar/:instruidoId', autorizar('administrador', 'entrenador'), v
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Dieta no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/:id')
   .get(validar(esquemaIdParam, 'params'), ctrl.getById)
@@ -282,11 +318,11 @@ router.route('/:id')
  *             schema:
  *               $ref: '#/components/schemas/DietaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Dieta no encontrada
  *         content:
@@ -295,7 +331,7 @@ router.route('/:id')
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Dieta no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post(
   '/:id/decision',

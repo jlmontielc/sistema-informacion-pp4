@@ -31,10 +31,32 @@ const router = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/PlantillaResponse'
+ *             example:
+ *               - id: 1
+ *                 entrenadorId: 1
+ *                 nombre: Full Body Fuerza
+ *                 descripcion: Rutina de fuerza tren completo 3 días
+ *                 tipo: fuerza
+ *                 ejercicios:
+ *                   - ejercicioId: 1
+ *                     dia: 1
+ *                     orden: 1
+ *                     series: 4
+ *                     repeticiones: 8
+ *                     cargaKg: 60
+ *                     descansoSegundos: 90
+ *                 diasSemana:
+ *                   '1': { diaSemana: 1, nombre: Lunes }
+ *                   '3': { diaSemana: 3, nombre: Miércoles }
+ *                 frecuenciaSemanal: 2
+ *                 duracionSemanas: 8
+ *                 objetivo: ganancia_muscular
+ *                 nivelDificultad: intermedio
+ *                 activa: true
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   post:
  *     tags: [Plantillas]
  *     summary: Crear plantilla de entrenamiento
@@ -54,13 +76,13 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/PlantillaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/', autorizar('administrador', 'entrenador'), ctrl.obtenerTodos);
 router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear), ctrl.crear);
@@ -85,7 +107,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *             schema:
  *               $ref: '#/components/schemas/PlantillaResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Plantilla no encontrada
  *         content:
@@ -94,10 +116,11 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plantilla no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Plantillas]
  *     summary: Actualizar plantilla
+ *     description: Actualiza campos de la plantilla. Debe enviarse al menos un campo.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -109,7 +132,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PlantillaCreateRequest'
+ *             $ref: '#/components/schemas/PlantillaUpdateRequest'
  *     responses:
  *       200:
  *         description: Plantilla actualizada
@@ -118,11 +141,11 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *             schema:
  *               $ref: '#/components/schemas/PlantillaResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Plantilla no encontrada
  *         content:
@@ -131,7 +154,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plantilla no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Plantillas]
  *     summary: Eliminar plantilla
@@ -145,9 +168,9 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *       204:
  *         description: Plantilla eliminada exitosamente
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Plantilla no encontrada
  *         content:
@@ -156,7 +179,7 @@ router.post('/', autorizar('administrador', 'entrenador'), validar(esquemaCrear)
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plantilla no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/:id', autorizar('administrador', 'entrenador'), ctrl.obtenerPorId);
 router.put('/:id', autorizar('administrador', 'entrenador'), validar(esquemaActualizar), ctrl.actualizar);
@@ -187,7 +210,7 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *             schema:
  *               $ref: '#/components/schemas/PlantillaDiaResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       404:
  *         description: Plantilla no encontrada
  *         content:
@@ -196,7 +219,7 @@ router.delete('/:id', autorizar('administrador', 'entrenador'), ctrl.eliminar);
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plantilla no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/:id/dia/:dia', autorizar('administrador', 'entrenador'), ctrl.obtenerPorDia);
 
@@ -221,7 +244,7 @@ router.get('/:id/dia/:dia', autorizar('administrador', 'entrenador'), ctrl.obten
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/EjercicioRutinaItem'
+ *             $ref: '#/components/schemas/AgregarEjercicioDiaRequest'
  *     responses:
  *       201:
  *         description: Ejercicio agregado exitosamente
@@ -230,20 +253,37 @@ router.get('/:id/dia/:dia', autorizar('administrador', 'entrenador'), ctrl.obten
  *             schema:
  *               $ref: '#/components/schemas/EjercicioRutinaItem'
  *       400:
- *         $ref: '#/components/responses/Error'
- *       401:
- *         $ref: '#/components/responses/Error'
- *       403:
- *         $ref: '#/components/responses/Error'
- *       404:
- *         description: Plantilla no encontrada
+ *         description: Día no configurado en la plantilla o validación Joi fallida
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Plantilla no encontrada' }
+ *             examples:
+ *               diaNoConfigurado:
+ *                 summary: El día no está configurado
+ *                 value: { error: 'El día 6 no está configurado en esta plantilla' }
+ *               validacion:
+ *                 summary: Validación Joi
+ *                 value: { error: '"series" is required' }
+ *       401:
+ *         $ref: '#/components/responses/NoAutenticado'
+ *       403:
+ *         $ref: '#/components/responses/AccesoDenegado'
+ *       404:
+ *         description: Plantilla o ejercicio del catálogo no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               plantilla:
+ *                 summary: Plantilla no encontrada
+ *                 value: { error: 'Plantilla no encontrada' }
+ *               ejercicio:
+ *                 summary: Ejercicio del catálogo no encontrado
+ *                 value: { error: 'Ejercicio no encontrado en el catálogo' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post(
   '/:id/dia/:dia/ejercicios',
@@ -258,6 +298,7 @@ router.post(
  *   put:
  *     tags: [Plantillas]
  *     summary: Editar ejercicio en un día de la plantilla
+ *     description: Actualiza campos de un ejercicio identificado por su índice dentro del día. Debe enviarse al menos un campo.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -272,13 +313,13 @@ router.post(
  *         name: idx
  *         required: true
  *         schema: { type: integer }
- *         description: Índice del ejercicio dentro del día
+ *         description: Índice del ejercicio dentro del día (base 0)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/EjercicioRutinaItem'
+ *             $ref: '#/components/schemas/EditarEjercicioDiaRequest'
  *     responses:
  *       200:
  *         description: Ejercicio actualizado
@@ -287,20 +328,29 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/EjercicioRutinaItem'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Plantilla no encontrada
+ *         description: Plantilla no encontrada o índice fuera de rango
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Plantilla no encontrada' }
+ *             examples:
+ *               plantilla:
+ *                 summary: Plantilla no encontrada
+ *                 value: { error: 'Plantilla no encontrada' }
+ *               indiceFuera:
+ *                 summary: Índice fuera de rango
+ *                 value: { error: 'Índice de ejercicio fuera de rango' }
+ *               ejercicio:
+ *                 summary: Ejercicio del catálogo no encontrado (si cambia ejercicioId)
+ *                 value: { error: 'Ejercicio no encontrado en el catálogo' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Plantillas]
  *     summary: Eliminar ejercicio de un día de la plantilla
@@ -318,26 +368,33 @@ router.post(
  *         name: idx
  *         required: true
  *         schema: { type: integer }
+ *         description: Índice del ejercicio dentro del día (base 0)
  *     responses:
  *       200:
- *         description: Ejercicio eliminado, devuelve lista actualizada del día
+ *         description: Ejercicio eliminado, devuelve confirmación y el ejercicio eliminado
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PlantillaDiaResponse'
+ *               $ref: '#/components/schemas/EjercicioEliminadoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Plantilla no encontrada
+ *         description: Plantilla no encontrada o índice fuera de rango
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Plantilla no encontrada' }
+ *             examples:
+ *               plantilla:
+ *                 summary: Plantilla no encontrada
+ *                 value: { error: 'Plantilla no encontrada' }
+ *               indiceFuera:
+ *                 summary: Índice fuera de rango
+ *                 value: { error: 'Índice de ejercicio fuera de rango' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.put(
   '/:id/dia/:dia/ejercicios/:idx',
@@ -372,29 +429,39 @@ router.delete(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [orden]
- *             properties:
- *               orden:
- *                 type: array
- *                 items: { type: integer }
- *                 description: Nuevo orden de índices
- *             example: { orden: [2, 0, 1] }
+ *             $ref: '#/components/schemas/ReordenarRequest'
  *     responses:
  *       200:
- *         description: Ejercicios reordenados
+ *         description: Ejercicios reordenados (lista del día en el nuevo orden)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/EjercicioRutinaItem'
+ *             example:
+ *               - ejercicioId: 5
+ *                 nombre: Press de banca
+ *                 dia: 1
+ *                 orden: 1
+ *                 series: 3
+ *                 repeticiones: 10
+ *                 cargaKg: 30
+ *                 descansoSegundos: 60
+ *               - ejercicioId: 1
+ *                 nombre: Sentadilla con barra
+ *                 dia: 1
+ *                 orden: 2
+ *                 series: 4
+ *                 repeticiones: 8
+ *                 cargaKg: 60
+ *                 descansoSegundos: 90
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Plantilla no encontrada
  *         content:
@@ -403,7 +470,7 @@ router.delete(
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plantilla no encontrada' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.put(
   '/:id/dia/:dia/reordenar',

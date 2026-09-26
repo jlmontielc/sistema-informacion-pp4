@@ -34,17 +34,22 @@ router.use(autenticar);
  *         schema: { type: integer }
  *     responses:
  *       200:
- *         description: Catálogo completo del entrenador
+ *         description: Catálogo completo del entrenador (caché 300s)
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/PagoCatalogoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         description: El instruido no está asignado al entrenador indicado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'No estás asignado a este entrenador' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/catalogo/:entrenadorId', autorizar('instruido'), ctrl.obtenerCatalogo);
 
@@ -73,20 +78,26 @@ router.get('/catalogo/:entrenadorId', autorizar('instruido'), ctrl.obtenerCatalo
  *             schema:
  *               $ref: '#/components/schemas/PagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Plan o método de pago no encontrado
+ *         description: Plan o método de pago no disponible para el entrenador
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Plan no encontrado' }
+ *             examples:
+ *               plan:
+ *                 summary: Plan no disponible
+ *                 value: { error: 'Plan no encontrado o no está disponible' }
+ *               metodo:
+ *                 summary: Método no disponible
+ *                 value: { error: 'Método de pago no encontrado o no está disponible' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post('/', autorizar('instruido'), validar(esquemaCrearPago), ctrl.registrarPago);
 
@@ -100,17 +111,35 @@ router.post('/', autorizar('instruido'), validar(esquemaCrearPago), ctrl.registr
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Lista de pagos del instruido
+ *         description: Lista de pagos del instruido (caché 60s)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/PagoResponse'
+ *             example:
+ *               - id: 1
+ *                 instruidoId: 2
+ *                 entrenadorId: 1
+ *                 planId: 1
+ *                 metodoPagoId: 1
+ *                 montoUsd: 30
+ *                 montoBs: 1387.5
+ *                 tasaAplicada: 46.25
+ *                 referencia: Pago-001234
+ *                 fechaPago: 2025-07-10
+ *                 estado: verificado
+ *                 verificadoPor: 1
+ *                 fechaVerificacion: 2025-07-10T15:00:00.000Z
+ *                 fechaInicio: 2025-07-10
+ *                 fechaFin: 2025-08-09
+ *                 plan: { id: 1, nombre: Plan Mensual Premium, montoUsd: 30, diasVigencia: 30 }
+ *                 metodo: { id: 1, tipo: pago_movil }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/mis-pagos', autorizar('instruido'), ctrl.listarMisPagos);
 
@@ -130,9 +159,9 @@ router.get('/mis-pagos', autorizar('instruido'), ctrl.listarMisPagos);
  *             schema:
  *               $ref: '#/components/schemas/SuscripcionResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/mi-suscripcion', autorizar('instruido'), ctrl.miSuscripcion);
 
@@ -148,19 +177,36 @@ router.get('/mi-suscripcion', autorizar('instruido'), ctrl.miSuscripcion);
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Lista de planes
+ *         description: Lista de planes (caché 600s)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/PlanPagoResponse'
+ *             example:
+ *               - id: 1
+ *                 entrenadorId: 1
+ *                 nombre: Plan Mensual Premium
+ *                 descripcion: Acceso completo a entrenamiento y dietas
+ *                 ofrecimiento: ambos
+ *                 montoUsd: 30
+ *                 diasVigencia: 30
+ *                 activo: true
+ *               - id: 2
+ *                 entrenadorId: 1
+ *                 nombre: Plan Solo Dietas
+ *                 descripcion: Planificación nutricional mensual
+ *                 ofrecimiento: dietas
+ *                 montoUsd: 20
+ *                 diasVigencia: 30
+ *                 activo: true
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   post:
  *     tags: [Pagos]
  *     summary: Crear plan de mensualidad
@@ -179,13 +225,13 @@ router.get('/mi-suscripcion', autorizar('instruido'), ctrl.miSuscripcion);
  *             schema:
  *               $ref: '#/components/schemas/PlanPagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/planes')
   .get(autorizar('entrenador', 'administrador'), ctrl.listarPlanes)
@@ -197,6 +243,7 @@ router.route('/planes')
  *   put:
  *     tags: [Pagos]
  *     summary: Modificar plan de mensualidad
+ *     description: Debe enviarse al menos un campo.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -208,7 +255,7 @@ router.route('/planes')
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PlanPagoCreateRequest'
+ *             $ref: '#/components/schemas/PlanPagoUpdateRequest'
  *     responses:
  *       200:
  *         description: Plan actualizado
@@ -217,11 +264,11 @@ router.route('/planes')
  *             schema:
  *               $ref: '#/components/schemas/PlanPagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Plan no encontrado
  *         content:
@@ -230,7 +277,7 @@ router.route('/planes')
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plan no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Pagos]
  *     summary: Desactivar plan (borrado lógico)
@@ -245,9 +292,9 @@ router.route('/planes')
  *       204:
  *         description: Plan desactivado exitosamente
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Plan no encontrado
  *         content:
@@ -256,7 +303,7 @@ router.route('/planes')
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Plan no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/planes/:planId')
   .put(autorizar('entrenador', 'administrador'), validar(esquemaActualizarPlan), ctrl.actualizarPlan)
@@ -274,19 +321,30 @@ router.route('/planes/:planId')
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200:
- *         description: Lista de métodos de pago
+ *         description: Lista de métodos de pago (caché 600s)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/MetodoPagoResponse'
+ *             example:
+ *               - id: 1
+ *                 entrenadorId: 1
+ *                 tipo: pago_movil
+ *                 datos: { banco: '0102', telefono: '04141234567', cedula: 'V-12345678' }
+ *                 activo: true
+ *               - id: 2
+ *                 entrenadorId: 1
+ *                 tipo: zelle
+ *                 datos: { correo: 'entrenador@example.com' }
+ *                 activo: true
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   post:
  *     tags: [Pagos]
  *     summary: Crear método de pago
@@ -308,13 +366,13 @@ router.route('/planes/:planId')
  *             schema:
  *               $ref: '#/components/schemas/MetodoPagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/metodos')
   .get(autorizar('entrenador', 'administrador'), ctrl.listarMetodos)
@@ -326,6 +384,7 @@ router.route('/metodos')
  *   put:
  *     tags: [Pagos]
  *     summary: Modificar método de pago
+ *     description: Debe enviarse al menos un campo.
  *     security: [{ bearerAuth: [] }]
  *     parameters:
  *       - in: path
@@ -337,7 +396,7 @@ router.route('/metodos')
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/MetodoPagoCreateRequest'
+ *             $ref: '#/components/schemas/MetodoPagoUpdateRequest'
  *     responses:
  *       200:
  *         description: Método actualizado
@@ -346,20 +405,20 @@ router.route('/metodos')
  *             schema:
  *               $ref: '#/components/schemas/MetodoPagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Método no encontrado
+ *         description: Método de pago no encontrado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Método no encontrado' }
+ *             example: { error: 'Método de pago no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Pagos]
  *     summary: Desactivar método de pago (borrado lógico)
@@ -373,18 +432,18 @@ router.route('/metodos')
  *       204:
  *         description: Método desactivado exitosamente
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
- *         description: Método no encontrado
+ *         description: Método de pago no encontrado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'Método no encontrado' }
+ *             example: { error: 'Método de pago no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/metodos/:metodoId')
   .put(autorizar('entrenador', 'administrador'), validar(esquemaActualizarMetodo), ctrl.actualizarMetodo)
@@ -408,11 +467,11 @@ router.route('/metodos/:metodoId')
  *             schema:
  *               $ref: '#/components/schemas/ConfiguracionPagoResponse'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  *   put:
  *     tags: [Pagos]
  *     summary: Actualizar tasa de cambio $ -> Bs
@@ -422,25 +481,22 @@ router.route('/metodos/:metodoId')
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [tasaCambio]
- *             properties:
- *               tasaCambio: { type: number, example: 46.25 }
+ *             $ref: '#/components/schemas/TasaCambioRequest'
  *     responses:
  *       200:
- *         description: Tasa actualizada
+ *         description: Tasa actualizada (caché 300s)
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ConfiguracionPagoResponse'
  *       400:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.route('/configuracion')
   .get(autorizar('entrenador', 'administrador'), ctrl.obtenerConfiguracion)
@@ -469,19 +525,34 @@ router.route('/configuracion')
  *         schema: { type: integer }
  *     responses:
  *       200:
- *         description: Lista de pagos
+ *         description: Lista de pagos (caché 60s; incluye datos del instruido)
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/PagoResponse'
+ *             example:
+ *               - id: 1
+ *                 instruidoId: 2
+ *                 entrenadorId: 1
+ *                 planId: 1
+ *                 metodoPagoId: 1
+ *                 montoUsd: 30
+ *                 montoBs: 1387.5
+ *                 tasaAplicada: 46.25
+ *                 referencia: Pago-001234
+ *                 fechaPago: 2025-07-10
+ *                 estado: pendiente
+ *                 Instruido: { id: 2, nombre: Ana Martínez }
+ *                 plan: { id: 1, nombre: Plan Mensual Premium, montoUsd: 30, diasVigencia: 30 }
+ *                 metodo: { id: 1, tipo: pago_movil }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/historial', autorizar('entrenador', 'administrador'), ctrl.listarPagosEntrenador);
 
@@ -511,14 +582,14 @@ router.get('/historial', autorizar('entrenador', 'administrador'), ctrl.listarPa
  *           image/webp:
  *             schema: { type: string, format: binary }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         description: No tiene permiso para ver este comprobante
+ *         description: El solicitante no es el dueño del pago ni el entrenador asignado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'No tiene permiso para ver este comprobante' }
+ *             example: { error: 'No tienes acceso a este comprobante' }
  *       404:
  *         description: Pago no encontrado o sin comprobante
  *         content:
@@ -527,7 +598,7 @@ router.get('/historial', autorizar('entrenador', 'administrador'), ctrl.listarPa
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Pago no encontrado' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.get('/:pagoId/comprobante', autorizar('instruido', 'entrenador', 'administrador'), ctrl.obtenerComprobante);
 
@@ -549,15 +620,22 @@ router.get('/:pagoId/comprobante', autorizar('instruido', 'entrenador', 'adminis
  *         schema: { type: integer }
  *     responses:
  *       200:
- *         description: Pago verificado y mensualidad activada
+ *         description: Pago verificado y mensualidad activada (devuelve el pago completo; las sugerencias de IA fallidas no alteran la respuesta, quedan en errorPrediccionIa)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/PagoVerificarResponse'
+ *               $ref: '#/components/schemas/PagoResponse'
+ *       400:
+ *         description: El plan asociado al pago ya no existe
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'El plan asociado al pago ya no existe' }
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Pago no encontrado
  *         content:
@@ -566,14 +644,14 @@ router.get('/:pagoId/comprobante', autorizar('instruido', 'entrenador', 'adminis
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Pago no encontrado' }
  *       409:
- *         description: El pago ya fue verificado anteriormente
+ *         description: El pago ya fue procesado (verificado o rechazado); el mensaje incluye el estado actual
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'El pago ya fue verificado' }
+ *             example: { error: 'El pago ya fue procesado (estado actual: verificado)' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post('/:pagoId/verificar', autorizar('entrenador', 'administrador'), ctrl.verificarPago);
 
@@ -603,10 +681,12 @@ router.post('/:pagoId/verificar', autorizar('entrenador', 'administrador'), ctrl
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/PagoResponse'
+ *       400:
+ *         $ref: '#/components/responses/PeticionInvalida'
  *       401:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/NoAutenticado'
  *       403:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/AccesoDenegado'
  *       404:
  *         description: Pago no encontrado
  *         content:
@@ -615,14 +695,14 @@ router.post('/:pagoId/verificar', autorizar('entrenador', 'administrador'), ctrl
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example: { error: 'Pago no encontrado' }
  *       409:
- *         description: El pago ya fue procesado
+ *         description: El pago ya fue procesado; el mensaje incluye el estado actual
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
- *             example: { error: 'El pago ya fue verificado o rechazado' }
+ *             example: { error: 'El pago ya fue procesado (estado actual: pendiente)' }
  *       500:
- *         $ref: '#/components/responses/Error'
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 router.post('/:pagoId/rechazar', autorizar('entrenador', 'administrador'), validar(esquemaRechazarPago), ctrl.rechazarPago);
 
