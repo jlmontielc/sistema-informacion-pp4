@@ -5,6 +5,7 @@ import { Loading } from '../common/Loading';
 import { Modal } from '../common/Modal';
 import api from '../../services/api';
 import { labelObjetivo } from '../../utils/constants';
+import { CertificacionCard } from './CertificacionCard';
 
 export function ListaPerfiles() {
   const [entrenadores, setEntrenadores] = useState([]);
@@ -123,11 +124,7 @@ export function ListaPerfiles() {
                   <div className="stack stack-sm">
                     <p className="field-ayuda">Certificaciones</p>
                     {seleccionado.certificaciones.map((cert) => (
-                      <div key={cert.id} className="tarjeta-borde">
-                        <p className="text-bold">{cert.nombre}</p>
-                        {cert.institucion && <p className="text-sm text-muted">{cert.institucion}</p>}
-                        {cert.imagenUrl && <a href={cert.imagenUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primario">Ver imagen</a>}
-                      </div>
+                      <CertificacionCard key={cert.id} cert={cert} />
                     ))}
                   </div>
                 )}

@@ -140,6 +140,18 @@ const eliminarCertificacion = async (req, res, next) => {
   }
 };
 
+const obtenerArchivoCertificacion = async (req, res, next) => {
+  try {
+    const archivo = await authService.obtenerArchivoCertificacion(Number(req.params.id), req.usuario);
+    const buffer = Buffer.from(archivo.archivo, 'base64');
+    res.set('Content-Type', archivo.mimeType);
+    res.set('Content-Length', buffer.length);
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   registrar,
   registrarInstruido,
@@ -153,4 +165,5 @@ module.exports = {
   crearCertificacion,
   actualizarCertificacion,
   eliminarCertificacion,
+  obtenerArchivoCertificacion,
 };

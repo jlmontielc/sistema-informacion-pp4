@@ -12,7 +12,7 @@ const { PlanPago, MetodoPago, ConfiguracionPago, Pago } = require('../../modules
 Entrenador.hasMany(Instruido, { foreignKey: 'entrenadorId' });
 Entrenador.hasMany(PlantillaEntrenamiento, { foreignKey: 'entrenadorId' });
 Entrenador.hasMany(RutinaAsignada, { foreignKey: 'entrenadorId' });
-Entrenador.hasMany(Certificacion, { foreignKey: 'entrenadorId' });
+Entrenador.hasMany(Certificacion, { foreignKey: 'entrenadorId', as: 'certificaciones' });
 Entrenador.hasMany(PlanPago, { foreignKey: 'entrenadorId' });
 Entrenador.hasMany(MetodoPago, { foreignKey: 'entrenadorId' });
 Entrenador.hasOne(ConfiguracionPago, { foreignKey: 'entrenadorId' });

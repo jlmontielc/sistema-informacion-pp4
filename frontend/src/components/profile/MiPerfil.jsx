@@ -30,7 +30,7 @@ const CAMPOS_MEDICOS = [
   { name: 'observaciones', label: 'Observaciones' },
 ];
 
-const CAMPOS_CERTIFICACION = ['nombre', 'institucion', 'fechaObtencion', 'fechaExpiracion', 'descripcion', 'imagenUrl'];
+const CAMPOS_CERTIFICACION = ['nombre', 'institucion', 'fechaObtencion', 'fechaExpiracion', 'descripcion'];
 
 const CERTIFICACION_VACIA = {
   nombre: '',
@@ -38,8 +38,18 @@ const CERTIFICACION_VACIA = {
   fechaObtencion: '',
   fechaExpiracion: '',
   descripcion: '',
-  imagenUrl: '',
 };
+
+const MIMES_VALIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const TAMANIO_MAX = 2 * 1024 * 1024;
+
+const leerArchivoBase64 = (archivo) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+    reader.readAsDataURL(archivo);
+  });
 
 export function MiPerfil({ perfil, onActualizar }) {
   const navigate = useNavigate();
@@ -61,6 +71,8 @@ export function MiPerfil({ perfil, onActualizar }) {
   const [guardandoCert, setGuardandoCert] = useState(false);
   const [errorCert, setErrorCert] = useState(null);
   const [successCert, setSuccessCert] = useState(null);
+  const [archivoNuevo, setArchivoNuevo] = useState(null);
+  const [inputArchivoKey, setInputArchivoKey] = useState(0);
 
   useEffect(() => {
     if (perfil.tipo === 'instruido') {
@@ -208,6 +220,8 @@ export function MiPerfil({ perfil, onActualizar }) {
   const abrirNuevaCert = () => {
     setFormCert({ ...CERTIFICACION_VACIA });
     setEditandoCert({});
+    setArchivoNuevo(null);
+    setInputArchivoKey((k) => k + 1);
     setErrorCert(null);
     setSuccessCert(null);
   };
@@ -219,9 +233,10 @@ export function MiPerfil({ perfil, onActualizar }) {
       fechaObtencion: cert.fechaObtencion || '',
       fechaExpiracion: cert.fechaExpiracion || '',
       descripcion: cert.descripcion || '',
-      imagenUrl: cert.imagenUrl || '',
     });
     setEditandoCert(cert);
+    setArchivoNuevo(null);
+    setInputArchivoKey((k) => k + 1);
     setErrorCert(null);
     setSuccessCert(null);
   };
@@ -229,11 +244,34 @@ export function MiPerfil({ perfil, onActualizar }) {
   const cancelarCert = () => {
     setEditandoCert(null);
     setFormCert({ ...CERTIFICACION_VACIA });
+    setArchivoNuevo(null);
     setErrorCert(null);
   };
 
   const handleChangeCert = (e) => {
     setFormCert({ ...formCert, [e.target.name]: e.target.value });
+  };
+
+  const handleArchivoCertChange = (e) => {
+    setErrorCert(null);
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setArchivoNuevo(null);
+      return;
+    }
+    if (!MIMES_VALIDOS.includes(file.type)) {
+      setArchivoNuevo(null);
+      e.target.value = '';
+      setErrorCert('Formato no permitido. Usa JPG, PNG o PDF.');
+      return;
+    }
+    if (file.size > TAMANIO_MAX) {
+      setArchivoNuevo(null);
+      e.target.value = '';
+      setErrorCert('El archivo supera el máximo de 2 MB.');
+      return;
+    }
+    setArchivoNuevo(file);
   };
 
   const recargarCertificaciones = async () => {
@@ -254,6 +292,10 @@ export function MiPerfil({ perfil, onActualizar }) {
         const valor = (formCert[campo] || '').trim();
         if (valor) payload[campo] = valor;
       });
+      if (archivoNuevo) {
+        payload.archivo = await leerArchivoBase64(archivoNuevo);
+        payload.archivoMime = archivoNuevo.type;
+      }
       if (editandoCert && editandoCert.id) {
         await api.put(`/auth/certifications/${editandoCert.id}`, payload);
       } else {
@@ -262,6 +304,8 @@ export function MiPerfil({ perfil, onActualizar }) {
       await recargarCertificaciones();
       setEditandoCert(null);
       setFormCert({ ...CERTIFICACION_VACIA });
+      setArchivoNuevo(null);
+      setInputArchivoKey((k) => k + 1);
       setSuccessCert('Certificación guardada correctamente');
     } catch (err) {
       setErrorCert(err.response?.data?.error || 'Error al guardar la certificación');
@@ -469,16 +513,24 @@ export function MiPerfil({ perfil, onActualizar }) {
                 />
               </div>
               <div className="field grid-full">
-                <label className="field-label" htmlFor="cert-imagen-url">URL de imagen</label>
+                <label className="field-label" htmlFor="cert-archivo">Archivo (imagen o PDF, máx. 2 MB)</label>
                 <input
-                  id="cert-imagen-url"
-                  name="imagenUrl"
-                  type="url"
-                  placeholder="https://"
+                  id="cert-archivo"
+                  key={inputArchivoKey}
+                  name="archivo"
+                  type="file"
                   className="field-input"
-                  value={formCert.imagenUrl}
-                  onChange={handleChangeCert}
+                  accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+                  onChange={handleArchivoCertChange}
                 />
+                {archivoNuevo && (
+                  <p className="text-sm text-muted">Seleccionado: {archivoNuevo.name}</p>
+                )}
+                {editandoCert && editandoCert.id && !archivoNuevo && editandoCert.tieneArchivo && (
+                  <p className="text-sm text-muted">
+                    La certificación ya tiene un archivo adjunto; se conservará si no eliges otro.
+                  </p>
+                )}
               </div>
             </div>
             {errorCert && <p className="text-sm text-error">{errorCert}</p>}

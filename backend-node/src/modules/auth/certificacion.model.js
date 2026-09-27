@@ -9,6 +9,9 @@ const Certificacion = sequelize.define('Certificacion', {
   fechaExpiracion: { type: DataTypes.DATEONLY, field: 'fecha_expiracion' },
   descripcion: { type: DataTypes.TEXT },
   imagenUrl: { type: DataTypes.STRING(500), field: 'imagen_url' },
+  archivo: { type: DataTypes.TEXT('long') },
+  archivoMime: { type: DataTypes.STRING(100), field: 'archivo_mime' },
+  tieneArchivo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false, field: 'tiene_archivo' },
 }, {
   underscored: true,
   tableName: 'certificaciones',

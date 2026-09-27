@@ -176,7 +176,7 @@ const _obtenerPerfil = async (usuarioId, tipo) => {
   if (tipo === 'entrenador') {
     const entrenador = await Entrenador.findByPk(usuarioId, {
       attributes: { exclude: ['contrasenaHash'] },
-      include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+      include: [{ model: Certificacion, as: 'certificaciones', attributes: { exclude: ['entrenadorId', 'archivo', 'archivoMime'] } }],
     });
     if (!entrenador) {
       const err = new Error('Entrenador no encontrado');
@@ -234,7 +234,7 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
     await entrenador.update(datosActualizar);
     return Entrenador.findByPk(usuarioId, {
       attributes: { exclude: ['contrasenaHash'] },
-      include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+      include: [{ model: Certificacion, as: 'certificaciones', attributes: { exclude: ['entrenadorId', 'archivo', 'archivoMime'] } }],
     });
   }
 
@@ -305,7 +305,7 @@ const _obtenerPerfilEntrenador = async (instruidoId) => {
   }
   const entrenador = await Entrenador.findByPk(instruido.entrenadorId, {
     attributes: { exclude: ['contrasenaHash'] },
-    include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+    include: [{ model: Certificacion, as: 'certificaciones', attributes: { exclude: ['entrenadorId', 'archivo', 'archivoMime'] } }],
   });
   if (!entrenador) {
     const err = new Error('Entrenador no encontrado');
@@ -325,7 +325,7 @@ const obtenerPerfilEntrenador = async (instruidoId) =>
 const _obtenerTodosLosPerfiles = async () => {
   return Entrenador.findAll({
     attributes: { exclude: ['contrasenaHash'] },
-    include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+    include: [{ model: Certificacion, as: 'certificaciones', attributes: { exclude: ['entrenadorId', 'archivo', 'archivoMime'] } }],
   });
 };
 
@@ -343,7 +343,7 @@ const crearCertificacion = async (entrenadorId, datos) => {
     err.status = 404;
     throw err;
   }
-  return Certificacion.create({ ...datos, entrenadorId });
+  return Certificacion.create({ ...datos, entrenadorId, tieneArchivo: !!datos.archivo });
 };
 
 const eliminarCertificacion = async (entrenadorId, certId) => {
@@ -364,8 +364,33 @@ const actualizarCertificacion = async (entrenadorId, certId, datos) => {
     err.status = 404;
     throw err;
   }
-  await cert.update(datos);
+  const datosActualizar = { ...datos };
+  if (datos.archivo) datosActualizar.tieneArchivo = true;
+  await cert.update(datosActualizar);
   return cert;
+};
+
+const obtenerArchivoCertificacion = async (certId, usuario) => {
+  const cert = await Certificacion.findByPk(certId, { attributes: ['id', 'archivo', 'archivoMime', 'entrenadorId'] });
+  if (!cert || !cert.archivo) {
+    const err = new Error('La certificación no tiene archivo adjunto');
+    err.status = 404;
+    throw err;
+  }
+  if (usuario.rol === 'entrenador' && cert.entrenadorId !== usuario.id) {
+    const err = new Error('No tienes acceso a este archivo');
+    err.status = 403;
+    throw err;
+  }
+  if (usuario.rol === 'instruido') {
+    const instruido = await Instruido.findByPk(usuario.id);
+    if (!instruido || instruido.entrenadorId !== cert.entrenadorId) {
+      const err = new Error('No tienes acceso a este archivo');
+      err.status = 403;
+      throw err;
+    }
+  }
+  return { archivo: cert.archivo, mimeType: cert.archivoMime || 'application/pdf' };
 };
 
 module.exports = {
@@ -380,4 +405,5 @@ module.exports = {
   crearCertificacion,
   actualizarCertificacion,
   eliminarCertificacion,
+  obtenerArchivoCertificacion,
 };

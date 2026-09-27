@@ -58,7 +58,14 @@ const esquemaCertificacion = Joi.object({
   fechaObtencion: Joi.date().optional().allow(null, ''),
   fechaExpiracion: Joi.date().optional().allow(null, ''),
   descripcion: Joi.string().optional().allow(''),
-  imagenUrl: Joi.string().uri().optional().allow(''),
+  archivo: Joi.string().base64().max(2800000).optional(),
+  archivoMime: Joi.string().valid('image/jpeg', 'image/png', 'image/webp', 'application/pdf').optional(),
+}).custom((valor, helpers) => {
+  if (valor.archivo && !valor.archivoMime) return helpers.error('validation.archivo.mimeRequerido');
+  if (valor.archivoMime && !valor.archivo) return helpers.error('validation.archivo.mimeRequerido');
+  return valor;
+}).messages({
+  'validation.archivo.mimeRequerido': 'archivo y archivoMime deben enviarse juntos',
 });
 
 const esquemaRegistroInstruido = Joi.object({

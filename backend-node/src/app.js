@@ -20,9 +20,10 @@ const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const app = express();
 
 app.use(cors());
-// Límite elevado SOLO para /api/pagos: admite comprobantes en base64 (~2 MB decodificados).
-// El resto de la API conserva el límite por defecto (100kb).
+// Límite elevado SOLO para /api/pagos y /api/auth/certifications: admiten archivos en base64 (~2 MB decodificados).
+// Las certificaciones aceptan imagen JPG/PNG/WebP o PDF adjunta; el resto de la API conserva el límite por defecto (100kb).
 app.use('/api/pagos', express.json({ limit: '5mb' }));
+app.use('/api/auth/certifications', express.json({ limit: '5mb' }));
 app.use(express.json());
 app.use(morgan('dev'));
 

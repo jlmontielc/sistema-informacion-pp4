@@ -622,7 +622,10 @@
  *   post:
  *     tags: [Auth]
  *     summary: Crear una certificación
- *     description: Crea una nueva certificación para el entrenador autenticado.
+ *     description: >
+ *       Crea una nueva certificación para el entrenador autenticado.
+ *       Acepta un archivo adjunto opcional (imagen JPG/PNG/WebP o PDF) en base64 (máximo 2 MB),
+ *       junto con su tipo MIME (archivo y archivoMime deben enviarse juntos).
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -651,7 +654,10 @@
  *   put:
  *     tags: [Auth]
  *     summary: Actualizar una certificación
- *     description: Actualiza una certificación del entrenador autenticado.
+ *     description: >
+ *       Actualiza una certificación del entrenador autenticado.
+ *       Si se envía archivo también debe enviarse archivoMime; si no se envía archivo,
+ *       el archivo previamente adjunto se conserva.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -716,6 +722,54 @@
  *         $ref: '#/components/responses/NoEncontrado'
  *       500:
  *         $ref: '#/components/responses/ErrorServidor'
+ *
+ * /api/auth/certifications/{id}/archivo:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Descargar archivo de la certificación
+ *     description: >
+ *       Devuelve el archivo adjunto de la certificación en su formato original
+ *       (JPEG, PNG, WebP o PDF). Accesible por el entrenador dueño, su instruido
+ *       asignado o un administrador.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la certificación
+ *     responses:
+ *       200:
+ *         description: Archivo de la certificación
+ *         content:
+ *           image/jpeg:
+ *             schema: { type: string, format: binary }
+ *           image/png:
+ *             schema: { type: string, format: binary }
+ *           image/webp:
+ *             schema: { type: string, format: binary }
+ *           application/pdf:
+ *             schema: { type: string, format: binary }
+ *       401:
+ *         $ref: '#/components/responses/NoAutenticado'
+ *       403:
+ *         description: El solicitante no tiene acceso a este archivo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'No tienes acceso a este archivo' }
+ *       404:
+ *         description: Certificación no encontrada o sin archivo adjunto
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example: { error: 'La certificación no tiene archivo adjunto' }
+ *       500:
+ *         $ref: '#/components/responses/ErrorServidor'
  */
 
 const { Router } = require('express');
@@ -764,5 +818,6 @@ router.get('/profiles', autenticar, autorizar('administrador'), ctrl.obtenerTodo
 router.post('/certifications', autenticar, autorizar('entrenador'), validar(esquemaCertificacion), ctrl.crearCertificacion);
 router.put('/certifications/:id', autenticar, autorizar('entrenador'), validar(esquemaCertificacion), ctrl.actualizarCertificacion);
 router.delete('/certifications/:id', autenticar, autorizar('entrenador'), ctrl.eliminarCertificacion);
+router.get('/certifications/:id/archivo', autenticar, autorizar('instruido', 'entrenador', 'administrador'), ctrl.obtenerArchivoCertificacion);
 
 module.exports = router;
