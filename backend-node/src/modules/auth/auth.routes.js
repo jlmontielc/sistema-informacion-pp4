@@ -648,6 +648,42 @@
  *         $ref: '#/components/responses/ErrorServidor'
  *
  * /api/auth/certifications/{id}:
+ *   put:
+ *     tags: [Auth]
+ *     summary: Actualizar una certificación
+ *     description: Actualiza una certificación del entrenador autenticado.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la certificación a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CertificacionRequest'
+ *     responses:
+ *       200:
+ *         description: Certificación actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Certificacion'
+ *       400:
+ *         $ref: '#/components/responses/PeticionInvalida'
+ *       401:
+ *         $ref: '#/components/responses/NoAutenticado'
+ *       403:
+ *         $ref: '#/components/responses/AccesoDenegado'
+ *       404:
+ *         $ref: '#/components/responses/NoEncontrado'
+ *       500:
+ *         $ref: '#/components/responses/ErrorServidor'
  *   delete:
  *     tags: [Auth]
  *     summary: Eliminar una certificación
@@ -726,6 +762,7 @@ router.put('/profile', autenticar, validar(esquemaActualizarPerfil), ctrl.actual
 router.get('/trainer', autenticar, autorizar('instruido'), ctrl.obtenerPerfilEntrenador);
 router.get('/profiles', autenticar, autorizar('administrador'), ctrl.obtenerTodosLosPerfiles);
 router.post('/certifications', autenticar, autorizar('entrenador'), validar(esquemaCertificacion), ctrl.crearCertificacion);
+router.put('/certifications/:id', autenticar, autorizar('entrenador'), validar(esquemaCertificacion), ctrl.actualizarCertificacion);
 router.delete('/certifications/:id', autenticar, autorizar('entrenador'), ctrl.eliminarCertificacion);
 
 module.exports = router;

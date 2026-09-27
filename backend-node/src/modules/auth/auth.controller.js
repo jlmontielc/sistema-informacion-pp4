@@ -114,6 +114,19 @@ const crearCertificacion = async (req, res, next) => {
   }
 };
 
+const actualizarCertificacion = async (req, res, next) => {
+  try {
+    const certificacion = await authService.actualizarCertificacion(req.usuario.id, req.params.id, req.body);
+    await cache.eliminar(cacheKeys.auth.perfil('entrenador', req.usuario.id));
+    await cache.eliminar(cacheKeys.auth.profiles('all'));
+    await cache.eliminarPorPatron(cacheKeys.auth.perfil('entrenador', '*'));
+    await cache.eliminarPorPatron(cacheKeys.auth.trainer('*'));
+    res.json(certificacion);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const eliminarCertificacion = async (req, res, next) => {
   try {
     const resultado = await authService.eliminarCertificacion(req.usuario.id, req.params.id);
@@ -138,5 +151,6 @@ module.exports = {
   obtenerPerfilEntrenador,
   obtenerTodosLosPerfiles,
   crearCertificacion,
+  actualizarCertificacion,
   eliminarCertificacion,
 };

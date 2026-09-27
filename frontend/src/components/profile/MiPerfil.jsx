@@ -4,6 +4,7 @@ import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
 import { DiaSelector } from '../entrenamiento/DiaSelector';
+import { CertificacionCard } from './CertificacionCard';
 import api from '../../services/api';
 import { labelObjetivo, labelNivelExperiencia } from '../../utils/constants';
 
@@ -29,6 +30,17 @@ const CAMPOS_MEDICOS = [
   { name: 'observaciones', label: 'Observaciones' },
 ];
 
+const CAMPOS_CERTIFICACION = ['nombre', 'institucion', 'fechaObtencion', 'fechaExpiracion', 'descripcion', 'imagenUrl'];
+
+const CERTIFICACION_VACIA = {
+  nombre: '',
+  institucion: '',
+  fechaObtencion: '',
+  fechaExpiracion: '',
+  descripcion: '',
+  imagenUrl: '',
+};
+
 export function MiPerfil({ perfil, onActualizar }) {
   const navigate = useNavigate();
   const [editando, setEditando] = useState(false);
@@ -42,6 +54,13 @@ export function MiPerfil({ perfil, onActualizar }) {
   const [guardandoMedico, setGuardandoMedico] = useState(false);
   const [errorMedico, setErrorMedico] = useState(null);
   const [mostrarMedicos, setMostrarMedicos] = useState(false);
+  const [certificaciones, setCertificaciones] = useState([]);
+  const [cargandoCerts, setCargandoCerts] = useState(false);
+  const [editandoCert, setEditandoCert] = useState(null);
+  const [formCert, setFormCert] = useState({ ...CERTIFICACION_VACIA });
+  const [guardandoCert, setGuardandoCert] = useState(false);
+  const [errorCert, setErrorCert] = useState(null);
+  const [successCert, setSuccessCert] = useState(null);
 
   useEffect(() => {
     if (perfil.tipo === 'instruido') {
@@ -50,6 +69,18 @@ export function MiPerfil({ perfil, onActualizar }) {
         .catch(() => {});
     }
   }, [perfil.tipo]);
+
+  useEffect(() => {
+    if (perfil.rol !== 'entrenador') return;
+    setCargandoCerts(true);
+    api.get('/auth/me')
+      .then((res) => {
+        setCertificaciones(res.data.certificaciones || []);
+        onActualizar(res.data);
+      })
+      .catch(() => setErrorCert('No se pudieron cargar las certificaciones'))
+      .finally(() => setCargandoCerts(false));
+  }, [perfil.rol]);
 
   const iniciarEdicion = () => {
     setDatos({
@@ -174,6 +205,83 @@ export function MiPerfil({ perfil, onActualizar }) {
     }
   };
 
+  const abrirNuevaCert = () => {
+    setFormCert({ ...CERTIFICACION_VACIA });
+    setEditandoCert({});
+    setErrorCert(null);
+    setSuccessCert(null);
+  };
+
+  const iniciarEdicionCert = (cert) => {
+    setFormCert({
+      nombre: cert.nombre || '',
+      institucion: cert.institucion || '',
+      fechaObtencion: cert.fechaObtencion || '',
+      fechaExpiracion: cert.fechaExpiracion || '',
+      descripcion: cert.descripcion || '',
+      imagenUrl: cert.imagenUrl || '',
+    });
+    setEditandoCert(cert);
+    setErrorCert(null);
+    setSuccessCert(null);
+  };
+
+  const cancelarCert = () => {
+    setEditandoCert(null);
+    setFormCert({ ...CERTIFICACION_VACIA });
+    setErrorCert(null);
+  };
+
+  const handleChangeCert = (e) => {
+    setFormCert({ ...formCert, [e.target.name]: e.target.value });
+  };
+
+  const recargarCertificaciones = async () => {
+    const res = await api.get('/auth/me');
+    setCertificaciones(res.data.certificaciones || []);
+  };
+
+  const guardarCert = async () => {
+    if (!(formCert.nombre || '').trim()) {
+      setErrorCert('El nombre es requerido');
+      return;
+    }
+    setGuardandoCert(true);
+    setErrorCert(null);
+    try {
+      const payload = {};
+      CAMPOS_CERTIFICACION.forEach((campo) => {
+        const valor = (formCert[campo] || '').trim();
+        if (valor) payload[campo] = valor;
+      });
+      if (editandoCert && editandoCert.id) {
+        await api.put(`/auth/certifications/${editandoCert.id}`, payload);
+      } else {
+        await api.post('/auth/certifications', payload);
+      }
+      await recargarCertificaciones();
+      setEditandoCert(null);
+      setFormCert({ ...CERTIFICACION_VACIA });
+      setSuccessCert('Certificación guardada correctamente');
+    } catch (err) {
+      setErrorCert(err.response?.data?.error || 'Error al guardar la certificación');
+    } finally {
+      setGuardandoCert(false);
+    }
+  };
+
+  const eliminarCert = async (id) => {
+    if (!window.confirm('¿Eliminar esta certificación?')) return;
+    setErrorCert(null);
+    try {
+      await api.delete(`/auth/certifications/${id}`);
+      await recargarCertificaciones();
+      setSuccessCert('Certificación eliminada correctamente');
+    } catch (err) {
+      setErrorCert(err.response?.data?.error || 'Error al eliminar la certificación');
+    }
+  };
+
   if (editando) {
     return (
       <Card header="Editar Mi Perfil">
@@ -265,6 +373,122 @@ export function MiPerfil({ perfil, onActualizar }) {
         </div>
       </div>
     </Card>
+
+      {perfil.rol === 'entrenador' && successCert && (
+        <div className="alerta alerta-success">
+          <span aria-hidden="true">✅</span>
+          <span>{successCert}</span>
+        </div>
+      )}
+
+      {perfil.rol === 'entrenador' && (
+        <Card header="Certificaciones">
+          <div className="stack">
+            {cargandoCerts && <p className="text-sm text-muted">Cargando certificaciones...</p>}
+            {!cargandoCerts && certificaciones.length === 0 && (
+              <p className="text-sm text-muted">Aún no tienes certificaciones registradas.</p>
+            )}
+            {!cargandoCerts && certificaciones.length > 0 && (
+              <div className="grid-datos">
+                {certificaciones.map((c) => (
+                  <div className="stack-sm" key={c.id}>
+                    <CertificacionCard cert={c} />
+                    <div className="form-acciones">
+                      <Button variant="secondary" size="sm" onClick={() => iniciarEdicionCert(c)}>Editar</Button>
+                      <Button variant="secondary" size="sm" onClick={() => eliminarCert(c.id)}>Eliminar</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!editandoCert && errorCert && <p className="text-sm text-error">{errorCert}</p>}
+            <div className="form-acciones">
+              <Button variant="primary" onClick={abrirNuevaCert}>Añadir certificación</Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {perfil.rol === 'entrenador' && editandoCert && (
+        <Card header={editandoCert.id ? 'Editar certificación' : 'Nueva certificación'}>
+          <div className="stack">
+            <div className="datos-grid">
+              <div className="field">
+                <label className="field-label" htmlFor="cert-nombre">Nombre</label>
+                <input
+                  id="cert-nombre"
+                  name="nombre"
+                  type="text"
+                  className="field-input"
+                  value={formCert.nombre}
+                  onChange={handleChangeCert}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="cert-institucion">Institución</label>
+                <input
+                  id="cert-institucion"
+                  name="institucion"
+                  type="text"
+                  className="field-input"
+                  value={formCert.institucion}
+                  onChange={handleChangeCert}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="cert-fecha-obtencion">Fecha de obtención</label>
+                <input
+                  id="cert-fecha-obtencion"
+                  name="fechaObtencion"
+                  type="date"
+                  className="field-input"
+                  value={formCert.fechaObtencion}
+                  onChange={handleChangeCert}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="cert-fecha-expiracion">Fecha de expiración</label>
+                <input
+                  id="cert-fecha-expiracion"
+                  name="fechaExpiracion"
+                  type="date"
+                  className="field-input"
+                  value={formCert.fechaExpiracion}
+                  onChange={handleChangeCert}
+                />
+              </div>
+              <div className="field grid-full">
+                <label className="field-label" htmlFor="cert-descripcion">Descripción</label>
+                <textarea
+                  id="cert-descripcion"
+                  name="descripcion"
+                  rows={2}
+                  className="field-input field-textarea"
+                  value={formCert.descripcion}
+                  onChange={handleChangeCert}
+                />
+              </div>
+              <div className="field grid-full">
+                <label className="field-label" htmlFor="cert-imagen-url">URL de imagen</label>
+                <input
+                  id="cert-imagen-url"
+                  name="imagenUrl"
+                  type="url"
+                  placeholder="https://"
+                  className="field-input"
+                  value={formCert.imagenUrl}
+                  onChange={handleChangeCert}
+                />
+              </div>
+            </div>
+            {errorCert && <p className="text-sm text-error">{errorCert}</p>}
+            <div className="form-acciones">
+              <Button variant="secondary" onClick={cancelarCert}>Cancelar</Button>
+              <Button variant="primary" loading={guardandoCert} onClick={guardarCert}>Guardar</Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {perfil.tipo === 'instruido' && !editandoMedico && (
         <Card header="Datos Médicos">

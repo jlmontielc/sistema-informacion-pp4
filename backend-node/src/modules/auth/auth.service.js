@@ -176,6 +176,7 @@ const _obtenerPerfil = async (usuarioId, tipo) => {
   if (tipo === 'entrenador') {
     const entrenador = await Entrenador.findByPk(usuarioId, {
       attributes: { exclude: ['contrasenaHash'] },
+      include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
     });
     if (!entrenador) {
       const err = new Error('Entrenador no encontrado');
@@ -231,7 +232,10 @@ const actualizarPerfil = async (usuarioId, tipo, datos) => {
     if (datos.especialidad !== undefined) datosActualizar.especialidad = datos.especialidad;
     if (datos.contrasena) datosActualizar.contrasenaHash = await encriptarContrasena(datos.contrasena);
     await entrenador.update(datosActualizar);
-    return Entrenador.findByPk(usuarioId, { attributes: { exclude: ['contrasenaHash'] } });
+    return Entrenador.findByPk(usuarioId, {
+      attributes: { exclude: ['contrasenaHash'] },
+      include: [{ model: Certificacion, attributes: { exclude: ['entrenadorId'] } }],
+    });
   }
 
   const instruido = await Instruido.findByPk(usuarioId);
@@ -353,6 +357,17 @@ const eliminarCertificacion = async (entrenadorId, certId) => {
   return { message: 'Certificación eliminada correctamente' };
 };
 
+const actualizarCertificacion = async (entrenadorId, certId, datos) => {
+  const cert = await Certificacion.findOne({ where: { id: certId, entrenadorId } });
+  if (!cert) {
+    const err = new Error('Certificación no encontrada');
+    err.status = 404;
+    throw err;
+  }
+  await cert.update(datos);
+  return cert;
+};
+
 module.exports = {
   iniciarSesion,
   registrar,
@@ -363,5 +378,6 @@ module.exports = {
   obtenerPerfilEntrenador,
   obtenerTodosLosPerfiles,
   crearCertificacion,
+  actualizarCertificacion,
   eliminarCertificacion,
 };
