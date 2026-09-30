@@ -296,4 +296,4 @@ Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/
 
 **Jorge Luis Montiel** — CI 31.545.512
 
-Facultad Experimental de Ciencias — LUZ · 961616 PP4: Desarrollo de Sistemas · 2025-I
+Facultad Experimental de Ciencias — LUZ · 961616 PP4: Desarrollo de Sistemas · 2026-I
