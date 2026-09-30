@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Modal } from '../common/Modal';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
+import { Icon } from '../common/Icon';
 import { ejerciciosApi } from '../../services/rutinasApi';
 
 const EXERCISES_BASE_URL = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
@@ -96,10 +96,14 @@ function preComputeTranslations(ejercicios) {
   }));
 }
 
-const GRUPO_EMOJI = {
-  'Pecho': '💪', 'Espalda': '🔙', 'Hombros': '🏋️', 'Brazos': '💪',
-  'Piernas': '🦵', 'Cintura': '🔥', 'Gemelos': '🦵', 'Antebrazos': '💪',
-  'Cardio': '🏃', 'Cuello': '🏋️',
+/* Icono SVG por grupo muscular (sustituye al antiguo mapa de emojis).
+   Grupos de fuerza → 'dumbbell'; Cintura → 'flame'; Cardio → 'heart';
+   Cuello → 'user'. */
+const GRUPO_ICONO = {
+  'Pecho': 'dumbbell', 'Espalda': 'dumbbell', 'Hombros': 'dumbbell',
+  'Brazos': 'dumbbell', 'Piernas': 'dumbbell', 'Gemelos': 'dumbbell',
+  'Antebrazos': 'dumbbell', 'Cintura': 'flame', 'Cardio': 'heart',
+  'Cuello': 'user',
 };
 
 function useDebounce(value, delay) {
@@ -314,11 +318,13 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
             <div className="catalogo-listado"><Loading text="Cargando ejercicios..." /></div>
           ) : filtrados.length === 0 ? (
             <div className="catalogo-listado">
-              <EmptyState
-                icon="🔍"
-                title="Sin resultados"
-                description="No se encontraron ejercicios con los filtros aplicados."
-              />
+              <div className="gt-vacio">
+                <Icon name="search" size={40} className="gt-vacio-icono" />
+                <p className="gt-vacio-titulo">Sin resultados</p>
+                <p className="gt-vacio-descripcion">
+                  No se encontraron ejercicios con los filtros aplicados.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="catalogo-listado">
@@ -334,7 +340,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                       onMouseEnter={() => handlePreview(ej)}
                     >
                       <div className="catalogo-item-name">
-                        {seleccionado && '✓ '}{ej.nombreTraducido}
+                        {seleccionado && <Icon name="check" size={14} />}{ej.nombreTraducido}
                       </div>
                       <div className="catalogo-item-info">
                         {ej.grupoMuscular && <span>{ej.grupoMuscular}</span>}
@@ -354,7 +360,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                     className="btn btn-secondary catalogo-cargar-mas"
                     onClick={cargarMas}
                   >
-                    Cargar mas ({Math.max(totalServer - filtrados.length, 0)} restantes)
+                    Cargar más ({Math.max(totalServer - filtrados.length, 0)} restantes)
                   </button>
                 )}
                 {!cargandoMas && hayMasPaginas && (
@@ -377,7 +383,9 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
                   />
                 ) : (
                   <div className="catalogo-sidebar-no-img">
-                    <span className="icono-grande" aria-hidden="true">{GRUPO_EMOJI[preview.grupoMuscular] || '🏋️'}</span>
+                    <span className="icono-grande" aria-hidden="true">
+                      <Icon name={GRUPO_ICONO[preview.grupoMuscular] || 'dumbbell'} size={20} />
+                    </span>
                     <span className="text-xs">Sin imagen</span>
                   </div>
                 )}
@@ -393,7 +401,9 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
               </>
             ) : (
               <div className="catalogo-sidebar-empty">
-                <span className="icono-grande" aria-hidden="true">🏋️</span>
+                <span className="icono-grande" aria-hidden="true">
+                  <Icon name="dumbbell" size={20} />
+                </span>
                 <p className="text-sm">
                   Pasa el mouse sobre un ejercicio para ver su GIF
                 </p>

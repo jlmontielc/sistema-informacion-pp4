@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
 import { rutinasAsignadasApi, hitlApi } from '../../services/rutinasApi';
 import { GenerarRutinaIAModal } from './GenerarRutinaIAModal';
 import { RecomendacionDetalle } from './RecomendacionDetalle';
+import { ConfirmacionDialog } from './ConfirmacionDialog';
 import { Icon } from '../common/Icon';
 
 const TIPO_LABELS = {
@@ -20,6 +20,8 @@ export function RecomendacionesIAView({ onRecargar }) {
   const [generarOpen, setGenerarOpen] = useState(false);
   const [verRutina, setVerRutina] = useState(null);
   const [procesando, setProcesando] = useState(false);
+  const [confirmacion, setConfirmacion] = useState(null);
+  const [errorAccion, setErrorAccion] = useState(null);
 
   const cargarRutinas = useCallback(async () => {
     setLoading(true);
@@ -36,53 +38,92 @@ export function RecomendacionesIAView({ onRecargar }) {
 
   useEffect(() => { cargarRutinas(); }, [cargarRutinas]);
 
-  const handleAprobar = async (rutinaId, datos = {}) => {
-    setProcesando(true);
-    try {
-      await hitlApi.decidir(rutinaId, {
-        accion: 'aceptada',
-        comentario: datos.observaciones || null,
-      });
-      setVerRutina(null);
-      await cargarRutinas();
-      onRecargar?.();
-    } catch (err) {
-      alert(err.response?.error || err.response?.data?.error || 'Error al aprobar la rutina');
-    } finally {
-      setProcesando(false);
-    }
+  /* Abre el diálogo de confirmación para aceptar la recomendación
+     y asignarla como rutina activa. */
+  const handleAprobar = (rutinaId, datos = {}) => {
+    const nombre = rutinas.find((r) => r.id === rutinaId)?.nombre || 'la recomendación';
+    setConfirmacion({
+      titulo: 'Aceptar recomendación',
+      mensaje: `¿Aceptar la recomendación «${nombre}» y asignarla como rutina activa?`,
+      accion: 'cian',
+      alConfirmar: async () => {
+        setConfirmacion((prev) => ({ ...prev, cargando: true }));
+        setProcesando(true);
+        try {
+          await hitlApi.decidir(rutinaId, {
+            accion: 'aceptada',
+            comentario: datos.observaciones || null,
+          });
+          setConfirmacion(null);
+          setErrorAccion(null);
+          setVerRutina(null);
+          await cargarRutinas();
+          onRecargar?.();
+        } catch (err) {
+          setConfirmacion(null);
+          setErrorAccion(err.response?.error || err.response?.data?.error || 'Error al aprobar la rutina');
+        } finally {
+          setProcesando(false);
+        }
+      },
+    });
   };
 
-  const handleRechazar = async (rutinaId, datos = {}) => {
-    setProcesando(true);
-    try {
-      await hitlApi.decidir(rutinaId, {
-        accion: 'rechazada',
-        comentario: datos.observaciones || null,
-      });
-      setVerRutina(null);
-      await cargarRutinas();
-      onRecargar?.();
-    } catch (err) {
-      alert(err.response?.error || err.response?.data?.error || 'Error al rechazar la rutina');
-    } finally {
-      setProcesando(false);
-    }
+  /* Abre el diálogo de confirmación para rechazar la recomendación
+     (permite ajustarla y generar una nueva versión). */
+  const handleRechazar = (rutinaId, datos = {}) => {
+    const nombre = rutinas.find((r) => r.id === rutinaId)?.nombre || 'la recomendación';
+    setConfirmacion({
+      titulo: 'Rechazar recomendación',
+      mensaje: `¿Rechazar la recomendación «${nombre}»? Podrás generar una nueva con ajustes.`,
+      accion: 'lavanda',
+      alConfirmar: async () => {
+        setConfirmacion((prev) => ({ ...prev, cargando: true }));
+        setProcesando(true);
+        try {
+          await hitlApi.decidir(rutinaId, {
+            accion: 'rechazada',
+            comentario: datos.observaciones || null,
+          });
+          setConfirmacion(null);
+          setErrorAccion(null);
+          setVerRutina(null);
+          await cargarRutinas();
+          onRecargar?.();
+        } catch (err) {
+          setConfirmacion(null);
+          setErrorAccion(err.response?.error || err.response?.data?.error || 'Error al rechazar la rutina');
+        } finally {
+          setProcesando(false);
+        }
+      },
+    });
   };
 
-  const handleEliminar = async (rutinaId) => {
-    if (!window.confirm('Eliminar esta recomendacion? Esta accion no se puede deshacer.')) return;
-    setProcesando(true);
-    try {
-      await rutinasAsignadasApi.eliminar(rutinaId);
-      setVerRutina(null);
-      await cargarRutinas();
-      onRecargar?.();
-    } catch (err) {
-      alert(err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la recomendacion');
-    } finally {
-      setProcesando(false);
-    }
+  /* Abre el diálogo de confirmación para eliminar la recomendación. */
+  const handleEliminar = (rutinaId) => {
+    setConfirmacion({
+      titulo: 'Eliminar recomendación',
+      mensaje: '¿Eliminar esta recomendación? Esta acción no se puede deshacer.',
+      accion: 'peligro',
+      alConfirmar: async () => {
+        setConfirmacion((prev) => ({ ...prev, cargando: true }));
+        setProcesando(true);
+        try {
+          await rutinasAsignadasApi.eliminar(rutinaId);
+          setConfirmacion(null);
+          setErrorAccion(null);
+          setVerRutina(null);
+          await cargarRutinas();
+          onRecargar?.();
+        } catch (err) {
+          setConfirmacion(null);
+          setErrorAccion(err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la recomendación');
+        } finally {
+          setProcesando(false);
+        }
+      },
+    });
   };
 
   if (loading) return <Loading text="Cargando recomendaciones IA..." />;
@@ -90,7 +131,7 @@ export function RecomendacionesIAView({ onRecargar }) {
   if (error) {
     return (
       <div className="gt-carta gt-vacio">
-        <p className="gt-vacio-icono" aria-hidden="true">⚠️</p>
+        <Icon name="close" size={40} className="gt-vacio-icono" />
         <p className="gt-vacio-texto">{error}</p>
         <button type="button" className="gt-boton-secundario" onClick={cargarRutinas}>
           Reintentar
@@ -108,18 +149,32 @@ export function RecomendacionesIAView({ onRecargar }) {
         </button>
       </div>
 
+      {errorAccion && (
+        <div className="gt-alerta-error" role="alert">
+          <Icon name="close" size={16} />
+          <span className="gt-alerta-error-texto">{errorAccion}</span>
+          <button
+            type="button"
+            className="gt-alerta-cerrar"
+            onClick={() => setErrorAccion(null)}
+            aria-label="Descartar error"
+          >
+            <Icon name="close" size={14} />
+          </button>
+        </div>
+      )}
+
       {rutinas.length === 0 ? (
         <div className="gt-carta gt-vacio">
-          <EmptyState
-            icon="🤖"
-            title="Sin recomendaciones pendientes"
-            description="Obtén una recomendación de plantilla del entrenador para un cliente. La recomendación aparecerá aqui para que la revises antes de activarla."
-            action={
-              <button type="button" className="gt-boton-primario" onClick={() => setGenerarOpen(true)}>
-                Obtener recomendación de plantilla
-              </button>
-            }
-          />
+          <Icon name="bolt" size={40} className="gt-vacio-icono" />
+          <p className="gt-vacio-titulo">Sin recomendaciones pendientes</p>
+          <p className="gt-vacio-descripcion">
+            Obtén una recomendación de plantilla del entrenador para un cliente. La
+            recomendación aparecerá aquí para que la revises antes de activarla.
+          </p>
+          <button type="button" className="gt-boton-primario" onClick={() => setGenerarOpen(true)}>
+            Obtener recomendación de plantilla
+          </button>
         </div>
       ) : (
         <div className="gt-grid">
@@ -210,6 +265,16 @@ export function RecomendacionesIAView({ onRecargar }) {
         isOpen={generarOpen}
         onClose={() => setGenerarOpen(false)}
         onGenerada={() => { cargarRutinas(); onRecargar?.(); }}
+      />
+
+      <ConfirmacionDialog
+        abierto={Boolean(confirmacion)}
+        titulo={confirmacion?.titulo || ''}
+        mensaje={confirmacion?.mensaje || ''}
+        accion={confirmacion?.accion || 'cian'}
+        cargando={Boolean(confirmacion?.cargando)}
+        onConfirmar={confirmacion?.alConfirmar}
+        onCerrar={() => setConfirmacion(null)}
       />
     </div>
   );

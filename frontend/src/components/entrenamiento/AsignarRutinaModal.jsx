@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
+import { Icon } from '../common/Icon';
 import { rutinasAsignadasApi, instruidosApi } from '../../services/rutinasApi';
 
 export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
@@ -109,11 +109,13 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
             <p>{errorClientes}</p>
           </div>
         ) : clientes.length === 0 ? (
-          <EmptyState
-            icon="👥"
-            title="Sin clientes"
-            description="No hay clientes registrados. Crea un cliente primero para poder asignarle rutinas."
-          />
+          <div className="gt-vacio">
+            <Icon name="users" size={40} className="gt-vacio-icono" />
+            <p className="gt-vacio-titulo">Sin clientes</p>
+            <p className="gt-vacio-descripcion">
+              No hay clientes registrados. Crea un cliente primero para poder asignarle rutinas.
+            </p>
+          </div>
         ) : (
           <>
             <div className="field">
@@ -161,7 +163,7 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
 
             {plantilla && (
               <div className="nota-informativa">
-                Se clonara la plantilla <strong>{plantilla.nombre}</strong> con todos sus ejercicios y dias configurados.
+                Se clonará la plantilla <strong>{plantilla.nombre}</strong> con todos sus ejercicios y días configurados.
               </div>
             )}
 

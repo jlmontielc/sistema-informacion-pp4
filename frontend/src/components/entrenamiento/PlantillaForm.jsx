@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
+import { Icon } from '../common/Icon';
 import { DiaSelector, obtenerNombreDia } from './DiaSelector';
 import { EjercicioCard } from './EjercicioCard';
 import { EjercicioCatalogoModal } from './EjercicioCatalogoModal';
@@ -69,11 +69,11 @@ const TIPO_LABELS = {
 };
 
 const OBJETIVOS = [
-  { value: 'perdida_peso', label: 'Perdida de peso' },
+  { value: 'perdida_peso', label: 'Pérdida de peso' },
   { value: 'ganancia_muscular', label: 'Ganancia muscular' },
   { value: 'mantenimiento', label: 'Mantenimiento' },
   { value: 'rendimiento', label: 'Rendimiento' },
-  { value: 'rehabilitacion', label: 'Rehabilitacion' },
+  { value: 'rehabilitacion', label: 'Rehabilitación' },
 ];
 
 const NIVELES = [
@@ -239,7 +239,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
       return;
     }
     if (form.diasSemana.length === 0) {
-      setError('Selecciona al menos un dia de la semana');
+      setError('Selecciona al menos un día de la semana');
       return;
     }
 
@@ -316,7 +316,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             className={`tab-button ${paso === 1 ? 'active' : ''}`}
             onClick={() => setPaso(1)}
           >
-            1. Datos basicos
+            1. Datos básicos
           </button>
           <button
             type="button"
@@ -346,13 +346,13 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             />
 
             <div className="field">
-              <label className="field-label">Descripcion</label>
+              <label className="field-label">Descripción</label>
               <textarea
                 className="field-input field-textarea"
                 rows={2}
                 value={form.descripcion}
                 onChange={(e) => handleChange('descripcion', e.target.value)}
-                placeholder="Descripcion breve de la plantilla..."
+                placeholder="Descripción breve de la plantilla..."
               />
             </div>
 
@@ -401,7 +401,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
               </div>
 
               <Input
-                label="Duracion (semanas)"
+                label="Duración (semanas)"
                 name="duracionSemanas"
                 type="number"
                 min={1}
@@ -422,7 +422,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
             </div>
 
             <div className="field">
-              <label className="field-label">Dias de la semana</label>
+              <label className="field-label">Días de la semana</label>
               <DiaSelector
                 seleccionados={form.diasSemana}
                 onToggle={toggleDia}
@@ -452,7 +452,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                 className="btn btn-ghost btn-sm"
                 onClick={() => setPaso(1)}
               >
-                Volver a datos basicos
+                Volver a datos básicos
               </button>
             </div>
 
@@ -477,7 +477,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
 
                 {(ejerciciosPorDia[diaActivo] || []).length === 0 ? (
                   <p className="empty-state empty-state-compacto text-sm">
-                    No hay ejercicios para este dia. Haz clic en "Agregar Ejercicio" para comenzar.
+                    No hay ejercicios para este día. Haz clic en "Agregar Ejercicio" para comenzar.
                   </p>
                 ) : (
                   <div className="stack stack-sm">
@@ -498,7 +498,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
 
             {diaActivo == null && (
               <p className="empty-state empty-state-compacto text-sm">
-                Selecciona un dia para configurar sus ejercicios
+                Selecciona un día para configurar sus ejercicios
               </p>
             )}
 
@@ -526,7 +526,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
               <Loading text="Cargando plantillas..." />
             ) : plantillasExistentes.length === 0 ? (
               <div className="empty-state">
-                <p className="empty-state-icono" aria-hidden="true">📋</p>
+                <Icon name="receipt" size={40} className="gt-vacio-icono" />
                 <p className="text-lg text-medium">
                   Sin plantillas creadas
                 </p>
@@ -539,7 +539,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                 {plantillasExistentes.map((p) => {
                   const diasNombres = p.diasSemana
                     ? Object.keys(p.diasSemana).map(Number).map(obtenerNombreDia).join(', ')
-                    : 'Sin dias';
+                    : 'Sin días';
                   const totalEjs = (p.ejercicios || []).length;
                   const estaSiendoEditada = plantillaEditandoId === p.id;
 
@@ -562,10 +562,10 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
                             )}
                           </div>
                           <div className="row text-xs text-muted">
-                            <span>📅 {diasNombres}</span>
-                            <span>🏋️ {totalEjs} ejercicio{totalEjs !== 1 ? 's' : ''}</span>
-                            {p.frecuenciaSemanal && <span>🔄 {p.frecuenciaSemanal}x/semana</span>}
-                            {p.duracionSemanas && <span>⏱ {p.duracionSemanas} semanas</span>}
+                            <span><Icon name="calendar" size={14} /> {diasNombres}</span>
+                            <span><Icon name="dumbbell" size={14} /> {totalEjs} ejercicio{totalEjs !== 1 ? 's' : ''}</span>
+                            {p.frecuenciaSemanal && <span><Icon name="history" size={14} /> {p.frecuenciaSemanal}x/semana</span>}
+                            {p.duracionSemanas && <span><Icon name="clock" size={14} /> {p.duracionSemanas} semanas</span>}
                           </div>
                           {p.descripcion && (
                             <p className="tabla-subtexto">

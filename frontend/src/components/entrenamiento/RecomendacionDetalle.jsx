@@ -52,7 +52,7 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
     <div className="gt-detalle-ia">
       {explicacion && (
         <div className="gt-nota-ia">
-          <strong>Explicacion IA:</strong> {explicacion}
+          <strong>Explicación IA:</strong> {explicacion}
         </div>
       )}
 
@@ -125,7 +125,7 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
             rows={2}
             value={comentario}
             onChange={(e) => setComentario(e.target.value)}
-            placeholder="Notas sobre la decision..."
+            placeholder="Notas sobre la decisión..."
             disabled={procesando}
           />
         </div>
@@ -156,7 +156,7 @@ export function RecomendacionDetalle({ rutina, onAprobar, onRechazar, procesando
               onClick={handleConfirmar}
               loading={procesando}
             >
-              Confirmar {decision === 'aprobada' ? 'Aprobacion' : 'Rechazo'}
+              Confirmar {decision === 'aprobada' ? 'Aprobación' : 'Rechazo'}
             </Button>
           )}
         </div>

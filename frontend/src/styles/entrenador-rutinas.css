@@ -1,22 +1,52 @@
+/* ============================================================
+   Flujo admin/entrenador de rutinas — Material 3 oscuro
+   Prefijo de clases: gt-
+   Tokens retuneados a la paleta M3 de las pestañas rediseñadas
+   (fondo #131317, superficie #1b1b1f, outline #494454).
+   ============================================================ */
+
+/* El fondo de la página se oscurece SOLO cuando el flujo gt- está
+   montado (:has no requiere tocar Layout.jsx; mismo patrón que
+   atleta.css / clientes.css / dietas.css / metabolismo.css). */
+body:has(.gt-flujo) {
+  background: #131317;
+}
+
+.app-content:has(.gt-flujo) {
+  background: #131317;
+}
+
 .gt-flujo {
   --gt-texto: #e4e1e7;
   --gt-texto-suave: #958ea0;
-  --gt-texto-tenue: #6b6b78;
+  --gt-texto-tenue: #958ea0;
   --gt-acento: #d0bcff;
   --gt-acento-medio: #a078ff;
-  --gt-fondo-carta: #181820;
-  --gt-borde-carta: #272734;
-  --gt-linea: #1b1b1f;
-  --gt-linea-media: #2a292e;
+  --gt-fondo-carta: #1b1b1f;
+  --gt-borde-carta: rgba(73, 68, 84, 0.6);
+  --gt-linea: rgba(73, 68, 84, 0.3);
+  --gt-linea-media: #494454;
   --gt-superficie: #1f1f23;
   --gt-cian: #4cd7f6;
-  --gt-peligro: #f87171;
+  --gt-peligro: #ffb4ab;
+  --gt-error-suave: rgba(255, 180, 171, 0.12);
   display: block;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 8px 24px;
   color: var(--gt-texto);
   font-family: 'Inter', sans-serif;
+}
+
+/* Foco visible naranja (mismo patrón que atleta.css y landing.css) */
+.gt-flujo :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+.modal-cyber :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
 }
 
 .gt-cabecera {
@@ -35,7 +65,7 @@
 
 .gt-titulo {
   margin: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: clamp(24px, 4.5vw, 30px);
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -65,7 +95,7 @@
   border-radius: 8px;
   background: linear-gradient(90deg, #6d3bd7, #6001d1);
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
   border: none;
@@ -100,7 +130,7 @@
   background: var(--gt-superficie);
   border: 1px solid #353439;
   color: var(--gt-texto);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -122,7 +152,7 @@
   background: var(--gt-superficie);
   border: 1px solid #353439;
   color: var(--gt-peligro);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -187,7 +217,7 @@
   border-radius: 8px;
   background: transparent;
   color: var(--gt-texto-suave);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 13px;
   font-weight: 500;
   border: 1px solid transparent;
@@ -276,7 +306,7 @@
 
 .gt-carta-titulo {
   margin: 0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -313,7 +343,7 @@
 }
 
 .gt-stat-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 24px;
   line-height: 28px;
   font-weight: 700;
@@ -356,7 +386,7 @@
   background: var(--gt-linea-media);
   color: var(--gt-texto-suave);
   border: 1px solid var(--gt-linea);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -504,7 +534,7 @@
 }
 
 .gt-metro-valor {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 34px;
   line-height: 1.1;
   font-weight: 700;
@@ -632,7 +662,7 @@
   background: transparent;
   border: none;
   color: var(--gt-acento);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -703,7 +733,7 @@
   background: var(--gt-linea-media);
   color: var(--gt-texto-suave);
   border: 1px solid var(--gt-linea);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -742,7 +772,7 @@
 }
 
 .gt-detalle .ejercicio-card-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--gt-texto);
@@ -766,9 +796,33 @@
 }
 
 .gt-vacio-icono {
+  width: 72px;
+  height: 72px;
+  padding: 16px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  color: #958ea0;
+  flex-shrink: 0;
+}
+
+.gt-vacio-titulo {
   margin: 0;
-  font-size: 40px;
-  line-height: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gt-texto);
+}
+
+.gt-vacio-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbc3d7;
+  max-width: 420px;
 }
 
 .gt-vacio-texto {
@@ -776,6 +830,48 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--gt-texto-suave);
+}
+
+/* Alerta inline M3 para errores de acción (sustituye a window.alert) */
+.gt-alerta-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gt-error-suave);
+  border: 1px solid rgba(255, 180, 171, 0.35);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--gt-peligro);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.gt-alerta-error svg {
+  flex-shrink: 0;
+}
+
+.gt-alerta-error-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.gt-alerta-cerrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--gt-peligro);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.16s;
+}
+
+.gt-alerta-cerrar:hover {
+  background: rgba(255, 180, 171, 0.14);
 }
 
 .gt-seccion-ia {
@@ -835,7 +931,7 @@
 }
 
 .gt-metricas-panel .rutina-resumen-stat-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #fff;
@@ -947,7 +1043,7 @@
 
 .gt-detalle-ia .btn {
   border-radius: 8px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -1076,8 +1172,8 @@
 }
 
 .modal-cyber {
-  background: #0e0e12;
-  border: 1px solid #23232e;
+  background: #1b1b1f;
+  border: 1px solid #494454;
   border-radius: 16px;
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
   color: #e4e1e7;
@@ -1110,7 +1206,7 @@
 }
 
 .modal-cyber .modal-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: #e4e1e7;
@@ -1187,7 +1283,7 @@
 
 .modal-cyber .btn {
   border-radius: 8px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-weight: 600;
 }
 
@@ -1259,7 +1355,7 @@
   border-radius: 8px;
   background: transparent;
   color: #958ea0;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 13px;
   font-weight: 500;
   border: 1px solid transparent;
@@ -1304,7 +1400,7 @@
   background: #2a292e;
   color: #958ea0;
   border: 1px solid #1b1b1f;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1359,7 +1455,7 @@
 }
 
 .modal-cyber .card-titulo {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   color: #e4e1e7;
 }
 
@@ -1535,7 +1631,7 @@
 }
 
 .modal-cyber .ejercicio-card-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
   color: #e4e1e7;
 }
 
@@ -1573,7 +1669,7 @@
 
 .modal-cyber .ia-panel h4 {
   color: #e4e1e7;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
 }
 
 .modal-cyber .ia-panel-exito {
@@ -1639,6 +1735,42 @@
   color: #958ea0;
 }
 
+/* ===== Ajustes para iconos SVG que sustituyen a emojis ===== */
+
+/* Icono de aviso del panel IA (el SVG no hereda el font-size del emoji) */
+.modal-cyber .ia-panel-icono {
+  display: inline-flex;
+  align-items: center;
+  color: #fbbf24;
+}
+
+/* Iconos grandes del catálogo (vista previa y panel vacío) */
+.modal-cyber .icono-grande {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+/* Marca de verificación del ítem seleccionado del catálogo */
+.modal-cyber .catalogo-item-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-cyber .catalogo-item-name svg {
+  flex-shrink: 0;
+  color: #34d399;
+}
+
+/* Chips de resumen del formulario de plantillas (icono + texto) */
+.modal-cyber .row.text-xs > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .modal-cyber .nota-informativa {
   background: #131316;
   border: 1px solid #1f1f29;
@@ -1679,5 +1811,176 @@
   .modal-cyber .field-input {
     animation: none;
     transition: none;
+  }
+}
+
+/* =============================================================
+   ConfirmacionDialog — diálogo de confirmación M3 (prefijo cd-)
+   Reutiliza el Modal global con .modal-cyber; solo define el
+   cuerpo (icono + mensaje), la fila de acciones y el spinner.
+   ============================================================= */
+
+.cd-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+
+.cd-icono-marco {
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  flex-shrink: 0;
+}
+
+.cd-icono-marco-peligro {
+  color: #ffb4ab;
+}
+
+.cd-icono-marco-cian {
+  color: #4cd7f6;
+}
+
+.cd-icono-marco-lavanda {
+  color: #d2bbff;
+}
+
+.cd-icono-marco-normal {
+  color: #d0bcff;
+}
+
+.cd-mensaje {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+  max-width: 380px;
+}
+
+.cd-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: #ffb4ab;
+  background: var(--gt-error-suave, rgba(255, 180, 171, 0.12));
+  border: 1px solid rgba(255, 180, 171, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-width: 380px;
+}
+
+.cd-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cd-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 112px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.16s, background 0.16s, border-color 0.16s, transform 0.16s;
+}
+
+.cd-boton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.cd-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
+
+.cd-boton-cancelar {
+  background: transparent;
+  border-color: #494454;
+  color: #cbc3d7;
+}
+
+.cd-boton-cancelar:hover:not(:disabled) {
+  border-color: #958ea0;
+  color: #e4e1e7;
+}
+
+.cd-boton-peligro {
+  background: #ffb4ab;
+  color: #690005;
+}
+
+.cd-boton-peligro:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.cd-boton-cian {
+  background: #4cd7f6;
+  color: #003640;
+}
+
+.cd-boton-cian:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.cd-boton-lavanda {
+  background: #d2bbff;
+  color: #3f008e;
+}
+
+.cd-boton-lavanda:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.cd-boton-primario {
+  background: linear-gradient(90deg, #6d3bd7, #a078ff);
+  color: #e4e1e7;
+}
+
+.cd-boton-primario:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.cd-spinner {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cd-spinner {
+    animation: cd-girar 0.6s linear infinite;
+  }
+}
+
+@keyframes cd-girar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

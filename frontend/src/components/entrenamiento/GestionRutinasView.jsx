@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
 import { plantillasApi, rutinasAsignadasApi } from '../../services/rutinasApi';
 import { PlantillaForm } from './PlantillaForm';
 import { AsignarRutinaModal } from './AsignarRutinaModal';
 import { RecomendacionesIAView } from './RecomendacionesIAView';
+import { ConfirmacionDialog } from './ConfirmacionDialog';
 import { DiaSelector, obtenerNombreDia } from './DiaSelector';
 import { EjercicioCard } from './EjercicioCard';
 import { useAuth } from '../../context/AuthContext';
@@ -37,6 +37,7 @@ export function GestionRutinasView() {
   const [verRutina, setVerRutina] = useState(null);
   const [diaVer, setDiaVer] = useState(null);
   const [recomendacionesCount, setRecomendacionesCount] = useState(0);
+  const [confirmacion, setConfirmacion] = useState(null);
 
   const cargarDatos = useCallback(async () => {
     setLoading(true);
@@ -60,24 +61,50 @@ export function GestionRutinasView() {
 
   useEffect(() => { cargarDatos(); }, [cargarDatos]);
 
-  const handleEliminarPlantilla = async (id) => {
-    if (!window.confirm('Eliminar esta plantilla?')) return;
-    try {
-      await plantillasApi.eliminar(id);
-      cargarDatos();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Error al eliminar la plantilla');
-    }
+  /* Abre el diálogo de confirmación para eliminar una plantilla. */
+  const handleEliminarPlantilla = (id) => {
+    setConfirmacion({
+      titulo: 'Eliminar plantilla',
+      mensaje: '¿Eliminar esta plantilla? Esta acción no se puede deshacer.',
+      accion: 'peligro',
+      alConfirmar: async () => {
+        setConfirmacion((prev) => ({ ...prev, cargando: true, error: null }));
+        try {
+          await plantillasApi.eliminar(id);
+          setConfirmacion(null);
+          cargarDatos();
+        } catch (err) {
+          setConfirmacion((prev) => ({
+            ...prev,
+            cargando: false,
+            error: err.response?.data?.message || 'Error al eliminar la plantilla',
+          }));
+        }
+      },
+    });
   };
 
-  const handleEliminarRutina = async (id) => {
-    if (!window.confirm('Eliminar esta rutina asignada? Esta accion no se puede deshacer.')) return;
-    try {
-      await rutinasAsignadasApi.eliminar(id);
-      cargarDatos();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Error al eliminar la rutina');
-    }
+  /* Abre el diálogo de confirmación para eliminar una rutina asignada. */
+  const handleEliminarRutina = (id) => {
+    setConfirmacion({
+      titulo: 'Eliminar rutina asignada',
+      mensaje: '¿Eliminar esta rutina asignada? Esta acción no se puede deshacer.',
+      accion: 'peligro',
+      alConfirmar: async () => {
+        setConfirmacion((prev) => ({ ...prev, cargando: true, error: null }));
+        try {
+          await rutinasAsignadasApi.eliminar(id);
+          setConfirmacion(null);
+          cargarDatos();
+        } catch (err) {
+          setConfirmacion((prev) => ({
+            ...prev,
+            cargando: false,
+            error: err.response?.data?.message || 'Error al eliminar la rutina',
+          }));
+        }
+      },
+    });
   };
 
   const handleAbrirAsignar = (plantilla = null) => {
@@ -94,7 +121,7 @@ export function GestionRutinasView() {
       <div className="gt-flujo">
         <div className="gt-cabecera">
           <div className="gt-cabecera-texto">
-            <h2 className="gt-titulo">{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
+            <h2 className="gt-titulo">{isAdmin ? 'Gestión de Rutinas' : 'Mis Rutinas'}</h2>
             <p className="gt-sub">
               {isAdmin
                 ? 'Administra plantillas y rutinas asignadas a todos los clientes'
@@ -103,7 +130,7 @@ export function GestionRutinasView() {
           </div>
         </div>
         <div className="gt-carta gt-vacio">
-          <p className="gt-vacio-icono" aria-hidden="true">⚠️</p>
+          <Icon name="close" size={40} className="gt-vacio-icono" />
           <p className="gt-vacio-texto">{error}</p>
           <button type="button" className="gt-boton-secundario" onClick={cargarDatos}>
             Reintentar
@@ -117,7 +144,7 @@ export function GestionRutinasView() {
     <div className="gt-flujo">
       <div className="gt-cabecera">
         <div className="gt-cabecera-texto">
-          <h2 className="gt-titulo">{isAdmin ? 'Gestion de Rutinas' : 'Mis Rutinas'}</h2>
+          <h2 className="gt-titulo">{isAdmin ? 'Gestión de Rutinas' : 'Mis Rutinas'}</h2>
           <p className="gt-sub">
             {isAdmin
               ? 'Administra plantillas y rutinas asignadas a todos los clientes'
@@ -197,20 +224,18 @@ export function GestionRutinasView() {
         <>
           {plantillas.length === 0 ? (
             <div className="gt-carta gt-vacio">
-              <EmptyState
-                icon="📋"
-                title="Sin plantillas"
-                description="Crea tu primera plantilla de entrenamiento para comenzar a asignar rutinas."
-                action={
-                  <button
-                    type="button"
-                    className="gt-boton-primario"
-                    onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}
-                  >
-                    Crear Plantilla
-                  </button>
-                }
-              />
+              <Icon name="receipt" size={40} className="gt-vacio-icono" />
+              <p className="gt-vacio-titulo">Sin plantillas</p>
+              <p className="gt-vacio-descripcion">
+                Crea tu primera plantilla de entrenamiento para comenzar a asignar rutinas.
+              </p>
+              <button
+                type="button"
+                className="gt-boton-primario"
+                onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}
+              >
+                Crear Plantilla
+              </button>
             </div>
           ) : (
             <div className="gt-grid">
@@ -289,32 +314,30 @@ export function GestionRutinasView() {
         <>
           {rutinas.length === 0 ? (
             <div className="gt-carta gt-vacio">
-              <EmptyState
-                icon="🏋️"
-                title="Sin rutinas asignadas"
-                description="Selecciona una plantilla y asignala a un cliente para que comience a entrenar."
-                action={
-                  plantillas.length > 0
-                    ? (
-                      <button
-                        type="button"
-                        className="gt-boton-primario"
-                        onClick={() => handleAbrirAsignar(plantillas[0])}
-                      >
-                        Asignar Rutina
-                      </button>
-                    )
-                    : (
-                      <button
-                        type="button"
-                        className="gt-boton-primario"
-                        onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}
-                      >
-                        Crear Plantilla
-                      </button>
-                    )
-                }
-              />
+              <Icon name="dumbbell" size={40} className="gt-vacio-icono" />
+              <p className="gt-vacio-titulo">Sin rutinas asignadas</p>
+              <p className="gt-vacio-descripcion">
+                Selecciona una plantilla y asígnala a un cliente para que comience a entrenar.
+              </p>
+              {plantillas.length > 0
+                ? (
+                  <button
+                    type="button"
+                    className="gt-boton-primario"
+                    onClick={() => handleAbrirAsignar(plantillas[0])}
+                  >
+                    Asignar Rutina
+                  </button>
+                )
+                : (
+                  <button
+                    type="button"
+                    className="gt-boton-primario"
+                    onClick={() => { setPlantillaEdit(null); setFormOpen(true); }}
+                  >
+                    Crear Plantilla
+                  </button>
+                )}
             </div>
           ) : (
             <div className="gt-grid">
@@ -350,7 +373,7 @@ export function GestionRutinasView() {
                       )}
 
                       <div className="gt-dias">
-                        <span className="gt-dias-label">Dias de entrenamiento</span>
+                        <span className="gt-dias-label">Días de entrenamiento</span>
                         <div className="gt-dias-fila">
                           {DIAS_SEMANA.map((d) => {
                             const activo = diasActivos.includes(d);
@@ -443,7 +466,7 @@ export function GestionRutinasView() {
                               </h4>
                               {(r.ejercicios || []).filter((e) => e.dia === diaVer).length === 0 ? (
                                 <p className="gt-detalle-vacio">
-                                  Sin ejercicios para este dia
+                                  Sin ejercicios para este día
                                 </p>
                               ) : (
                                 <div className="gt-detalle-lista">
@@ -489,6 +512,17 @@ export function GestionRutinasView() {
         onClose={() => { setAsignarOpen(false); setPlantillaAsignar(null); }}
         plantilla={plantillaAsignar}
         onSaved={cargarDatos}
+      />
+
+      <ConfirmacionDialog
+        abierto={Boolean(confirmacion)}
+        titulo={confirmacion?.titulo || ''}
+        mensaje={confirmacion?.mensaje || ''}
+        accion={confirmacion?.accion || 'peligro'}
+        cargando={Boolean(confirmacion?.cargando)}
+        error={confirmacion?.error || null}
+        onConfirmar={confirmacion?.alConfirmar}
+        onCerrar={() => setConfirmacion(null)}
       />
     </div>
   );

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
+import { Icon } from '../common/Icon';
 import { hitlApi, instruidosApi, plantillasApi } from '../../services/rutinasApi';
 
 export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
@@ -85,11 +85,13 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
             {loadingClientes ? (
               <Loading text="Cargando clientes..." />
             ) : clientes.length === 0 ? (
-              <EmptyState
-                icon="👥"
-                title="Sin clientes"
-                description="No hay clientes registrados para recomendar plantillas."
-              />
+              <div className="gt-vacio">
+                <Icon name="users" size={40} className="gt-vacio-icono" />
+                <p className="gt-vacio-titulo">Sin clientes</p>
+                <p className="gt-vacio-descripcion">
+                  No hay clientes registrados para recomendar plantillas.
+                </p>
+              </div>
             ) : (
               <>
                 <div className="field">
@@ -233,7 +235,9 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
 
               return (
                 <div className="ia-panel ia-panel-aviso row">
-                  <span className="ia-panel-icono" aria-hidden="true">⚠️</span>
+                  <span className="ia-panel-icono" aria-hidden="true">
+                    <Icon name="close" size={22} />
+                  </span>
                   <div>
                     <p className="text-medium">
                       {titulo}
