@@ -2,7 +2,9 @@ import { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+/* `className` es un prop aditivo y retrocompatible: los usos existentes no
+   lo pasan y quedan idénticos; solo DietasPage pasa "modal-dietas". */
+export function Modal({ isOpen, onClose, title, children, size = 'md', className = '' }) {
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') onClose();
   }, [onClose]);
@@ -22,11 +24,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
   return createPortal(
     <div
-      className="modal-overlay"
+      className={`modal-overlay${className ? ` ${className}-overlay` : ''}`}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className={`modal-content modal-${size}`}
+        className={`modal-content modal-${size}${className ? ` ${className}` : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}

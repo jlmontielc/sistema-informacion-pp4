@@ -1,62 +1,120 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Loading } from '../common/Loading';
 import { EmptyState } from '../common/EmptyState';
+import { Icon } from '../common/Icon';
 import { rutinasAsignadasApi, registroEntrenamientoApi } from '../../services/rutinasApi';
-import { obtenerNombreDia, obtenerAbbrDia, obtenerDiaActual } from './DiaSelector';
-import { EjercicioCard } from './EjercicioCard';
+import { useResumenSemanal } from '../../hooks/useResumenSemanal';
+import { useSesionAbierta } from '../../hooks/useSesionAbierta';
+import { obtenerDiaActual, DiaSelector } from './DiaSelector';
 import { RegistroEntrenamientoModal } from './RegistroEntrenamientoModal';
+import { MiRutinaCabecera } from './MiRutinaCabecera';
+import { VistaSemanalRutina } from './VistaSemanalRutina';
+import {
+  abreviarDia,
+  estimarTiempoSesion,
+  extraerNotasRegistro,
+  fechaDeDiaSemana,
+  formatearDia,
+  formatearDuracion,
+  formatearFechaCorta,
+  formatearFechaLarga,
+} from '../../utils/fechasRutina';
 
-const DIAS_NUM = [1, 2, 3, 4, 5, 6, 7];
+const PESTANAS = [
+  { id: 'dia', etiqueta: 'Rutina del día' },
+  { id: 'semana', etiqueta: 'Vista semanal' },
+  { id: 'historial', etiqueta: 'Historial' },
+];
+
+function ordenar(ejercicios) {
+  return [...(ejercicios || [])].sort((a, b) => (a.orden || 0) - (b.orden || 0));
+}
 
 export function InstruidoRutinasView() {
-  const [tab, setTab] = useState('hoy');
+  const [pestana, setPestana] = useState('dia');
+  const [dia, setDia] = useState(obtenerDiaActual());
   const [rutina, setRutina] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [diaActual, setDiaActual] = useState(obtenerDiaActual());
-  const [registrando, setRegistrando] = useState(false);
-  const [resumen, setResumen] = useState(null);
+  const [cargandoRutina, setCargandoRutina] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [historial, setHistorial] = useState([]);
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
 
   const cargarRutina = useCallback(async () => {
-    setLoading(true);
+    setCargandoRutina(true);
     try {
-      const res = await rutinasAsignadasApi.listar();
-      const rutinas = res.data?.rutinas || res.data || [];
-      const activa = rutinas.find((r) => r.activa);
-      setRutina(activa || null);
-      if (activa) {
-        try {
-          const resR = await rutinasAsignadasApi.obtenerResumen(activa.id);
-          setResumen(resR.data);
-        } catch {
-          setResumen(null);
-        }
-      }
+      const respuesta = await rutinasAsignadasApi.listar();
+      const rutinas = Array.isArray(respuesta?.data)
+        ? respuesta.data
+        : respuesta?.data?.rutinas || [];
+      setRutina(rutinas.find((item) => item.activa) || rutinas[0] || null);
     } catch {
       setRutina(null);
     } finally {
-      setLoading(false);
+      setCargandoRutina(false);
     }
   }, []);
 
-  useEffect(() => { cargarRutina(); }, [cargarRutina]);
+  useEffect(() => {
+    cargarRutina();
+  }, [cargarRutina]);
 
-  const ejerciciosDelDia = (rutina?.ejercicios || []).filter((e) => e.dia === diaActual);
+  const resumenSemana = useResumenSemanal(rutina);
+  const { recargar: recargarSemana } = resumenSemana;
+  /* Solo lectura: la sesion abierta se pinta en la cabecera y el modal la
+     reutiliza; la vista diaria nunca crea series. */
+  const sesionAbierta = useSesionAbierta(rutina);
+  const { recargar: recargarSesion } = sesionAbierta;
 
-  const handleRegistrarEntrenamiento = () => {
-    if (!rutina || ejerciciosDelDia.length === 0) return;
-    setModalAbierto(true);
-  };
+  const ejerciciosDelDia = useMemo(
+    () => ordenar((rutina?.ejercicios || []).filter((item) => Number(item.dia) === dia)),
+    [rutina, dia]
+  );
+
+  const resumenDia = useMemo(
+    () => resumenSemana.dias.find((item) => Number(item.dia) === dia) || null,
+    [resumenSemana.dias, dia]
+  );
+
+  const seriesPlaneadas = useMemo(
+    () => ejerciciosDelDia.reduce((acc, item) => acc + (Number(item.series) || 0), 0),
+    [ejerciciosDelDia]
+  );
+
+  const seriesRegistradas = useMemo(
+    () =>
+      ejerciciosDelDia.reduce(
+        (acc, item) =>
+          acc + Object.keys(sesionAbierta.series?.[item.ejercicioId] || {}).length,
+        0
+      ),
+    [ejerciciosDelDia, sesionAbierta.series]
+  );
+
+  /* El resumen de la semana solo trae registros completados: si el día elegido
+     tiene sesión abierta, su avance se cuenta aparte. */
+  const seriesHechasDia = resumenDia?.estado === 'completado' ? resumenDia.series : seriesRegistradas;
+
+  const duracionEstimada = useMemo(
+    () => estimarTiempoSesion(ejerciciosDelDia),
+    [ejerciciosDelDia]
+  );
+
+  /* Nombre real de la sesion ("Día de Empuje", "Tirón", ...) si el entrenador
+     lo configuró en la rutina; si no, se omite el distintivo. */
+  const nombreSesion = useMemo(() => {
+    const diaSemana = rutina?.diasSemana?.[String(dia)];
+    return diaSemana?.nombre || resumenDia?.nombreSesion || '';
+  }, [rutina, dia, resumenDia]);
 
   const cargarHistorial = useCallback(async () => {
     setCargandoHistorial(true);
     try {
-      const res = await registroEntrenamientoApi.listar();
-      const registros = res.data?.registros || res.data || [];
+      const respuesta = await registroEntrenamientoApi.listar();
+      const registros = Array.isArray(respuesta?.data)
+        ? respuesta.data
+        : respuesta?.data?.registros || [];
       setHistorial(registros);
     } catch {
       setHistorial([]);
@@ -66,42 +124,38 @@ export function InstruidoRutinasView() {
   }, []);
 
   useEffect(() => {
-    if (tab === 'historial') {
-      cargarHistorial();
-    }
-  }, [tab, cargarHistorial]);
+    if (pestana === 'historial') cargarHistorial();
+  }, [pestana, cargarHistorial]);
 
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '-';
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
+  /* Tras finalizar hay que invalidar el resumen semanal y el de la sesión. */
+  const handleFinalizado = useCallback(() => {
+    recargarSemana();
+    recargarSesion();
+    cargarHistorial();
+  }, [recargarSemana, recargarSesion, cargarHistorial]);
 
-  const extraerVolumen = (observaciones) => {
-    if (!observaciones) return null;
-    const match = observaciones.match(/"volumenTotal":([0-9.]+)/);
-    return match ? parseFloat(match[1]) : null;
-  };
+  const handleIrADia = useCallback((numero) => {
+    setDia(numero);
+    setPestana('dia');
+  }, []);
 
-  if (loading) return <Loading text="Cargando tu rutina..." />;
+  /* "Iniciar" en la vista semanal lleva al día y, si es hoy, abre el registro. */
+  const handleAbrirDia = useCallback((numero) => {
+    handleIrADia(numero);
+    if (numero === obtenerDiaActual()) setModalAbierto(true);
+  }, [handleIrADia]);
+
+  if (cargandoRutina) return <Loading text="Cargando tu rutina..." />;
 
   if (!rutina) {
     return (
-      <div className="page">
-        <div className="page-header">
-          <div className="page-header-text">
-            <h2 className="page-title">Mi Rutina</h2>
-            <p className="page-subtitle">Tu plan de entrenamiento personalizado</p>
-          </div>
-        </div>
+      <div className="page mi-rutina">
+        <MiRutinaCabecera rutina={null} semana={{ etiqueta: '', rango: '' }} />
         <Card>
           <EmptyState
-            icon="🏋️"
+            icon={<Icon name="dumbbell" size={48} />}
             title="Sin rutina activa"
-            description="Tu entrenador aun no te ha asignado una rutina de entrenamiento. Pronto tendras tu plan personalizado."
+            description="Tu entrenador aún no te ha asignado una rutina de entrenamiento. Pronto tendrás tu plan personalizado."
           />
         </Card>
       </div>
@@ -109,197 +163,265 @@ export function InstruidoRutinasView() {
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h2 className="page-title">Mi Rutina</h2>
-          <p className="page-subtitle">
-            {rutina.nombre} · {rutina.frecuenciaSemanal}x/semana
-          </p>
-        </div>
+    <div className="page mi-rutina">
+      {pestana !== 'historial' && (
+        <MiRutinaCabecera
+          rutina={rutina}
+          semana={resumenSemana.semana}
+          sesionAbierta={sesionAbierta.sesionId ? sesionAbierta : null}
+        />
+      )}
+
+      <div className="tabs-container mi-rutina-pestanas" role="tablist" aria-label="Vistas de la rutina">
+        {PESTANAS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`pestana-${item.id}`}
+            aria-selected={pestana === item.id}
+            aria-controls={`panel-${item.id}`}
+            className={`tab-button ${pestana === item.id ? 'active' : ''}`}
+            onClick={() => setPestana(item.id)}
+          >
+            {item.etiqueta}
+          </button>
+        ))}
       </div>
 
-      <div className="tabs-container">
-        <button
-          type="button"
-          className={`tab-button ${tab === 'hoy' ? 'active' : ''}`}
-          onClick={() => setTab('hoy')}
+      {pestana === 'dia' && (
+        <section
+          id="panel-dia"
+          role="tabpanel"
+          aria-labelledby="pestana-dia"
+          className="mi-rutina-panel"
         >
-          Rutina del Dia
-        </button>
-        <button
-          type="button"
-          className={`tab-button ${tab === 'semana' ? 'active' : ''}`}
-          onClick={() => setTab('semana')}
-        >
-          Vista Semanal
-        </button>
-        <button
-          type="button"
-          className={`tab-button ${tab === 'historial' ? 'active' : ''}`}
-          onClick={() => setTab('historial')}
-        >
-          Historial
-        </button>
-      </div>
-
-      {tab === 'hoy' && (
-        <Card>
-          <div className="card-body stack">
-            <div className="row-between">
+          <section className="mi-rutina-workout">
+            <div className="mi-rutina-workout-cabecera">
               <div>
-                <h3 className="card-titulo card-titulo-lg">
-                  {obtenerNombreDia(diaActual)}
-                </h3>
-                <p className="text-sm text-muted">
-                  {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                <h2 className="mi-rutina-workout-dia">
+                  {formatearDia(dia)}
+                  {nombreSesion && (
+                    <span className="mi-rutina-workout-badge">{nombreSesion}</span>
+                  )}
+                </h2>
+                <p className="mi-rutina-workout-fecha">
+                  {formatearFechaLarga(fechaDeDiaSemana(dia))}
+                  {duracionEstimada ? ` • Duración estimada: ${formatearDuracion(duracionEstimada)}` : ''}
                 </p>
               </div>
-              <span className={`rutina-tipo-badge ${rutina.tipo}`}>
-                {rutina.tipo}
-              </span>
             </div>
 
-            {ejerciciosDelDia.length === 0 ? (
-              <div className="empty-state">
-                <p className="empty-state-icono" aria-hidden="true">😴</p>
-                <p className="text-lg text-bold">
-                  Dia de descanso
-                </p>
-                <p className="text-sm text-muted">
-                  No hay ejercicios programados para hoy
-                </p>
+            <div className="mi-rutina-dias">
+              <DiaSelector
+                seleccionados={[dia]}
+                onToggle={(numero) => setDia(numero)}
+              />
+            </div>
+
+            <div className="mi-rutina-progreso">
+              <span className="mi-rutina-progreso-etiqueta">Día</span>
+              <div className="mi-rutina-progreso-cuerpo">
+                <div className="mi-rutina-progreso-cabecera">
+                  <span className="mi-rutina-progreso-titulo">
+                    {`${abreviarDia(dia)} ${formatearFechaCorta(fechaDeDiaSemana(dia))}`}
+                  </span>
+                  <span className="mi-rutina-progreso-cifras">
+                    {`${seriesHechasDia}/${seriesPlaneadas || '—'} `}
+                    <span className="mi-rutina-progreso-vistos">vistas</span>
+                  </span>
+                </div>
+                <div
+                  className="mi-rutina-barra"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={seriesPlaneadas || 0}
+                  aria-valuenow={seriesHechasDia}
+                  aria-label="Series completadas del día"
+                >
+                  <div
+                    className="mi-rutina-barra-relleno"
+                    style={{
+                      width: `${
+                        seriesPlaneadas > 0
+                          ? Math.min(100, Math.round((seriesHechasDia / seriesPlaneadas) * 100))
+                          : 0
+                      }%`,
+                    }}
+                  />
+                </div>
               </div>
+            </div>
+
+            {sesionAbierta.error && (
+              <p className="mi-rutina-error-linea" role="alert">
+                {sesionAbierta.error}
+              </p>
+            )}
+
+            {ejerciciosDelDia.length === 0 ? (
+              <Card>
+                <EmptyState
+                  icon={<Icon name="dumbbell" size={48} />}
+                  title="Día de descanso"
+                  description="No hay ejercicios programados para este día. Aprovecha para recuperarte."
+                />
+              </Card>
             ) : (
               <>
-                <div className="stack stack-sm">
-                  {ejerciciosDelDia
-                    .sort((a, b) => a.orden - b.orden)
-                    .map((ej, idx) => (
-                      <EjercicioCard
-                        key={`${ej.ejercicioId}-${idx}`}
-                        ejercicio={ej}
-                        nombreEjercicio={ej.nombre}
-                        showActions={false}
-                      />
-                    ))}
+                <div className="mi-rutina-ejercicios">
+                  {ejerciciosDelDia.map((ejercicio, indice) => (
+                    <article key={ejercicio.ejercicioId} className="mi-rutina-ejercicio">
+                      <div className="mi-rutina-ejercicio-cabecera">
+                        <div>
+                          <span className="mi-rutina-ejercicio-etiqueta">{`Ejercicio ${indice + 1}`}</span>
+                          <h3 className="mi-rutina-ejercicio-nombre">{ejercicio.nombre}</h3>
+                        </div>
+                        <span className="mi-rutina-resumen">
+                          <span className="mi-rutina-resumen-num">{ejercicio.series}</span> series
+                          <span aria-hidden="true"> x </span>
+                          <span className="mi-rutina-resumen-num">{ejercicio.repeticiones}</span> reps
+                          {Number(ejercicio.descansoSegundos) > 0 && (
+                            <>
+                              <span aria-hidden="true"> • </span>
+                              <span className="mi-rutina-resumen-num">
+                                {`${ejercicio.descansoSegundos}s`}
+                              </span>{' '}
+                              descanso
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div className="mi-rutina-ejercicio-pie">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mi-rutina-enlace"
+                          onClick={() => setModalAbierto(true)}
+                        >
+                          Registrar series
+                        </Button>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-                <div className="text-center">
+
+                <div className="mi-rutina-acciones">
                   <Button
-                    onClick={handleRegistrarEntrenamiento}
-                    loading={registrando}
+                    variant="primary"
                     size="lg"
+                    onClick={() => setModalAbierto(true)}
                   >
-                    Registrar Entrenamiento
+                    Registrar entrenamiento
                   </Button>
                 </div>
+                <p className="mi-rutina-acciones-nota">
+                  Los datos se sincronizarán inmediatamente con tu plan y tu panel de progreso.
+                </p>
               </>
             )}
-          </div>
-        </Card>
+          </section>
+        </section>
       )}
 
-      {tab === 'semana' && (
-        <div className="semana-grid">
-          {DIAS_NUM.map((num) => {
-            const ejerciciosDelDiaSemana = (rutina.ejercicios || []).filter((e) => e.dia === num);
-            const esHoy = num === diaActual;
-            return (
-              <div key={num} className={`semana-dia ${esHoy ? 'hoy' : ''}`}>
-                <div className="semana-dia-header">
-                  {obtenerAbbrDia(num)}
-                  {esHoy && ' (Hoy)'}
-                </div>
-                <div className="semana-dia-body">
-                  {ejerciciosDelDiaSemana.length === 0 ? (
-                    <div className="semana-dia-descanso">Descanso</div>
-                  ) : (
-                    ejerciciosDelDiaSemana
-                      .sort((a, b) => a.orden - b.orden)
-                      .map((ej, idx) => (
-                        <div key={idx} className="semana-ejercicio-item">
-                          <strong>{ej.nombre || `Ej ${idx + 1}`}</strong>
-                          {ej.series}×{ej.repeticiones}
-                          {ej.cargaKg > 0 ? ` · ${ej.cargaKg}kg` : ''}
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+      {pestana === 'semana' && (
+        <section
+          id="panel-semana"
+          role="tabpanel"
+          aria-labelledby="pestana-semana"
+          className="mi-rutina-panel"
+        >
+          <VistaSemanalRutina
+            dias={resumenSemana.dias}
+            semana={resumenSemana.semana}
+            tipoRutina={rutina.tipo}
+            diasCompletados={resumenSemana.diasCompletados}
+            diasPlanificados={resumenSemana.diasPlanificados}
+            metricas={{
+              tiempoTotalMin: resumenSemana.tiempoTotalMin,
+              seriesTotales: resumenSemana.seriesTotales,
+              repeticionesTotales: resumenSemana.repeticionesTotales,
+              volumenTotalKg: resumenSemana.volumenTotalKg,
+            }}
+            cargando={resumenSemana.cargando}
+            error={resumenSemana.error}
+            grupos={resumenSemana.gruposMusculares}
+            onReintentar={recargarSemana}
+            onAbrirDia={handleAbrirDia}
+            onIrADia={handleIrADia}
+          />
+        </section>
       )}
 
-      {tab === 'historial' && (
-        <div className="stack">
+      {pestana === 'historial' && (
+        <section
+          id="panel-historial"
+          role="tabpanel"
+          aria-labelledby="pestana-historial"
+          className="mi-rutina-panel"
+        >
           {cargandoHistorial ? (
             <Loading text="Cargando historial..." />
           ) : historial.length === 0 ? (
             <Card>
               <EmptyState
-                icon="📋"
+                icon={<Icon name="chartline" size={48} />}
                 title="Sin registros"
-                description="Aun no has registrado ningun entrenamiento."
+                description="Aún no has registrado ningún entrenamiento."
               />
             </Card>
           ) : (
-            historial.map((reg) => {
-              const volumen = extraerVolumen(reg.observaciones);
-              return (
-                <Card key={reg.id}>
-                  <div className="card-body stack">
-                    <div className="row-between">
+            <ul className="mi-rutina-historial">
+              {historial.map((registro) => {
+                const completado = registro.estado === 'completado';
+                const notas = extraerNotasRegistro(registro.observaciones);
+                return (
+                  <li key={registro.id} className="mi-rutina-historial-item">
+                    <div className="mi-rutina-historial-cabecera">
                       <div>
-                        <h4 className="card-titulo card-titulo-md">
-                          {formatearFecha(reg.fecha)}
-                        </h4>
-                        <p className="text-sm text-muted">
-                          {reg.estado === 'completado' ? 'Entrenamiento completado' : 'Sesion cancelada'}
+                        <h3 className="mi-rutina-historial-fecha">
+                          {formatearFechaLarga(registro.fechaInicio || registro.fecha)}
+                        </h3>
+                        <p className="mi-rutina-historial-estado">
+                          {completado ? 'Entrenamiento completado' : 'Sesión cancelada'}
                         </p>
                       </div>
-                      <span className={`rutina-estado-badge ${reg.estado === 'completado' ? 'activa' : 'inactiva'}`}>
-                        {reg.estado}
+                      <span
+                        className={`mi-rutina-historial-badge ${
+                          completado ? 'mi-rutina-historial-badge-ok' : ''
+                        }`}
+                      >
+                        {completado ? 'Completado' : 'Cancelado'}
                       </span>
                     </div>
-                    <div className="rutina-resumen-stats">
-                      {reg.duracionMinutos !== null && reg.duracionMinutos !== undefined && (
-                        <div className="rutina-resumen-stat">
-                          <div className="rutina-resumen-stat-value">{reg.duracionMinutos}</div>
-                          <div className="rutina-resumen-stat-label">min</div>
+                    <dl className="mi-rutina-historial-datos">
+                      <div>
+                        <dt>Duración</dt>
+                        <dd>{formatearDuracion(registro.duracionMinutos)}</dd>
+                      </div>
+                      {registro.percepcionEsfuerzo ? (
+                        <div>
+                          <dt>RPE</dt>
+                          <dd>{registro.percepcionEsfuerzo}</dd>
                         </div>
-                      )}
-                      {volumen !== null && (
-                        <div className="rutina-resumen-stat">
-                          <div className="rutina-resumen-stat-value">{volumen.toFixed(0)}</div>
-                          <div className="rutina-resumen-stat-label">volumen (kg)</div>
-                        </div>
-                      )}
-                      {reg.percepcionEsfuerzo && (
-                        <div className="rutina-resumen-stat">
-                          <div className="rutina-resumen-stat-value">{reg.percepcionEsfuerzo}</div>
-                          <div className="rutina-resumen-stat-label">RPE</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              );
-            })
+                      ) : null}
+                    </dl>
+                    {notas && <p className="mi-rutina-historial-notas">{notas}</p>}
+                  </li>
+                );
+              })}
+            </ul>
           )}
-        </div>
+        </section>
       )}
 
       <RegistroEntrenamientoModal
         isOpen={modalAbierto}
         onClose={() => setModalAbierto(false)}
         rutina={rutina}
-        dia={diaActual}
-        ejercicios={ejerciciosDelDia.sort((a, b) => a.orden - b.orden)}
-        onFinalizado={() => {
-          cargarHistorial();
-          setTab('historial');
-        }}
+        dia={dia}
+        ejercicios={ejerciciosDelDia}
+        onFinalizado={handleFinalizado}
       />
     </div>
   );

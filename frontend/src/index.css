@@ -6,6 +6,20 @@
 @import './styles/landing.css';
 @import './styles/entrenamiento.css';
 @import './styles/reportes.css';
+@import './styles/auth.css';
+/* Chrome global oscuro (Material 3) y Dashboard del Atleta: al final de la
+   lista para que ganen en cascada sobre los estilos anteriores. */
+@import './styles/material-dark.css';
+@import './styles/atleta.css';
+@import './styles/dashboard-entrenador.css';
+@import './styles/clientes.css';
+@import './styles/perfil-entrenador.css';
+@import './styles/perfil.css';
+@import './styles/planes.css';
+@import './styles/mi-rutina.css';
+@import './styles/dietas.css';
+@import './styles/metabolismo.css';
+@import './styles/entrenador-rutinas.css';
 
 body {
   font-family: var(--font-family);

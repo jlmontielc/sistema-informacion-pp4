@@ -1,0 +1,424 @@
+/* ============================================================
+   Mi Entrenador (vista del instruido) — Material 3 oscuro
+   (siempre oscuro)
+   Prefijo de clases: pe-
+   Todos los colores van duros (paleta M3): no heredan del tema.
+   ============================================================ */
+
+/* El fondo del área de contenido se oscurece SOLO cuando esta
+   página está montada (:has no requiere tocar Layout.jsx). */
+body:has(.pe-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.pe-pagina) {
+  background: #131317;
+}
+
+/* ===== Contenedor de página ===== */
+.pe-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* Foco visible naranja (mismo patrón que atleta.css y landing.css) */
+.pe-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ===== Aparición escalonada de secciones (solo sin reduce-motion) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .pe-seccion {
+    animation: pe-aparecer 350ms ease-out both;
+  }
+
+  .pe-seccion:nth-child(1) { animation-delay: 0ms; }
+  .pe-seccion:nth-child(2) { animation-delay: 60ms; }
+  .pe-seccion:nth-child(3) { animation-delay: 120ms; }
+  .pe-seccion:nth-child(4) { animation-delay: 180ms; }
+  .pe-seccion:nth-child(5) { animation-delay: 240ms; }
+  .pe-seccion:nth-child(6) { animation-delay: 300ms; }
+
+  @keyframes pe-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ===== Cabecera ===== */
+.pe-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pe-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e4e1e7;
+}
+
+.pe-subtitulo {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+/* ===== Card base ===== */
+.pe-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pe-card-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+}
+
+.pe-card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pe-card-titulo-icono {
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+/* Badge pill con el conteo de certificaciones */
+.pe-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2a292e;
+  border: 1px solid rgba(208, 188, 255, 0.2);
+  font-size: 11px;
+  font-weight: 600;
+  color: #d0bcff;
+  white-space: nowrap;
+}
+
+/* ===== Card de identidad del entrenador ===== */
+.pe-identidad {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.pe-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6d3bd7, #a078ff);
+  color: #3c0091;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.pe-identidad-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pe-nombre {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #e4e1e7;
+  overflow-wrap: anywhere;
+}
+
+.pe-email {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-family: var(--font-mono), monospace;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+.pe-chip-especialidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(160, 120, 255, 0.1);
+  border: 1px solid rgba(208, 188, 255, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  color: #d0bcff;
+  white-space: nowrap;
+}
+
+/* ===== Estados locales (reemplazan a EmptyState; sin emojis) ===== */
+.pe-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.pe-estado-icono {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+/* Variantes de color del icono */
+.pe-estado-icono--error {
+  color: #ffb4ab;
+}
+
+.pe-estado-icono--vacio {
+  color: #958ea0;
+}
+
+.pe-estado-titulo {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pe-estado-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  max-width: 420px;
+}
+
+/* ===== Grid de certificaciones ===== */
+.pe-cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.pe-cert {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+  transition: border-color 150ms ease;
+}
+
+.pe-cert:hover {
+  border-color: rgba(208, 188, 255, 0.4);
+}
+
+.pe-cert-nombre {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #e4e1e7;
+  overflow-wrap: anywhere;
+}
+
+.pe-cert-institucion {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+.pe-cert-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+.pe-cert-fechas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  line-height: 14px;
+  color: #958ea0;
+}
+
+.pe-cert-fecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pe-cert-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+/* Botón "Ver archivo" */
+.pe-boton-archivo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #1f1f23;
+  border: 1px solid #494454;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #e4e1e7;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.pe-boton-archivo:hover:not(:disabled) {
+  background: #2a292e;
+  color: #d0bcff;
+}
+
+.pe-boton-archivo:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner CSS del botón */
+.pe-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pe-spinner {
+    animation: pe-girar 0.6s linear infinite;
+  }
+
+  @keyframes pe-girar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+}
+
+/* Enlace "Ver imagen" */
+.pe-enlace-imagen {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #d0bcff;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.pe-enlace-imagen:hover {
+  text-decoration: underline;
+}
+
+/* Mensaje de error de archivo */
+.pe-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #ffb4ab;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .pe-pagina {
+    padding: 16px;
+  }
+
+  .pe-titulo {
+    font-size: 26px;
+    line-height: 34px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pe-cert-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .pe-identidad {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .pe-identidad-info {
+    align-items: center;
+  }
+
+  .pe-chip-especialidad {
+    align-self: center;
+  }
+}

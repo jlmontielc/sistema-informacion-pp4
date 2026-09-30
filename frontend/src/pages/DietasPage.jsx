@@ -1,63 +1,100 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Card } from '../components/common/Card';
-import { Button } from '../components/common/Button';
 import { Loading } from '../components/common/Loading';
-import { EmptyState } from '../components/common/EmptyState';
 import { Modal } from '../components/common/Modal';
+import { Icon } from '../components/common/Icon';
 import { dietasApi } from '../services/dietasApi';
 import { instruidosApi } from '../services/rutinasApi';
 
+/* ---------------------------------------------------------------------------
+   Constantes de la vista (los VALUES se envían al backend intactos)
+   --------------------------------------------------------------------------- */
+
 const TABS = [
-  { key: 'pendientes', label: 'Pendientes de revision' },
+  { key: 'pendientes', label: 'Pendientes de revisión' },
   { key: 'activas', label: 'Activas' },
   { key: 'rechazadas', label: 'Rechazadas' },
 ];
 
 const PROPUESTOS = [
   { value: 'perder_peso', label: 'Perder peso' },
-  { value: 'ganar_musculo', label: 'Ganar musculo' },
+  { value: 'ganar_musculo', label: 'Ganar músculo' },
   { value: 'mantener', label: 'Mantener' },
 ];
 
-const ACCIONES_DECISION = [
-  { valor: 'aceptada', chip: 'chip-success' },
-  { valor: 'modificada', chip: 'chip-warning' },
-  { valor: 'rechazada', chip: 'chip-danger' },
+/* Macros de la tabla: clave con el color M3 asignado a cada uno */
+const MACROS = [
+  { key: 'proteinas', etiqueta: 'P' },
+  { key: 'carbohidratos', etiqueta: 'C' },
+  { key: 'grasas', etiqueta: 'G' },
 ];
 
+/* ---------------------------------------------------------------------------
+   Utilidades puras (comentarios en español)
+   --------------------------------------------------------------------------- */
+
+/* Devuelve 2 iniciales en mayúsculas (nombre y apellido);
+   si solo hay una palabra, una sola letra */
+const iniciales = (nombre) => {
+  if (typeof nombre !== 'string') return '—';
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return '—';
+  if (palabras.length === 1) return palabras[0].charAt(0).toUpperCase();
+  return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+};
+
+/* Formatea una fecha ISO como dd/mm/yyyy; sin fecha devuelve guion */
 const formatearFecha = (fecha) => {
   if (!fecha) return '-';
   const partes = String(fecha).split('T')[0].split('-');
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
 };
 
-const EstadoDieta = ({ decision, activo }) => {
+/* Clase del chip de estado según la decisión y el flag activo */
+const claseChipEstado = (decision, activo) => {
   const clases = {
-    pendiente: 'badge-warning',
-    aprobada: 'badge-success',
-    rechazada: 'badge-danger',
-    modificada: 'badge-info',
+    pendiente: 'dd-chip-estado--pendiente',
+    rechazada: 'dd-chip-estado--rechazada',
+    modificada: 'dd-chip-estado--modificada',
   };
+  if (clases[decision]) return clases[decision];
+  return activo ? 'dd-chip-estado--activa' : 'dd-chip-estado--borrador';
+};
+
+/* Etiqueta del chip de estado (mismas etiquetas que la vista original) */
+const etiquetaEstado = (decision, activo) => {
   const etiquetas = {
     pendiente: 'Pendiente',
-    aprobada: 'Activa',
     rechazada: 'Rechazada',
     modificada: 'Modificada',
   };
-  const clase = clases[decision] || 'badge-neutral';
-  return (
-    <span className={`badge ${clase}`}>
-      {etiquetas[decision] || (activo ? 'Activa' : 'Borrador')}
-    </span>
-  );
+  if (etiquetas[decision]) return etiquetas[decision];
+  return activo ? 'Activa' : 'Borrador';
 };
 
-const MacroBadge = ({ label, value, unit = 'g' }) => (
-  <span className="badge badge-neutral">
-    {label}: {value}{unit}
-  </span>
-);
+/* ---------------------------------------------------------------------------
+   Subcomponentes de presentación
+   --------------------------------------------------------------------------- */
+
+/* Chip de macronutriente con formato "P: 144g" como la vista original */
+function ChipMacro({ macro, valor }) {
+  return (
+    <span className={`dd-chip-macro dd-chip-macro--${macro.key}`}>
+      {macro.etiqueta}: {Number(valor).toFixed(0)}g
+    </span>
+  );
+}
+
+/* Chip de estado de la dieta; solo el chip "activa" lleva punto animado */
+function ChipEstado({ decision, activo }) {
+  const clase = claseChipEstado(decision, activo);
+  return (
+    <span className={`dd-chip-estado ${clase}`}>
+      {clase === 'dd-chip-estado--activa' && <span className="dd-punto" />}
+      {etiquetaEstado(decision, activo)}
+    </span>
+  );
+}
 
 export default function DietasPage() {
   const { user } = useAuth();
@@ -139,7 +176,7 @@ export default function DietasPage() {
       setDecisionForm({ accion: '', comentario: '' });
       await cargarDatos();
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al procesar decision');
+      setError(err.response?.data?.error || 'Error al procesar decisión');
     } finally {
       setGuardandoDecision(false);
     }
@@ -148,37 +185,39 @@ export default function DietasPage() {
   if (cargando) return <Loading />;
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h1 className="page-title">Dietas</h1>
-          <p className="page-subtitle">
-            Planes alimenticios generados por IA y asignados a clientes
-          </p>
-        </div>
-      </div>
+    <div className="dd-pagina">
+      {/* Cabecera de la página */}
+      <header className="dd-seccion dd-cabecera">
+        <h1>Dietas</h1>
+        <p>Planes alimenticios generados por IA y asignados a clientes</p>
+      </header>
 
       {error && (
-        <div className="alerta alerta-error">
+        <div className="dd-seccion dd-alerta" role="alert">
           <span className="flex-1">{error}</span>
           <button
+            type="button"
             onClick={() => setError('')}
-            className="alerta-cerrar"
+            className="dd-alerta-cerrar"
             aria-label="Cerrar aviso"
           >
-            x
+            <Icon name="close" size={14} />
           </button>
         </div>
       )}
 
-      <Card>
-        <div className="toolbar">
-          <div className="tabs-container tabs-inline">
+      {/* Card principal: tabs + tabla de dietas */}
+      <section className="dd-seccion dd-card">
+        <div className="dd-toolbar">
+          <div className="dd-segmentos" role="tablist" aria-label="Filtrar por estado">
             {TABS.map((t) => (
               <button
                 key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.key}
                 onClick={() => setTab(t.key)}
-                className={`tab-button ${tab === t.key ? 'active' : ''}`}
+                className={`dd-segmento ${tab === t.key ? 'active' : ''}`}
               >
                 {t.label}
               </button>
@@ -186,39 +225,45 @@ export default function DietasPage() {
           </div>
 
           {esAdminOEntrenador && (
-            <select
-              value={filtroCliente}
-              onChange={(e) => setFiltroCliente(e.target.value)}
-              className="field-input select-filtro"
-              aria-label="Filtrar por cliente"
-            >
-              <option value="">Todos los clientes</option>
-              {instruidos.map((i) => (
-                <option key={i.id} value={i.id}>{i.nombre}</option>
-              ))}
-            </select>
+            <div className="dd-select-cliente">
+              <select
+                value={filtroCliente}
+                onChange={(e) => setFiltroCliente(e.target.value)}
+                aria-label="Filtrar por cliente"
+              >
+                <option value="">Todos los clientes</option>
+                {instruidos.map((i) => (
+                  <option key={i.id} value={i.id}>{i.nombre}</option>
+                ))}
+              </select>
+              <Icon name="next" size={14} className="dd-select-flecha" />
+            </div>
           )}
         </div>
 
         {dietasFiltradas.length === 0 ? (
-          <EmptyState
-            icon="🥗"
-            title="Sin dietas"
-            description={
-              tab === 'pendientes'
-                ? 'No hay dietas pendientes de revision. Genera una dieta IA para un cliente.'
+          /* Estado vacío: sin emojis, solo el icono SVG 'restaurant' */
+          <div className="dd-estado">
+            <span className="dd-estado-icono" aria-hidden="true">
+              <Icon name="restaurant" size={32} />
+            </span>
+            <h3 className="dd-estado-titulo">Sin dietas</h3>
+            <p className="dd-estado-descripcion">
+              {tab === 'pendientes'
+                ? 'No hay dietas pendientes de revisión. Genera una dieta IA para un cliente.'
                 : tab === 'activas'
                   ? 'No hay dietas activas actualmente.'
-                  : 'No hay dietas rechazadas.'
-            }
-          />
+                  : 'No hay dietas rechazadas.'}
+            </p>
+          </div>
         ) : (
-          <div className="table-wrapper">
-            <table>
+          /* Tabla: scroll horizontal en móvil vía .table-wrapper */
+          <div className="table-wrapper dd-tabla-envoltura">
+            <table className="dd-tabla">
               <thead>
                 <tr>
                   {esAdminOEntrenador && <th>Cliente</th>}
-                  <th>Calorias</th>
+                  <th>Calorías</th>
                   <th>Macros (P / C / G)</th>
                   <th>Estado</th>
                   <th>Fecha</th>
@@ -232,58 +277,70 @@ export default function DietasPage() {
                     <tr key={dieta.id}>
                       {esAdminOEntrenador && (
                         <td>
-                          {cliente?.nombre || `Cliente #${dieta.instruidoId}`}
+                          <div className="dd-cliente">
+                            <span className="dd-avatar" aria-hidden="true">
+                              {iniciales(cliente?.nombre || `Cliente ${dieta.instruidoId}`)}
+                            </span>
+                            <span className="dd-nombre-cliente">
+                              {cliente?.nombre || `Cliente #${dieta.instruidoId}`}
+                            </span>
+                          </div>
                         </td>
                       )}
                       <td>
-                        <strong>{dieta.objetivoCalorico}</strong> kcal
+                        <span className="dd-calorias">
+                          {dieta.objetivoCalorico}
+                          <span className="dd-unidad-kcal"> kcal</span>
+                        </span>
                       </td>
                       <td>
-                        <div className="row">
-                          <MacroBadge label="P" value={Number(dieta.proteinas).toFixed(0)} />
-                          <MacroBadge label="C" value={Number(dieta.carbohidratos).toFixed(0)} />
-                          <MacroBadge label="G" value={Number(dieta.grasas).toFixed(0)} />
+                        <div className="dd-macros">
+                          <ChipMacro macro={MACROS[0]} valor={dieta.proteinas} />
+                          <ChipMacro macro={MACROS[1]} valor={dieta.carbohidratos} />
+                          <ChipMacro macro={MACROS[2]} valor={dieta.grasas} />
                         </div>
                       </td>
                       <td>
-                        <EstadoDieta decision={dieta.decision} activo={dieta.activo} />
+                        <ChipEstado decision={dieta.decision} activo={dieta.activo} />
                       </td>
                       <td>
-                        {formatearFecha(dieta.fechaInicio || dieta.created_at)}
+                        <span className="dd-fecha">
+                          {formatearFecha(dieta.fechaInicio || dieta.created_at)}
+                        </span>
                       </td>
                       <td>
                         {esAdminOEntrenador && dieta.decision === 'pendiente' && (
-                          <div className="row">
-                            <Button
-                              size="sm"
-                              variant="success"
+                          <div className="dd-acciones">
+                            <button
+                              type="button"
+                              className="dd-boton dd-boton-aceptar"
                               onClick={() => {
                                 setModalDecision(dieta);
                                 setDecisionForm({ accion: 'aceptada', comentario: '' });
                               }}
                             >
                               Aceptar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="warning"
+                            </button>
+                            <button
+                              type="button"
+                              className="dd-boton dd-boton-modificar"
                               onClick={() => {
                                 setModalDecision(dieta);
                                 setDecisionForm({ accion: 'modificada', comentario: '' });
                               }}
                             >
                               Modificar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger"
+                            </button>
+                            <button
+                              type="button"
+                              className="dd-boton dd-boton-rechazar"
                               onClick={() => {
                                 setModalDecision(dieta);
                                 setDecisionForm({ accion: 'rechazada', comentario: '' });
                               }}
                             >
                               Rechazar
-                            </Button>
+                            </button>
                           </div>
                         )}
                       </td>
@@ -294,68 +351,81 @@ export default function DietasPage() {
             </table>
           </div>
         )}
-      </Card>
+      </section>
 
+      {/* Card de generación IA: solo admin/entrenador */}
       {esAdminOEntrenador && (
-        <Card>
-          <div className="card-header">
-            <h3 className="card-titulo card-titulo-md">Generar dieta IA</h3>
-          </div>
-          <div className="card-body stack">
-            <p className="text-sm text-muted">
-              Selecciona un cliente para generar automaticamente un plan de alimentacion basado en su perfil metabolico y datos medicos.
-            </p>
-            <div className="row">
-              <label className="field-label" htmlFor="proposito-dieta">Proposito:</label>
-              <select
-                id="proposito-dieta"
-                value={propositoSeleccionado}
-                onChange={(e) => setPropositoSeleccionado(e.target.value)}
-                className="field-input"
-              >
-                {PROPUESTOS.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
+        <section className="dd-seccion">
+          <div className="dd-card">
+            <div className="dd-card-cabecera">
+              <h3>
+                <Icon name="restaurant" size={20} />
+                Generar dieta IA
+              </h3>
             </div>
-            <div className="row">
-              {instruidos.map((i) => (
-                <Button
-                  key={i.id}
-                  variant="outline"
-                  size="sm"
-                  loading={generando && generandoClienteId === i.id}
-                  disabled={generando}
-                  onClick={() => handleGenerar(i.id)}
-                >
-                  {i.nombre}
-                </Button>
-              ))}
-            </div>
-            {instruidos.length === 0 && (
-              <p className="text-sm text-muted">
-                No hay clientes registrados.
+            <div className="dd-card-cuerpo">
+              <p className="dd-descripcion-card">
+                Selecciona un cliente para generar automáticamente un plan de alimentación
+                basado en su perfil metabólico y datos médicos.
               </p>
-            )}
+              <div className="dd-fila-proposito">
+                <label className="dd-etiqueta" htmlFor="proposito-dieta">Propósito:</label>
+                <div className="dd-select">
+                  <select
+                    id="proposito-dieta"
+                    value={propositoSeleccionado}
+                    onChange={(e) => setPropositoSeleccionado(e.target.value)}
+                  >
+                    {PROPUESTOS.map((p) => (
+                      <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
+                  </select>
+                  <Icon name="next" size={14} className="dd-select-flecha" />
+                </div>
+              </div>
+              <div className="dd-chips-cliente">
+                {instruidos.map((i) => {
+                  const cargandoEste = generando && generandoClienteId === i.id;
+                  return (
+                    <button
+                      key={i.id}
+                      type="button"
+                      className="dd-chip-cliente"
+                      disabled={generando}
+                      onClick={() => handleGenerar(i.id)}
+                    >
+                      {cargandoEste && <span className="dd-spinner" aria-hidden="true" />}
+                      {i.nombre}
+                    </button>
+                  );
+                })}
+                {instruidos.length === 0 && (
+                  <p className="dd-previa-cliente">No hay clientes registrados.</p>
+                )}
+              </div>
+            </div>
           </div>
-        </Card>
+        </section>
       )}
 
+      {/* Modal de decisión sobre la dieta */}
       <Modal
         isOpen={!!modalDecision}
         onClose={() => { setModalDecision(null); setDecisionForm({ accion: '', comentario: '' }); }}
-        title={`Decision: Dieta #${modalDecision?.id || ''}`}
+        title={`Decisión: Dieta #${modalDecision?.id || ''}`}
+        className="modal-dietas"
       >
-        <div className="stack">
-          <div className="field">
-            <span className="field-label">Accion</span>
-            <div className="chip-group">
-              {ACCIONES_DECISION.map(({ valor, chip }) => (
+        <div className="dd-form-decision">
+          <div className="dd-campo">
+            <span className="dd-etiqueta">Acción</span>
+            <div className="dd-chips-accion">
+              {[{ valor: 'aceptada' }, { valor: 'modificada' }, { valor: 'rechazada' }].map(({ valor }) => (
                 <button
                   key={valor}
                   type="button"
                   onClick={() => setDecisionForm((prev) => ({ ...prev, accion: valor }))}
-                  className={`chip ${chip}${decisionForm.accion === valor ? ' active' : ''}`}
+                  className={`dd-chip-accion dd-chip-accion--${valor}${decisionForm.accion === valor ? ' active' : ''}`}
+                  aria-pressed={decisionForm.accion === valor}
                 >
                   {valor.charAt(0).toUpperCase() + valor.slice(1)}
                 </button>
@@ -363,8 +433,8 @@ export default function DietasPage() {
             </div>
           </div>
 
-          <div className="field">
-            <label className="field-label" htmlFor="comentario-decision">
+          <div className="dd-campo">
+            <label className="dd-etiqueta" htmlFor="comentario-decision">
               Comentario (opcional)
             </label>
             <textarea
@@ -372,26 +442,28 @@ export default function DietasPage() {
               value={decisionForm.comentario}
               onChange={(e) => setDecisionForm((prev) => ({ ...prev, comentario: e.target.value }))}
               rows={3}
-              className="field-input field-textarea"
-              placeholder="Motivo de la decision..."
+              className="dd-textarea"
+              placeholder="Motivo de la decisión..."
             />
           </div>
 
-          <div className="form-acciones">
-            <Button
-              variant="secondary"
+          <div className="dd-acciones-modal">
+            <button
+              type="button"
+              className="dd-boton-modal dd-boton-modal-cancelar"
               onClick={() => { setModalDecision(null); setDecisionForm({ accion: '', comentario: '' }); }}
             >
               Cancelar
-            </Button>
-            <Button
-              variant={decisionForm.accion === 'aceptada' ? 'success' : decisionForm.accion === 'modificada' ? 'warning' : 'danger'}
-              loading={guardandoDecision}
-              disabled={!decisionForm.accion}
+            </button>
+            <button
+              type="button"
+              className="dd-boton-modal dd-boton-modal-confirmar"
+              disabled={!decisionForm.accion || guardandoDecision}
               onClick={handleDecision}
             >
+              {guardandoDecision && <span className="dd-spinner" aria-hidden="true" />}
               Confirmar
-            </Button>
+            </button>
           </div>
         </div>
       </Modal>

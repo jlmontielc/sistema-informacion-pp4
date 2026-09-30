@@ -1,6 +1,5 @@
-import { Card } from '../common/Card';
+import { Icon } from '../common/Icon';
 import { Loading } from '../common/Loading';
-import { EmptyState } from '../common/EmptyState';
 
 function formatearNumero(valor) {
   if (valor === undefined || valor === null || Number.isNaN(Number(valor))) return '—';
@@ -30,27 +29,27 @@ function Delta({ valor, etiqueta }) {
   const esPositivo = valor > 0;
   const esNegativo = valor < 0;
   return (
-    <div className="reportes-delta">
+    <div className="rp-delta">
       <span
-        className={`reportes-delta-valor ${esPositivo ? 'positivo' : ''} ${esNegativo ? 'negativo' : ''}`}
+        className={`rp-delta-valor ${esPositivo ? 'rp-delta-valor--positivo' : ''} ${esNegativo ? 'rp-delta-valor--negativo' : ''}`}
         aria-label={`${etiqueta}: ${formatearDelta(valor)}`}
       >
         {formatearDelta(valor)}
       </span>
-      <span className="reportes-delta-etiqueta">{etiqueta}</span>
+      <span className="rp-delta-etiqueta">{etiqueta}</span>
     </div>
   );
 }
 
 function MetricaCard({ nombre, valor, unidad, deltaVsHistorico, deltaVsGrupo }) {
   return (
-    <div className="reportes-comparativa-card">
-      <p className="reportes-comparativa-nombre">{nombre}</p>
-      <p className="reportes-comparativa-valor">
+    <div className="rp-metrica">
+      <p className="rp-metrica-nombre">{nombre}</p>
+      <p className="rp-metrica-valor">
         {formatearNumero(valor)}
-        {unidad ? <span className="reportes-comparativa-unidad"> {unidad}</span> : null}
+        {unidad ? <span className="rp-metrica-unidad">{unidad}</span> : null}
       </p>
-      <div className="reportes-comparativa-deltas">
+      <div className="rp-deltas">
         <Delta valor={deltaVsHistorico} etiqueta="vs histórico" />
         <Delta valor={deltaVsGrupo} etiqueta="vs grupo" />
       </div>
@@ -59,31 +58,53 @@ function MetricaCard({ nombre, valor, unidad, deltaVsHistorico, deltaVsGrupo }) 
 }
 
 export function ResumenComparativa({ datos, cargando, error }) {
+  const cabecera = (
+    <div className="rp-card-cabecera">
+      <h2 className="rp-card-titulo">
+        <Icon name="target" size={20} className="rp-icono" />
+        Comparativa de rendimiento
+      </h2>
+    </div>
+  );
+
   if (cargando) {
     return (
-      <Card header="Comparativa de rendimiento">
+      <div className="rp-card">
+        {cabecera}
         <Loading size="md" text="Cargando comparativa..." />
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card header="Comparativa de rendimiento">
-        <EmptyState icon="⚠️" title="Error" description={error} />
-      </Card>
+      <div className="rp-card">
+        {cabecera}
+        <div className="rp-estado">
+          <div className="rp-estado-icono rp-estado-icono--error">
+            <Icon name="close" size={32} />
+          </div>
+          <h3 className="rp-estado-titulo">Error</h3>
+          <p className="rp-estado-descripcion">{error}</p>
+        </div>
+      </div>
     );
   }
 
   if (!datos) {
     return (
-      <Card header="Comparativa de rendimiento">
-        <EmptyState
-          icon="🎯"
-          title="Sin comparativas"
-          description="No hay suficiente historial para generar comparativas."
-        />
-      </Card>
+      <div className="rp-card">
+        {cabecera}
+        <div className="rp-estado">
+          <div className="rp-estado-icono">
+            <Icon name="target" size={32} />
+          </div>
+          <h3 className="rp-estado-titulo">Sin comparativas</h3>
+          <p className="rp-estado-descripcion">
+            No hay suficiente historial para generar comparativas.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -126,27 +147,30 @@ export function ResumenComparativa({ datos, cargando, error }) {
   ];
 
   return (
-    <Card header="Comparativa de rendimiento">
-      <div className="reportes-comparativa-grid">
-        {metricas.map((metrica) => (
-          <MetricaCard
-            key={metrica.clave}
-            nombre={metrica.nombre}
-            valor={metrica.valor}
-            unidad={metrica.unidad}
-            deltaVsHistorico={
-              metrica.referenciaHistorico !== null
-                ? calcularDelta(metrica.valor, metrica.referenciaHistorico)
-                : null
-            }
-            deltaVsGrupo={
-              metrica.referenciaGrupo !== null
-                ? calcularDelta(metrica.valor, metrica.referenciaGrupo)
-                : null
-            }
-          />
-        ))}
+    <div className="rp-card">
+      {cabecera}
+      <div className="rp-card-cuerpo">
+        <div className="rp-comparativa-grid">
+          {metricas.map((metrica) => (
+            <MetricaCard
+              key={metrica.clave}
+              nombre={metrica.nombre}
+              valor={metrica.valor}
+              unidad={metrica.unidad}
+              deltaVsHistorico={
+                metrica.referenciaHistorico !== null
+                  ? calcularDelta(metrica.valor, metrica.referenciaHistorico)
+                  : null
+              }
+              deltaVsGrupo={
+                metrica.referenciaGrupo !== null
+                  ? calcularDelta(metrica.valor, metrica.referenciaGrupo)
+                  : null
+              }
+            />
+          ))}
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

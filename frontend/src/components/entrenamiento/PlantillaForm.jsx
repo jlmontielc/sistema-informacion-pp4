@@ -301,6 +301,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
       isOpen={isOpen}
       onClose={onClose}
       title={plantillaEditandoId ? 'Editar Plantilla' : 'Crear Plantilla'}
+      className="modal-cyber"
     >
       <div className="stack">
         {error && (
@@ -335,7 +336,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         </div>
 
         {paso === 1 && (
-          <div className="stack">
+          <div className="stack modal-seccion">
             <Input
               label="Nombre de la plantilla"
               name="nombre"
@@ -442,7 +443,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         )}
 
         {paso === 2 && (
-          <div className="stack">
+          <div className="stack modal-seccion">
             <div className="row-between">
               <span className="text-sm text-muted">
                 {totalEjercicios} ejercicio{totalEjercicios !== 1 ? 's' : ''} configurado{totalEjercicios !== 1 ? 's' : ''}
@@ -511,7 +512,7 @@ export function PlantillaForm({ isOpen, onClose, plantilla, onSaved }) {
         )}
 
         {paso === 3 && (
-          <div className="stack">
+          <div className="stack modal-seccion">
             <div className="row-between">
               <p className="text-sm text-muted">
                 Selecciona una plantilla para editarla o crea una nueva

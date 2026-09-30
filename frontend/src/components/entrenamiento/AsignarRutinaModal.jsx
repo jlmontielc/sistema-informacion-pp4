@@ -93,6 +93,7 @@ export function AsignarRutinaModal({ isOpen, onClose, plantilla, onSaved }) {
       isOpen={isOpen}
       onClose={onClose}
       title={plantilla ? `Asignar: ${plantilla.nombre}` : 'Asignar Rutina'}
+      className="modal-cyber"
     >
       <div className="stack">
         {error && (

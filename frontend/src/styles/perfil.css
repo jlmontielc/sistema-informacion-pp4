@@ -1,0 +1,1015 @@
+/* ==========================================================================
+   Página Mi Perfil (/perfil: MiPerfil, ListaPerfiles, ListaInstruidos)
+   Estética Material 3 oscura (siempre oscura). Prefijo exclusivo: pf-
+   No reutiliza ni modifica clases globales (mismo patrón que clientes.css
+   y perfil-entrenador.css).
+   ========================================================================== */
+
+/* El fondo del área de contenido se oscurece SOLO cuando la página de
+   perfil está montada (:has no requiere tocar Layout.jsx). */
+body:has(.pf-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.pf-pagina) {
+  background: #131317;
+}
+
+.pf-pagina {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Foco visible naranja (mismo patrón que clientes.css y atleta.css) */
+.pf-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ---------- Aparición escalonada (solo sin reduce-motion) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pf-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .pf-seccion {
+    animation: pf-aparecer 350ms ease-out backwards;
+  }
+
+  .pf-seccion:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .pf-seccion:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .pf-seccion:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .pf-seccion:nth-child(5) {
+    animation-delay: 240ms;
+  }
+}
+
+/* ---------- Cabecera de la página ---------- */
+
+.pf-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e4e1e7;
+}
+
+.pf-subtitulo {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+/* ---------- Card base ---------- */
+
+.pf-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pf-card-cabecera {
+  padding: 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+  background: rgba(14, 14, 18, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.pf-card-titulo {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pf-card-titulo .pf-icono {
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.pf-card-cuerpo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Badge contador: pill con el número de registros */
+.pf-badge-contador {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #2a292e;
+  border: 1px solid rgba(208, 188, 255, 0.2);
+  color: #d0bcff;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Hero de identidad (avatar + nombre + rol) ---------- */
+
+.pf-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  flex-wrap: wrap;
+}
+
+.pf-avatar {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6d3bd7, #a078ff);
+  color: #3c0091;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Variante pequeña para celdas de tabla */
+.pf-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+  background: #2a292e;
+  border: 1px solid #494454;
+  color: #d0bcff;
+}
+
+.pf-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pf-hero-nombre {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #e4e1e7;
+  overflow-wrap: anywhere;
+}
+
+.pf-hero-email {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-family: var(--font-mono), monospace;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+.pf-hero-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Chip de rol */
+.pf-chip-rol {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pf-chip-rol--entrenador {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.pf-chip-rol--administrador {
+  background: rgba(160, 120, 255, 0.1);
+  border-color: rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+}
+
+.pf-chip-rol--instruido {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+/* Chip de especialidad (entrenador) */
+.pf-chip-especialidad {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2a292e;
+  border: 1px solid #494454;
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbc3d7;
+  white-space: nowrap;
+}
+
+/* ---------- Grid de datos (vista) ---------- */
+
+.pf-datos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+}
+
+.pf-datos-grid--ancho {
+  grid-column: 1 / -1;
+}
+
+.pf-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pf-dato-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+}
+
+.pf-dato-valor {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #e4e1e7;
+  overflow-wrap: anywhere;
+}
+
+.pf-dato-valor--mono {
+  font-family: var(--font-mono), monospace;
+  font-weight: 400;
+  color: #cbc3d7;
+}
+
+/* Texto de reemplazo cuando el backend no envía un valor */
+.pf-dato-valor--vacio {
+  color: #958ea0;
+  font-weight: 400;
+}
+
+/* Subtítulo de grupo dentro de una card (p. ej. "Seguridad") */
+.pf-grupo-titulo {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d0bcff;
+  border-top: 1px solid rgba(73, 68, 84, 0.4);
+  padding-top: 16px;
+  grid-column: 1 / -1;
+}
+
+/* ---------- Formularios (edición inline) ---------- */
+
+.pf-campos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.pf-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pf-campo--ancho {
+  grid-column: 1 / -1;
+}
+
+.pf-campo-label {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: #cbc3d7;
+}
+
+.pf-campo-input {
+  width: 100%;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  color: #e4e1e7;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.pf-campo-input::placeholder {
+  color: rgba(149, 142, 160, 0.6);
+}
+
+.pf-campo-input:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+textarea.pf-campo-input {
+  resize: vertical;
+  min-height: 56px;
+}
+
+/* Select con chevron propio (el icono rota porque no existe "down") */
+.pf-selecto {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.pf-selecto select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.pf-selecto select.pf-campo-input {
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.pf-selecto .pf-selecto-flecha {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: #cbc3d7;
+  pointer-events: none;
+}
+
+/* Input de archivo: mantiene texto sobre superficie oscura */
+.pf-campo-input[type='file'] {
+  cursor: pointer;
+  color: #cbc3d7;
+}
+
+.pf-campo-input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #494454;
+  background: #2a292e;
+  color: #e4e1e7;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.pf-campo-input[type='file']::file-selector-button:hover {
+  background: #33323a;
+  color: #d0bcff;
+}
+
+.pf-campo-ayuda {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #958ea0;
+}
+
+.pf-campo-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #ffb4ab;
+}
+
+/* Días disponibles (DiaSelector) sobre fondo oscuro */
+.pf-pagina .dia-item {
+  background: #0e0e12;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+  min-width: 64px;
+}
+
+.pf-pagina .dia-item:hover {
+  border-color: rgba(208, 188, 255, 0.5);
+  color: #d0bcff;
+}
+
+.pf-pagina .dia-item.seleccionado {
+  background: #d0bcff;
+  border-color: #d0bcff;
+  color: #3c0091;
+}
+
+.pf-pagina .dia-item.descanso {
+  opacity: 0.45;
+  border-style: dashed;
+}
+
+/* ---------- Acciones de formulario ---------- */
+
+.pf-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Botones del sistema re-estilizados (M3) ---------- */
+
+/* Alcance con body:has para cubrir también los modales, que se
+   renderizan por portal fuera de .pf-pagina */
+body:has(.pf-pagina) .btn-primary {
+  background: #d0bcff;
+  border: none;
+  color: #381e72;
+}
+
+body:has(.pf-pagina) .btn-primary:hover:not(:disabled) {
+  background: #dcc8ff;
+}
+
+body:has(.pf-pagina) .btn-secondary {
+  background: #2a292e;
+  border: 1px solid #494454;
+  color: #e4e1e7;
+}
+
+body:has(.pf-pagina) .btn-secondary:hover:not(:disabled) {
+  background: #33323a;
+  border-color: rgba(208, 188, 255, 0.5);
+  color: #d0bcff;
+}
+
+body:has(.pf-pagina) .btn-danger {
+  background: rgba(255, 180, 171, 0.12);
+  border: 1px solid rgba(255, 180, 171, 0.4);
+  color: #ffb4ab;
+}
+
+body:has(.pf-pagina) .btn-danger:hover:not(:disabled) {
+  background: rgba(255, 180, 171, 0.22);
+}
+
+body:has(.pf-pagina) .btn .spinner {
+  border-color: rgba(56, 30, 114, 0.3);
+  border-top-color: #381e72;
+}
+
+body:has(.pf-pagina) .btn-secondary .spinner,
+body:has(.pf-pagina) .btn-danger .spinner {
+  border-color: rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+}
+
+/* ---------- Avisos (éxito / error / advertencia) ---------- */
+
+.pf-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 20px;
+  border: 1px solid transparent;
+}
+
+.pf-aviso p {
+  margin: 0;
+}
+
+.pf-aviso--ok {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.pf-aviso--error {
+  background: rgba(255, 180, 171, 0.1);
+  border-color: rgba(255, 180, 171, 0.35);
+  color: #ffb4ab;
+}
+
+.pf-aviso--advertencia {
+  background: rgba(253, 133, 58, 0.1);
+  border-color: rgba(253, 133, 58, 0.35);
+  color: #fd853a;
+}
+
+.pf-aviso .pf-icono {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Cuerpo interno de un aviso con varios párrafos */
+.pf-aviso-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Pill de estado de datos médicos */
+.pf-pill-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pf-pill-estado--completo {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.pf-pill-estado--pendiente {
+  background: rgba(253, 133, 58, 0.12);
+  border-color: rgba(253, 133, 58, 0.4);
+  color: #fd853a;
+}
+
+/* ---------- Tabs (chips) ---------- */
+
+.pf-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pf-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #1b1b1f;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.pf-tab:hover {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+.pf-tab--activa {
+  background: rgba(208, 188, 255, 0.14);
+  border-color: rgba(208, 188, 255, 0.4);
+  color: #d0bcff;
+}
+
+.pf-tab--activa:hover {
+  background: rgba(208, 188, 255, 0.2);
+  color: #d0bcff;
+}
+
+/* ---------- Tabla M3 ---------- */
+
+.pf-tabla-envoltura {
+  overflow-x: auto;
+}
+
+.pf-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pf-tabla thead th {
+  padding: 14px 20px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  text-align: left;
+  white-space: nowrap;
+  background: #1f1f23;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+}
+
+.pf-tabla tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  vertical-align: middle;
+}
+
+.pf-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pf-tabla tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.pf-tabla tbody tr:hover {
+  background: rgba(31, 31, 35, 0.6);
+}
+
+.pf-fila-clicable {
+  cursor: pointer;
+}
+
+.pf-tabla-envoltura::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.pf-tabla-envoltura::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pf-tabla-envoltura::-webkit-scrollbar-thumb {
+  background: #2a292e;
+  border-radius: 999px;
+}
+
+.pf-tabla-envoltura::-webkit-scrollbar-thumb:hover {
+  background: #494454;
+}
+
+/* Celda nombre con avatar */
+.pf-tabla-cliente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pf-tabla-nombre {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #e4e1e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-tabla tbody tr:hover .pf-tabla-nombre {
+  color: #d0bcff;
+}
+
+/* Valores de tabla */
+.pf-tabla-valor {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #e4e1e7;
+  white-space: nowrap;
+}
+
+.pf-tabla-unidad {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: #958ea0;
+  margin-left: 3px;
+}
+
+/* ---------- Chips de nivel y experiencia (paleta de clientes.css) ---------- */
+
+.pf-chip-nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pf-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.pf-chip-nivel--sedentario {
+  background: rgba(73, 68, 84, 0.3);
+  border-color: #494454;
+  color: #cbc3d7;
+}
+
+.pf-chip-nivel--sedentario .pf-punto {
+  background: #958ea0;
+}
+
+.pf-chip-nivel--ligero {
+  background: rgba(160, 120, 255, 0.1);
+  border-color: rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+}
+
+.pf-chip-nivel--ligero .pf-punto {
+  background: #d0bcff;
+}
+
+.pf-chip-nivel--moderado,
+.pf-chip-nivel--activo {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.pf-chip-nivel--moderado .pf-punto,
+.pf-chip-nivel--activo .pf-punto {
+  background: #4cd7f6;
+}
+
+.pf-chip-nivel--muy_activo {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+.pf-chip-nivel--muy_activo .pf-punto {
+  background: #d2bbff;
+}
+
+.pf-chip-exp {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pf-chip-exp--principiante {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.pf-chip-exp--intermedio {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+.pf-chip-exp--avanzado {
+  background: rgba(160, 120, 255, 0.1);
+  border-color: rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+}
+
+.pf-chip-exp--sin-definir {
+  background: rgba(73, 68, 84, 0.3);
+  border-color: #494454;
+  color: #958ea0;
+}
+
+/* ---------- Estados locales (vacío / error, sin emojis) ---------- */
+
+.pf-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.pf-estado-icono {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+.pf-estado-icono--error {
+  color: #ffb4ab;
+}
+
+.pf-estado-titulo {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pf-estado-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  max-width: 420px;
+}
+
+/* ---------- Certificaciones (grid contenedor) ---------- */
+
+.pf-cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Item del grid: tarjeta + acciones bajo ella */
+.pf-cert-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Mini acciones bajo cada certificación */
+.pf-cert-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- Modal: superficie oscura solo con la página montada ---------- */
+
+body:has(.pf-pagina) .modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+body:has(.pf-pagina) .modal-content {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+body:has(.pf-pagina) .modal-header {
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+}
+
+body:has(.pf-pagina) .modal-title {
+  color: #e4e1e7;
+}
+
+body:has(.pf-pagina) .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+body:has(.pf-pagina) .header-button {
+  color: #cbc3d7;
+}
+
+body:has(.pf-pagina) .header-button:hover {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+/* Lista de datos dentro del modal */
+.pf-modal-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Lista de certificaciones dentro del modal */
+.pf-modal-cert-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .pf-pagina {
+    padding: 16px;
+  }
+
+  .pf-titulo {
+    font-size: 26px;
+    line-height: 34px;
+  }
+
+  .pf-datos-grid,
+  .pf-campos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pf-tabla thead th,
+  .pf-tabla tbody td {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pf-card-cabecera {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pf-hero {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .pf-hero-info {
+    align-items: center;
+  }
+
+  .pf-hero-chips {
+    justify-content: center;
+  }
+
+  .pf-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

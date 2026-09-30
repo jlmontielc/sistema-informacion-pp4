@@ -1,6 +1,13 @@
 import { useAuth } from '../context/AuthContext';
 import { MiPerfil, ListaInstruidos, ListaPerfiles } from '../components/profile';
 
+/* Etiqueta legible del rol para la cabecera */
+function etiquetaRol(user) {
+  if (user?.rol === 'administrador') return 'Administrador';
+  if (user?.rol === 'entrenador') return 'Entrenador';
+  return 'Instruido';
+}
+
 export default function PerfilPage() {
   const { user, setUser } = useAuth();
 
@@ -9,18 +16,17 @@ export default function PerfilPage() {
   };
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h1 className="page-title">Mi Perfil</h1>
-          <p className="page-subtitle">Gestiona tu información personal</p>
-        </div>
+    <div className="pf-pagina">
+      {/* Cabecera común de la página */}
+      <div className="pf-seccion pf-cabecera">
+        <h1 className="pf-titulo">Mi Perfil</h1>
+        <p className="pf-subtitulo">
+          Gestiona tu información personal · <strong>{etiquetaRol(user)}</strong>
+        </p>
       </div>
 
       {user?.rol === 'administrador' ? (
-        <>
-          <ListaPerfiles />
-        </>
+        <ListaPerfiles />
       ) : (
         <>
           <MiPerfil perfil={user} onActualizar={handleActualizar} />

@@ -72,7 +72,7 @@ export function GenerarRutinaIAModal({ isOpen, onClose, onGenerada }) {
   const clienteSeleccionado = clientes.find((c) => c.id === Number(clienteId));
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Obtener recomendación de plantilla" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Obtener recomendación de plantilla" size="lg" className="modal-cyber">
       <div className="stack">
         {error && (
           <div className="alerta alerta-error">

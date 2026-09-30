@@ -1,18 +1,37 @@
 import { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
-import { EmptyState } from '../common/EmptyState';
 import { Loading } from '../common/Loading';
+import { Icon } from '../common/Icon';
 import { CertificacionCard } from './CertificacionCard';
 import api from '../../services/api';
 
-const redesIconos = {
-  instagram: '📷',
-  facebook: '👍',
-  whatsapp: '💬',
-  twitter: '🐦',
-  linkedin: '🔗',
-  youtube: '📺',
-};
+/* ============================================================
+   Perfil del entrenador del instruido ("Mi Entrenador").
+   Vista Material 3 oscura; todos los iconos van via el componente
+   Icon (SVG) — prohibido usar emojis en la interfaz.
+   ============================================================ */
+
+/* Devuelve 2 iniciales en mayúsculas (nombre y apellido);
+   si solo hay una palabra, una sola letra */
+function iniciales(nombre) {
+  if (typeof nombre !== 'string') return '—';
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return '—';
+  if (palabras.length === 1) return palabras[0].charAt(0).toUpperCase();
+  return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+}
+
+/* Valor seguro para texto: null/undefined → guion largo */
+function textoSeguro(valor) {
+  return valor || '—';
+}
+
+/* Formatea fecha con es-ES cuando se puede parsear; si no, la muestra tal cual */
+function formatearFecha(fecha) {
+  if (!fecha) return '';
+  const parseada = new Date(fecha);
+  if (Number.isNaN(parseada.getTime())) return fecha;
+  return parseada.toLocaleDateString('es-ES');
+}
 
 export function PerfilEntrenador() {
   const [entrenador, setEntrenador] = useState(null);
@@ -27,68 +46,95 @@ export function PerfilEntrenador() {
   }, []);
 
   if (loading) return <Loading text="Cargando perfil del entrenador..." />;
-  if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
-  if (!entrenador) return <EmptyState icon="🏋️" title="Sin entrenador" description="No tienes un entrenador asignado." />;
+
+  if (error) {
+    return (
+      <div className="pe-pagina">
+        <div className="pe-seccion">
+          <div className="pe-estado">
+            <div className="pe-estado-icono pe-estado-icono--error">
+              <Icon name="close" size={40} />
+            </div>
+            <h2 className="pe-estado-titulo">Error</h2>
+            <p className="pe-estado-descripcion">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!entrenador) {
+    return (
+      <div className="pe-pagina">
+        <div className="pe-seccion">
+          <div className="pe-estado">
+            <div className="pe-estado-icono pe-estado-icono--vacio">
+              <Icon name="user" size={40} />
+            </div>
+            <h2 className="pe-estado-titulo">Sin entrenador</h2>
+            <p className="pe-estado-descripcion">No tienes un entrenador asignado.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const certificaciones = entrenador.certificaciones || [];
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h1 className="page-title">Mi Entrenador</h1>
-          <p className="page-subtitle">Información de tu entrenador personal</p>
+    <div className="pe-pagina">
+      {/* Cabecera */}
+      <div className="pe-seccion pe-cabecera">
+        <h1 className="pe-titulo">Mi Entrenador</h1>
+        <p className="pe-subtitulo">Información de tu entrenador personal</p>
+      </div>
+
+      {/* Identidad del entrenador */}
+      <div className="pe-seccion pe-card">
+        <div className="pe-identidad">
+          <div className="pe-avatar" aria-hidden="true">{iniciales(entrenador.nombre)}</div>
+          <div className="pe-identidad-info">
+            <p className="pe-nombre">{entrenador.nombre}</p>
+            <p className="pe-email">{textoSeguro(entrenador.email)}</p>
+            {entrenador.especialidad && (
+              <span className="pe-chip-especialidad">
+                <Icon name="dumbbell" size={12} />
+                {entrenador.especialidad}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <Card header="Información General">
-        <div className="grid-datos">
-          <InfoField label="Nombre" value={entrenador.nombre} />
-          <InfoField label="Email" value={entrenador.email} />
-          {entrenador.especialidad && <InfoField label="Especialidad" value={entrenador.especialidad} />}
-          {entrenador.telefono && <InfoField label="Teléfono" value={entrenador.telefono} />}
+      {/* Certificaciones */}
+      <div className="pe-seccion pe-card">
+        <div className="pe-card-cabecera">
+          <h2 className="pe-card-titulo">
+            <Icon name="receipt" size={20} className="pe-card-titulo-icono" />
+            Certificaciones
+          </h2>
+          {certificaciones.length > 0 && (
+            <span className="pe-badge">{certificaciones.length}</span>
+          )}
         </div>
-      </Card>
-
-      <Card header="Certificaciones">
-        {entrenador.certificaciones?.length > 0 ? (
-          <div className="grid-datos">
-            {entrenador.certificaciones.map((cert) => (
+        {certificaciones.length > 0 ? (
+          <div className="pe-cert-grid">
+            {certificaciones.map((cert) => (
               <CertificacionCard key={cert.id} cert={cert} />
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted">
-            Este entrenador aun no tiene certificaciones registradas.
-          </p>
-        )}
-      </Card>
-
-      {entrenador.redesSociales && Object.keys(entrenador.redesSociales).length > 0 && (
-        <Card header="Redes Sociales">
-          <div className="row">
-            {Object.entries(entrenador.redesSociales).map(([red, url]) => (
-              <a
-                key={red}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="red-social-enlace"
-              >
-                <span className="red-social-icono" aria-hidden="true">{redesIconos[red] || '🔗'}</span>
-                <span className="red-social-nombre">{red}</span>
-              </a>
-            ))}
+          <div className="pe-estado">
+            <div className="pe-estado-icono pe-estado-icono--vacio">
+              <Icon name="receipt" size={40} />
+            </div>
+            <h3 className="pe-estado-titulo">Sin certificaciones</h3>
+            <p className="pe-estado-descripcion">
+              Este entrenador aún no tiene certificaciones registradas.
+            </p>
           </div>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function InfoField({ label, value }) {
-  return (
-    <div className="field">
-      <p className="dato-label">{label}</p>
-      <p className="dato-valor">{value}</p>
+        )}
+      </div>
     </div>
   );
 }

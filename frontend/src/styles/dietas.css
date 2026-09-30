@@ -1,0 +1,942 @@
+/* ==========================================================================
+   Página de Dietas (/dietas) - Estética Material 3 oscura (siempre oscura).
+   Prefijo exclusivo: dd-
+   No reutiliza ni modifica clases globales, salvo anular el fondo/borde
+   claros de .table-wrapper dentro de la card (patrón de clientes.css).
+   ========================================================================== */
+
+/* El fondo del área de contenido se oscurece SOLO cuando la página de
+   dietas está montada (mismo patrón que atleta.css y clientes.css con :has). */
+body:has(.dd-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.dd-pagina) {
+  background: #131317;
+}
+
+.dd-pagina {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .dd-pagina {
+    padding: 16px;
+  }
+}
+
+/* ---------- Cabecera de la página ---------- */
+
+.dd-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dd-cabecera h1 {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e4e1e7;
+}
+
+.dd-cabecera p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+/* ---------- Alerta de error ---------- */
+
+.dd-alerta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 180, 171, 0.12);
+  border: 1px solid rgba(255, 180, 171, 0.35);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #ffb4ab;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.dd-alerta > span {
+  flex: 1;
+}
+
+/* Botón de cierre de la alerta (icono SVG, no emoji) */
+.dd-alerta-cerrar {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 150ms ease;
+}
+
+.dd-alerta-cerrar:hover {
+  opacity: 1;
+}
+
+/* ---------- Card (superficie de tabla y card "Generar dieta IA") ---------- */
+
+.dd-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dd-card-cabecera {
+  padding: 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dd-card-cabecera h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.dd-card-cabecera h3 svg {
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.dd-card-cuerpo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- Toolbar: tabs y filtro de cliente ---------- */
+
+.dd-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+}
+
+/* Segmented control de tabs */
+.dd-segmentos {
+  display: inline-flex;
+  align-items: center;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.dd-segmento {
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #cbc3d7;
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.dd-segmento:hover {
+  color: #e4e1e7;
+}
+
+.dd-segmento.active {
+  background: #2a292e;
+  color: #d0bcff;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Select de cliente con chevron propio (icono "next" rotado 90 grados) */
+.dd-select-cliente {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dd-select-cliente select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 8px 36px 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #e4e1e7;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.dd-select-cliente select:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+.dd-select-cliente .dd-select-flecha {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: #cbc3d7;
+  pointer-events: none;
+}
+
+/* ---------- Tabla ---------- */
+
+/* Se reutiliza .table-wrapper (scroll horizontal en móvil) junto a la clase
+   propia; aquí se anulan su fondo y borde claros para que la tabla quede
+   sobre la superficie oscura de la tarjeta. */
+.dd-tabla-envoltura {
+  background: #1b1b1f;
+  border: none;
+  border-radius: 0;
+}
+
+.dd-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dd-tabla thead th {
+  padding: 14px 20px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  text-align: left;
+  white-space: nowrap;
+  background: #1f1f23;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+}
+
+.dd-tabla tbody td {
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  vertical-align: middle;
+  color: inherit;
+}
+
+.dd-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dd-tabla tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.dd-tabla tbody tr:hover {
+  background: rgba(31, 31, 35, 0.6);
+}
+
+/* Scrollbar fino solo dentro de la tabla */
+.dd-tabla-envoltura::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.dd-tabla-envoltura::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dd-tabla-envoltura::-webkit-scrollbar-thumb {
+  background: #2a292e;
+  border-radius: 999px;
+}
+
+.dd-tabla-envoltura::-webkit-scrollbar-thumb:hover {
+  background: #494454;
+}
+
+/* Celda cliente: avatar con iniciales + nombre */
+.dd-cliente {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dd-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #2a292e;
+  border: 1px solid #494454;
+  color: #d0bcff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dd-nombre-cliente {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #e4e1e7;
+  transition: color 150ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dd-tabla tbody tr:hover .dd-nombre-cliente {
+  color: #d0bcff;
+}
+
+/* Calorías: cifra grande + unidad */
+.dd-calorias {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  color: #e4e1e7;
+  white-space: nowrap;
+}
+
+.dd-calorias .dd-unidad-kcal {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: #958ea0;
+  margin-left: 3px;
+}
+
+/* Chips de macronutrientes (P / C / G) */
+.dd-macros {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dd-chip-macro {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.dd-chip-macro--proteinas {
+  background: rgba(255, 180, 171, 0.12);
+  border-color: rgba(255, 180, 171, 0.3);
+  color: #ffb4ab;
+}
+
+.dd-chip-macro--carbohidratos {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+.dd-chip-macro--grasas {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+/* Chip de estado de la dieta */
+.dd-chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.dd-chip-estado--pendiente {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+.dd-chip-estado--activa {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.dd-chip-estado--rechazada {
+  background: rgba(255, 180, 171, 0.12);
+  border-color: rgba(255, 180, 171, 0.3);
+  color: #ffb4ab;
+}
+
+.dd-chip-estado--modificada {
+  background: rgba(160, 120, 255, 0.1);
+  border-color: rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+}
+
+/* Fallback: decisión nula o desconocida equivale a "Borrador" */
+.dd-chip-estado--borrador {
+  background: rgba(73, 68, 84, 0.3);
+  border-color: rgba(149, 142, 160, 0.3);
+  color: #958ea0;
+}
+
+/* Puntito animado SOLO para el chip "activa" */
+.dd-chip-estado--activa .dd-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #4cd7f6;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes dd-pulso-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(1.2);
+    }
+  }
+
+  .dd-chip-estado--activa .dd-punto {
+    animation: dd-pulso-dot 2s ease-in-out infinite;
+  }
+}
+
+/* Fecha de inicio/alta */
+.dd-fecha {
+  font-size: 13px;
+  line-height: 18px;
+  color: #cbc3d7;
+  white-space: nowrap;
+}
+
+/* ---------- Acciones de la fila ---------- */
+
+.dd-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dd-boton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #1f1f23;
+  border: 1px solid #494454;
+  color: #e4e1e7;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.dd-boton:hover:not(:disabled) {
+  background: #2a292e;
+  color: #d0bcff;
+}
+
+.dd-boton:disabled,
+.dd-boton[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Variantes de acción: aceptar (cian), modificar (lavanda), rechazar (error) */
+.dd-boton-aceptar {
+  border-color: rgba(76, 215, 246, 0.5);
+  color: #4cd7f6;
+}
+
+.dd-boton-aceptar:hover:not(:disabled) {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: #4cd7f6;
+  color: #4cd7f6;
+}
+
+.dd-boton-modificar {
+  border-color: rgba(210, 187, 255, 0.5);
+  color: #d2bbff;
+}
+
+.dd-boton-modificar:hover:not(:disabled) {
+  background: rgba(210, 187, 255, 0.1);
+  border-color: #d2bbff;
+  color: #d2bbff;
+}
+
+.dd-boton-rechazar {
+  border-color: rgba(255, 180, 171, 0.5);
+  color: #ffb4ab;
+}
+
+.dd-boton-rechazar:hover:not(:disabled) {
+  background: rgba(255, 180, 171, 0.1);
+  border-color: #ffb4ab;
+  color: #ffb4ab;
+}
+
+/* ---------- Card "Generar dieta IA" ---------- */
+
+.dd-descripcion-card {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: #cbc3d7;
+  max-width: 560px;
+}
+
+.dd-fila-proposito {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Etiqueta "Propósito" */
+.dd-etiqueta {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #cbc3d7;
+}
+
+/* Select de propósito: mismo estilo que el select de cliente */
+.dd-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dd-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 8px 36px 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #e4e1e7;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.dd-select select:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+.dd-select .dd-select-flecha {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: #cbc3d7;
+  pointer-events: none;
+}
+
+/* Chips de clientes para generar dieta */
+.dd-chips-cliente {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dd-chip-cliente {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.dd-chip-cliente:hover:not(:disabled) {
+  border-color: #d0bcff;
+  color: #d0bcff;
+}
+
+.dd-chip-cliente:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dd-previa-cliente {
+  color: #958ea0;
+  font-size: 13px;
+  line-height: 18px;
+  margin: 0;
+}
+
+/* Spinner circular */
+.dd-spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 2px solid rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes dd-girar {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .dd-spinner {
+    animation: dd-girar 0.6s linear infinite;
+  }
+}
+
+/* ---------- Estados vacíos (sin emojis, solo SVG del componente Icon) ---------- */
+
+.dd-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.dd-estado-icono {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+.dd-estado-titulo {
+  margin: 0;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.dd-estado-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  max-width: 420px;
+}
+
+/* ---------- Modal de decisión (portal en body, no bajo .dd-pagina) ---------- */
+
+.modal-overlay:has(.modal-dietas) {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-dietas {
+  background: #1b1b1f !important;
+  border: 1px solid #494454;
+  color: #e4e1e7;
+}
+
+.modal-dietas .modal-header {
+  border-bottom-color: #494454;
+}
+
+.modal-dietas .modal-title {
+  color: #e4e1e7;
+}
+
+.modal-dietas .header-button {
+  color: #cbc3d7;
+}
+
+.modal-dietas .modal-body {
+  color: #e4e1e7;
+}
+
+/* Contenido del modal: columnas con separación */
+.dd-form-decision {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dd-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Chips de acción dentro del modal */
+
+.dd-chips-accion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dd-chip-accion {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.dd-chip-accion:hover {
+  color: #e4e1e7;
+}
+
+/* Estado activo de cada chip: tinte según la acción elegida */
+.dd-chip-accion--aceptada.active {
+  background: rgba(76, 215, 246, 0.15);
+  border-color: #4cd7f6;
+  color: #4cd7f6;
+}
+
+.dd-chip-accion--modificada.active {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: #d2bbff;
+  color: #d2bbff;
+}
+
+.dd-chip-accion--rechazada.active {
+  background: rgba(255, 180, 171, 0.15);
+  border-color: #ffb4ab;
+  color: #ffb4ab;
+}
+
+/* Textarea del comentario */
+.dd-textarea {
+  width: 100%;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  color: #e4e1e7;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.dd-textarea::placeholder {
+  color: rgba(149, 142, 160, 0.5);
+}
+
+.dd-textarea:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+/* Botones Cancelar / Confirmar del modal */
+.dd-acciones-modal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dd-boton-modal {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease,
+    filter 150ms ease, opacity 150ms ease;
+}
+
+.dd-boton-modal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dd-boton-modal-cancelar {
+  background: transparent;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+}
+
+.dd-boton-modal-cancelar:hover:not(:disabled) {
+  color: #e4e1e7;
+  border-color: rgba(208, 188, 255, 0.5);
+}
+
+.dd-boton-modal-confirmar {
+  background: linear-gradient(90deg, #6d3bd7, #a078ff);
+  border: none;
+  color: #e4e1e7;
+  font-weight: 600;
+}
+
+.dd-boton-modal-confirmar:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* ---------- Animación de aparición ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes dd-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .dd-seccion {
+    animation: dd-aparecer 350ms ease-out backwards;
+  }
+
+  /* Escalonado: cada sección entra 60ms después de la anterior */
+  .dd-seccion:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .dd-seccion:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .dd-seccion:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .dd-seccion:nth-child(5) {
+    animation-delay: 240ms;
+  }
+}
+
+/* ---------- Foco visible ---------- */
+
+.dd-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .dd-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dd-segmentos {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .dd-select-cliente,
+  .dd-select-cliente select {
+    width: 100%;
+  }
+
+  /* La tabla ya tiene scroll horizontal vía .table-wrapper */
+}

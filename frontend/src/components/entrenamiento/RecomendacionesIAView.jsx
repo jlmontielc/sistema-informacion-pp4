@@ -6,6 +6,7 @@ import { EmptyState } from '../common/EmptyState';
 import { rutinasAsignadasApi, hitlApi } from '../../services/rutinasApi';
 import { GenerarRutinaIAModal } from './GenerarRutinaIAModal';
 import { RecomendacionDetalle } from './RecomendacionDetalle';
+import { Icon } from '../common/Icon';
 
 const TIPO_LABELS = {
   fuerza: 'Fuerza', hipertrofia: 'Hipertrofia', resistencia: 'Resistencia',
@@ -88,88 +89,102 @@ export function RecomendacionesIAView({ onRecargar }) {
 
   if (error) {
     return (
-      <Card>
-        <div className="empty-state">
-          <p className="empty-state-icono" aria-hidden="true">⚠️</p>
-          <p className="text-lg text-medium text-error">{error}</p>
-          <Button onClick={cargarRutinas}>
-            Reintentar
-          </Button>
-        </div>
-      </Card>
+      <div className="gt-carta gt-vacio">
+        <p className="gt-vacio-icono" aria-hidden="true">⚠️</p>
+        <p className="gt-vacio-texto">{error}</p>
+        <button type="button" className="gt-boton-secundario" onClick={cargarRutinas}>
+          Reintentar
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="stack">
-      <div className="form-acciones">
-        <Button onClick={() => setGenerarOpen(true)}>
+    <div className="gt-seccion-ia">
+      <div className="gt-fila-ia">
+        <button type="button" className="gt-boton-primario" onClick={() => setGenerarOpen(true)}>
+          <Icon name="bolt" size={16} />
           Obtener recomendación de plantilla
-        </Button>
+        </button>
       </div>
 
       {rutinas.length === 0 ? (
-        <Card>
+        <div className="gt-carta gt-vacio">
           <EmptyState
             icon="🤖"
             title="Sin recomendaciones pendientes"
             description="Obtén una recomendación de plantilla del entrenador para un cliente. La recomendación aparecerá aqui para que la revises antes de activarla."
-            action={<Button onClick={() => setGenerarOpen(true)}>Obtener recomendación de plantilla</Button>}
+            action={
+              <button type="button" className="gt-boton-primario" onClick={() => setGenerarOpen(true)}>
+                Obtener recomendación de plantilla
+              </button>
+            }
           />
-        </Card>
+        </div>
       ) : (
-        <div className="rutinas-grid">
-          {rutinas.map((r) => (
-            <Card key={r.id}>
-              <div className="card-body stack">
-                <div className="row-between">
-                  <h3 className="card-titulo card-titulo-md">{r.nombre}</h3>
-                  <div className="row row-gap-sm">
-                    <span className={`rutina-tipo-badge ${r.tipo}`}>
+        <div className="gt-grid">
+          {rutinas.map((r, i) => (
+            <div
+              key={r.id}
+              className="gt-carta gt-carta-ia"
+              style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+            >
+              <div className="gt-carta-cuerpo">
+                <div className="gt-carta-cabecera">
+                  <h3 className="gt-carta-titulo">{r.nombre}</h3>
+                  <div className="gt-fila">
+                    <span className={`gt-chip gt-chip-${r.tipo}`}>
                       {TIPO_LABELS[r.tipo] || r.tipo}
                     </span>
-                    <span className="badge badge-warning">
+                    <span className="gt-chip gt-estado-pendiente">
                       Pendiente
                     </span>
                   </div>
                 </div>
 
                 {r.Instruido && (
-                  <p className="rutina-cliente-nombre">
-                    Cliente: {r.Instruido.nombre}
-                  </p>
+                  <div className="gt-cliente">
+                    <Icon name="user" size={15} className="gt-cliente-icono" />
+                    <span className="gt-cliente-nombre">{r.Instruido.nombre}</span>
+                  </div>
                 )}
 
-                <div className="rutina-resumen-stats">
-                  <div className="rutina-resumen-stat">
-                    <div className="rutina-resumen-stat-value">{r.frecuenciaSemanal || '?'}</div>
-                    <div className="rutina-resumen-stat-label">x/semana</div>
-                  </div>
-                  <div className="rutina-resumen-stat">
-                    <div className="rutina-resumen-stat-value">
-                      {r.ejercicios?.plantillas_recomendadas
-                        ? r.ejercicios.plantillas_recomendadas.length
-                        : Array.isArray(r.ejercicios) ? r.ejercicios.length : 0}
+                <div className="gt-metricas-panel">
+                  <div className="rutina-resumen-stats">
+                    <div className="rutina-resumen-stat">
+                      <div className="rutina-resumen-stat-value">{r.frecuenciaSemanal || '?'}</div>
+                      <div className="rutina-resumen-stat-label">x/semana</div>
                     </div>
-                    <div className="rutina-resumen-stat-label">plantillas</div>
+                    <div className="rutina-resumen-stat">
+                      <div className="rutina-resumen-stat-value">
+                        {r.ejercicios?.plantillas_recomendadas
+                          ? r.ejercicios.plantillas_recomendadas.length
+                          : Array.isArray(r.ejercicios) ? r.ejercicios.length : 0}
+                      </div>
+                      <div className="rutina-resumen-stat-label">plantillas</div>
+                    </div>
                   </div>
                 </div>
 
                 {r.createdAt && (
-                  <p className="text-xs text-muted">
+                  <span className="gt-ia-fecha">
+                    <Icon name="clock" size={12} />
                     Recomendada: {new Date(r.createdAt).toLocaleDateString('es-ES')}
-                  </p>
+                  </span>
                 )}
 
-                <div className="rutina-acciones">
+                <div className="gt-acciones">
                   <button
-                    className="btn btn-ghost btn-sm"
+                    type="button"
+                    className="gt-ver"
                     onClick={() => setVerRutina(verRutina === r.id ? null : r.id)}
                   >
+                    <Icon name="eye" size={14} />
                     {verRutina === r.id ? 'Ocultar' : 'Ver y Revisar'}
                   </button>
                   <button
-                    className="btn btn-ghost btn-sm btn-ghost-peligroso"
+                    type="button"
+                    className="gt-accion-peligro"
                     onClick={() => handleEliminar(r.id)}
                     disabled={procesando}
                   >
@@ -186,7 +201,7 @@ export function RecomendacionesIAView({ onRecargar }) {
                   />
                 )}
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -1,0 +1,1021 @@
+/* ============================================================
+   Dashboard del Atleta — Material 3 oscuro (siempre oscuro)
+   Prefijo de clases: da-
+   Todos los colores van duros (paleta M3): no heredan del tema.
+   ============================================================ */
+
+/* El fondo del área de contenido se oscurece SOLO cuando la página
+   del atleta está montada (:has no requiere tocar Layout.jsx). */
+body:has(.da-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.da-pagina) {
+  background: #131317;
+}
+
+/* ===== Contenedor de página ===== */
+.da-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* Foco visible naranja (mismo patrón que landing.css) */
+.da-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* Texto solo para lectores de pantalla */
+.da-sr-solo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== Cabecera ===== */
+.da-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.da-cabecera-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.da-fila-titulo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.da-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.da-subtitulo {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+.da-pill-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.7);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  white-space: nowrap;
+}
+
+.da-pulso {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4cd7f6;
+  flex-shrink: 0;
+}
+
+.da-cabecera-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.da-chip-calendario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.7);
+  color: #cbc3d7;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.da-chip-calendario svg {
+  color: #d0bcff;
+}
+
+.da-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #6d3bd7, #a078ff);
+  color: #e4e1e7;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: filter 150ms ease;
+}
+
+.da-cta:hover {
+  filter: brightness(1.1);
+}
+
+/* ===== Aparición escalonada de secciones (solo sin reduce-motion) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .da-seccion {
+    animation: da-aparecer 350ms ease-out both;
+  }
+
+  .da-seccion:nth-child(1) { animation-delay: 0ms; }
+  .da-seccion:nth-child(2) { animation-delay: 60ms; }
+  .da-seccion:nth-child(3) { animation-delay: 120ms; }
+  .da-seccion:nth-child(4) { animation-delay: 180ms; }
+  .da-seccion:nth-child(5) { animation-delay: 240ms; }
+  .da-seccion:nth-child(6) { animation-delay: 300ms; }
+
+  @keyframes da-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ===== KPIs ===== */
+.da-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.da-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.7);
+  border-radius: 12px;
+  min-width: 0;
+  transition: border-color 150ms ease;
+}
+
+.da-kpi:hover {
+  border-color: #d0bcff;
+}
+
+.da-kpi-cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.da-kpi-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(160, 120, 255, 0.2);
+  border: 1px solid rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.da-kpi-titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.da-kpi-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+}
+
+.da-kpi-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #958ea0;
+}
+
+.da-kpi-chip {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(208, 188, 255, 0.14);
+  border: 1px solid rgba(208, 188, 255, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: #d0bcff;
+  white-space: nowrap;
+}
+
+.da-kpi-valor {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 44px;
+  line-height: 48px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #e4e1e7;
+  overflow-wrap: break-word;
+}
+
+.da-kpi-unidad {
+  margin-left: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #cbc3d7;
+}
+
+.da-kpi-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(73, 68, 84, 0.3);
+  font-size: 12px;
+  color: #cbc3d7;
+}
+
+.da-kpi-pie-valor {
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+/* Barras de progreso */
+.da-barra {
+  height: 6px;
+  border-radius: 999px;
+  background: #1f1f23;
+  overflow: hidden;
+}
+
+.da-barra-relleno {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #d0bcff;
+  transition: width 600ms ease;
+}
+
+/* Barra segmentada decorativa del IMC (3 tramos) */
+.da-tramos {
+  display: flex;
+  gap: 3px;
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.da-tramos span {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #1f1f23;
+}
+
+/* ===== Cards genéricas (cabecera, cuerpo y pie) ===== */
+.da-tabla-card,
+.da-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.7);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.da-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.da-card-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  flex-wrap: wrap;
+}
+
+.da-card-cabecera-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.da-card-titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.da-card-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(160, 120, 255, 0.2);
+  border: 1px solid rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.da-card-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.da-card-subtitulo {
+  margin: 0;
+  font-size: 12px;
+  color: #cbc3d7;
+}
+
+.da-card-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  flex: 1;
+}
+
+.da-card-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(73, 68, 84, 0.3);
+  flex-wrap: wrap;
+}
+
+/* Enlace de acción en cabeceras y pies de tarjeta */
+.da-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #d0bcff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.da-enlace:hover {
+  color: #e9ddff;
+}
+
+/* Botón secundario: hover invierte a primario */
+.da-boton-secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #2a292e;
+  color: #e4e1e7;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.da-boton-secundario:hover {
+  background: #d0bcff;
+  color: #3c0091;
+}
+
+/* EmptyState dentro de cards oscuras: el componente compartido usa
+   variables del tema, así que se re-estiliza con !important aquí. */
+.da-card .empty-state,
+.da-tabla-card .empty-state {
+  padding: 32px 20px;
+  color: #cbc3d7;
+  flex: 1;
+  justify-content: center;
+}
+
+.da-card .empty-state h3,
+.da-tabla-card .empty-state h3 {
+  color: #e4e1e7 !important;
+}
+
+/* ===== Historial: tabla ===== */
+/* Se reutiliza .table-wrapper (scroll horizontal en móvil) pero se
+   neutraliza su fondo y borde para integrarla en la tarjeta. */
+.da-tabla-card .table-wrapper {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.da-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.da-tabla-card thead th {
+  padding: 12px 24px 12px 14px;
+  background: rgba(14, 14, 18, 0.6);
+  border-bottom: 1px solid #49454;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.da-tabla tbody td {
+  padding: 14px 24px 14px 14px;
+  background: transparent;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  color: #e4e1e7;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+}
+
+.da-tabla tbody tr {
+  transition: background 150ms ease;
+}
+
+.da-tabla tbody tr:hover {
+  background: rgba(31, 31, 35, 0.5);
+}
+
+.da-fila {
+  cursor: pointer;
+}
+
+.da-celda-observaciones {
+  color: #958ea0;
+  min-width: 160px;
+}
+
+/* Nombre de rutina con puntito de color rotativo */
+.da-rutina-nombre {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e4e1e7;
+  font-weight: 500;
+}
+
+.da-punto-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Chip de esfuerzo percibido (RPE) */
+.da-chip-rpe {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  font-size: 12px;
+  font-weight: 600;
+  color: #e4e1e7;
+  white-space: nowrap;
+}
+
+.da-chip-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d2bbff;
+  flex-shrink: 0;
+}
+
+/* Nivel alto ≥7: violeta M3 */
+.da-chip-rpe.alto .da-chip-punto {
+  background: #d0bcff;
+}
+
+/* Nivel medio 4–6.9: cian M3 */
+.da-chip-rpe.medio .da-chip-punto {
+  background: #4cd7f6;
+}
+
+/* Nivel bajo <4: lila suave */
+.da-chip-rpe.bajo .da-chip-punto {
+  background: #d2bbff;
+}
+
+/* Celda y botón de acción (chevron) */
+.da-col-accion {
+  width: 44px;
+  text-align: right;
+}
+
+.da-fila-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  color: #958ea0;
+  cursor: pointer;
+  transition: transform 200ms ease, background 150ms ease, color 150ms ease;
+}
+
+.da-fila-toggle:hover {
+  background: #2a292e;
+  color: #d0bcff;
+}
+
+.da-fila-toggle.abierto {
+  transform: rotate(90deg);
+  color: #d0bcff;
+}
+
+/* Panel de detalle de la fila expandida */
+.da-fila-detalle td {
+  padding: 0 14px 14px;
+}
+
+.da-fila-detalle:hover {
+  background: transparent;
+}
+
+.da-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+}
+
+.da-detalle-titulo {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+}
+
+.da-detalle-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.da-detalle-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(73, 68, 84, 0.3);
+  flex-wrap: wrap;
+}
+
+.da-detalle-item:first-child {
+  border-top: none;
+}
+
+.da-detalle-nombre {
+  color: #e4e1e7;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.da-detalle-series {
+  color: #cbc3d7;
+  font-size: 13px;
+}
+
+.da-detalle-carga {
+  color: #d0bcff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.da-detalle-notas {
+  color: #958ea0;
+  font-size: 12px;
+}
+
+.da-detalle-total {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(73, 68, 84, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbc3d7;
+  text-align: right;
+}
+
+/* ===== Mi Progreso ===== */
+/* Control segmentado */
+.da-segmentos {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: #0e0e12;
+  border: 1px solid #49454;
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.da-segmentos button {
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: transparent;
+  color: #cbc3d7;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.da-segmentos button:hover {
+  color: #e4e1e7;
+}
+
+.da-segmentos button.activo {
+  background: #2a292e;
+  color: #d0bcff;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenedor del gráfico */
+.da-grafico {
+  height: 288px;
+  padding: 8px 4px;
+  background: rgba(14, 14, 18, 0.8);
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+}
+
+/* Línea de tiempo bajo el gráfico */
+.da-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(73, 68, 84, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+  flex-wrap: wrap;
+}
+
+.da-timeline .activa {
+  color: #d0bcff;
+  font-weight: 700;
+}
+
+/* ===== Doble columna: rutina y dieta ===== */
+.da-doble {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+/* Insignia "En curso" */
+.da-badge-curso {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(76, 215, 246, 0.15);
+  border: 1px solid rgba(76, 215, 246, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4cd7f6;
+  white-space: nowrap;
+}
+
+/* Panel interior de la tarjeta de rutina */
+.da-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.5);
+  border-radius: 8px;
+}
+
+.da-panel-nombre {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  color: #e4e1e7;
+  overflow-wrap: break-word;
+}
+
+.da-panel-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #cbc3d7;
+}
+
+.da-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.da-dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.da-dato-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+}
+
+.da-dato-valor {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e4e1e7;
+  overflow-wrap: break-word;
+}
+
+/* Pill "Próxima sesión" / estado del programa */
+.da-sesion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+}
+
+.da-sesion-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(208, 188, 255, 0.14);
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.da-sesion-titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.da-sesion-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #958ea0;
+}
+
+/* Callout de calorías */
+.da-calorias {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 16px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.da-calorias-valor {
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #e4e1e7;
+}
+
+.da-calorias-unidad {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cbc3d7;
+}
+
+/* Macros */
+.da-macros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  gap: 10px;
+}
+
+.da-macro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.da-macro-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+}
+
+.da-macro-valor {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+}
+
+.da-macro-barra {
+  height: 4px;
+  border-radius: 999px;
+  background: #1f1f23;
+  overflow: hidden;
+}
+
+.da-macro-barra i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 600ms ease;
+}
+
+.da-macro-pct {
+  font-size: 10px;
+  color: #cbc3d7;
+}
+
+/* ===== Alerta de perfil médico ===== */
+.da-alerta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 180, 171, 0.12);
+  border: 1px solid rgba(255, 180, 171, 0.35);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.da-alerta-texto {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: #ffb4ab;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .da-doble {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .da-pagina {
+    padding: 16px;
+  }
+
+  .da-titulo {
+    font-size: 26px;
+    line-height: 32px;
+  }
+
+  .da-grafico {
+    height: 260px;
+  }
+
+  .da-timeline-media {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .da-card-cabecera {
+    align-items: flex-start;
+  }
+
+  .da-segmentos {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .da-kpi-valor {
+    font-size: 36px;
+    line-height: 40px;
+  }
+
+  .da-panel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .da-cabecera-acciones {
+    width: 100%;
+  }
+
+  .da-cta {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .da-card-pie {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .da-card-pie .da-boton-secundario {
+    width: 100%;
+  }
+}

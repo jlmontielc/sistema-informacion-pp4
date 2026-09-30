@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
-import { Card } from '../components/common/Card';
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
@@ -32,56 +30,66 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="contenedor-centrado">
-      <Card className="form-estrecho form-estrecho-sm">
-        <Card.Body>
-          <div className="stack stack-md">
-            <div className="stack stack-sm text-center">
-              <h1 className="page-title">Iniciar Sesión</h1>
-              <p className="page-subtitle">
-                Ingresa tus credenciales para acceder al sistema
-              </p>
-            </div>
+    <div className="auth-flujo">
+      <div className="auth-radiancia-and" aria-hidden="true" />
+      <div className="auth-radiancia-at" aria-hidden="true" />
 
-            {error && (
-              <div className="alerta alerta-error text-center" role="alert">
-                {error}
-              </div>
-            )}
+      <header className="auth-marca">
+        <div className="auth-marca-pildora">
+          <span className="material-symbols-outlined">fitness_center</span>
+          <span className="auth-marca-texto">Yantraining</span>
+        </div>
+      </header>
 
-            <form onSubmit={handleSubmit} className="stack stack-md">
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                placeholder="tu@email.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-              <Input
-                label="Contraseña"
-                name="contrasena"
-                type="password"
-                placeholder="••••••••"
-                value={form.contrasena}
-                onChange={handleChange}
-                required
-              />
-              <Button type="submit" loading={loading} className="w-full">
-                Iniciar Sesión
-              </Button>
-            </form>
-
-            <p className="text-center text-sm text-muted">
-              ¿No tienes cuenta?{' '}
-              <Link to="/register" className="enlace-sin-subrayado text-primario">
-                Regístrate aquí
-              </Link>
-            </p>
+      <main className="auth-contenido">
+        <section className="auth-tarjeta auth-tarjeta-estrecha">
+          <div className="auth-encabezado-centrado">
+            <h1 className="auth-titulo">Iniciar Sesión</h1>
+            <p className="auth-subtitulo">Ingresa tus credenciales para acceder al sistema</p>
           </div>
-        </Card.Body>
-      </Card>
+
+          {error && (
+            <div className="auth-error" role="alert">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="auth-formulario">
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="tu@email.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              label="Contraseña"
+              name="contrasena"
+              type="password"
+              placeholder="••••••••"
+              value={form.contrasena}
+              onChange={handleChange}
+              required
+            />
+
+            <button type="submit" className="auth-boton-principal" disabled={loading}>
+              Iniciar Sesión
+              {loading ? <span className="spinner spinner-sm" /> : <span className="material-symbols-outlined">arrow_forward</span>}
+            </button>
+          </form>
+
+          <p className="auth-alternativa">
+            ¿No tienes cuenta?{' '}
+            <Link to="/register" className="auth-enlace">Regístrate aquí</Link>
+          </p>
+        </section>
+      </main>
+
+      <footer className="auth-pie">
+        © {new Date().getFullYear()} Yantraining. Todos los derechos reservados.
+      </footer>
     </div>
   );
 }

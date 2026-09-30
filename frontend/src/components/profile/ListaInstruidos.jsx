@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
-import { EmptyState } from '../common/EmptyState';
 import { Loading } from '../common/Loading';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
+import { Icon } from '../common/Icon';
 import api from '../../services/api';
 import { labelObjetivo } from '../../utils/constants';
 
@@ -21,11 +20,20 @@ const experienciaLabels = {
   avanzado: 'Avanzado',
 };
 
-const experienciaBadge = {
-  principiante: 'badge-success',
-  intermedio: 'badge-warning',
-  avanzado: 'badge-danger',
-};
+/* Devuelve 2 iniciales en mayúsculas (nombre y apellido);
+   si solo hay una palabra, una sola letra */
+function iniciales(nombre) {
+  if (typeof nombre !== 'string') return '—';
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return '—';
+  if (palabras.length === 1) return palabras[0].charAt(0).toUpperCase();
+  return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+}
+
+/* Valor seguro para texto: null/undefined → guion largo */
+function textoSeguro(valor) {
+  return valor || '—';
+}
 
 export function ListaInstruidos() {
   const [instruidos, setInstruidos] = useState([]);
@@ -71,25 +79,52 @@ export function ListaInstruidos() {
   };
 
   if (loading) return <Loading text="Cargando instruidos..." />;
-  if (error) return <EmptyState icon="⚠️" title="Error" description={error} />;
+  if (error) {
+    return (
+      <div className="pf-seccion pf-card">
+        <div className="pf-estado">
+          <div className="pf-estado-icono pf-estado-icono--error">
+            <Icon name="close" size={36} />
+          </div>
+          <h3 className="pf-estado-titulo">Error</h3>
+          <p className="pf-estado-descripcion">{error}</p>
+        </div>
+      </div>
+    );
+  }
   if (instruidos.length === 0) return (
-    <EmptyState icon="👥" title="Sin instruidos" description="Aun no tienes instruidos asignados." />
+    <div className="pf-seccion pf-card">
+      <div className="pf-estado">
+        <div className="pf-estado-icono">
+          <Icon name="users" size={36} />
+        </div>
+        <h3 className="pf-estado-titulo">Sin instruidos</h3>
+        <p className="pf-estado-descripcion">Aun no tienes instruidos asignados.</p>
+      </div>
+    </div>
   );
 
   return (
     <>
-      <Card header={`Mis Instruidos (${instruidos.length})`}>
-        <div className="table-wrapper tabla-ajustada">
-          <table>
+      <div className="pf-seccion pf-card">
+        <div className="pf-card-cabecera">
+          <h2 className="pf-card-titulo">
+            <Icon name="users" size={20} className="pf-icono" />
+            Mis Instruidos
+          </h2>
+          <span className="pf-badge-contador">{instruidos.length}</span>
+        </div>
+        <div className="pf-tabla-envoltura">
+          <table className="pf-tabla">
             <thead>
               <tr>
                 <th>Nombre</th>
-                <th className="hide-mobile">Email</th>
+                <th>Email</th>
                 <th>Edad</th>
                 <th>Peso</th>
-                <th className="hide-mobile">Nivel Act.</th>
+                <th>Nivel Act.</th>
                 <th>Experiencia</th>
-                <th className="hide-mobile">Registro</th>
+                <th>Registro</th>
               </tr>
             </thead>
             <tbody>
@@ -97,64 +132,92 @@ export function ListaInstruidos() {
                 <tr
                   key={inst.id}
                   onClick={() => abrirDetalle(inst)}
-                  className="tabla-fila-clicable"
+                  className="pf-fila-clicable"
                 >
-                  <td>{inst.nombre}</td>
-                  <td className="hide-mobile">{inst.email}</td>
-                  <td>{inst.edad}</td>
-                  <td>{inst.peso} kg</td>
-                  <td className="hide-mobile">{nivelLabels[inst.nivelActividad] || inst.nivelActividad}</td>
                   <td>
-                    <span className={`badge ${experienciaBadge[inst.nivelExperiencia] || 'badge-neutral'}`}>
-                      {experienciaLabels[inst.nivelExperiencia] || '—'}
-                    </span>
+                    <div className="pf-tabla-cliente">
+                      <span className="pf-avatar pf-avatar--sm" aria-hidden="true">
+                        {iniciales(inst.nombre)}
+                      </span>
+                      <span className="pf-tabla-nombre">{textoSeguro(inst.nombre)}</span>
+                    </div>
                   </td>
-                  <td className="hide-mobile">{inst.fechaRegistro}</td>
+                  <td>
+                    <span className="pf-dato-valor pf-dato-valor--mono">{textoSeguro(inst.email)}</span>
+                  </td>
+                  <td>
+                    <span className="pf-tabla-valor">{inst.edad || <span className="pf-dato-valor pf-dato-valor--vacio">—</span>}</span>
+                  </td>
+                  <td>
+                    {inst.peso ? (
+                      <span className="pf-tabla-valor">
+                        {inst.peso}
+                        <span className="pf-tabla-unidad">kg</span>
+                      </span>
+                    ) : (
+                      <span className="pf-dato-valor pf-dato-valor--vacio">—</span>
+                    )}
+                  </td>
+                  <td>
+                    <ChipNivel nivel={inst.nivelActividad} />
+                  </td>
+                  <td>
+                    <ChipExperiencia nivel={inst.nivelExperiencia} />
+                  </td>
+                  <td>
+                    <span className="pf-dato-valor pf-dato-valor--mono">{inst.fechaRegistro || '—'}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
 
       <Modal isOpen={!!seleccionado} onClose={() => setSeleccionado(null)} title="Detalle del Instruido">
         {seleccionado && (
-          <div className="stack">
-            <InfoField label="Nombre" value={seleccionado.nombre} />
-            <InfoField label="Email" value={seleccionado.email} />
-            <InfoField label="Edad" value={`${seleccionado.edad} años`} />
-            <InfoField label="Peso" value={`${seleccionado.peso} kg`} />
-            <InfoField label="Altura" value={`${seleccionado.altura} m`} />
-            <InfoField label="Sexo" value={seleccionado.sexo === 'masculino' ? 'Masculino' : 'Femenino'} />
-            <InfoField label="Nivel de actividad" value={nivelLabels[seleccionado.nivelActividad] || seleccionado.nivelActividad} />
-            <InfoField label="Propósito" value={seleccionado.propositoEntrenamiento ? labelObjetivo(seleccionado.propositoEntrenamiento) : '—'} />
-            <InfoField label="Días disponibles" value={seleccionado.diasDisponibles ? `${seleccionado.diasDisponibles} días/semana` : '—'} />
-            <InfoField label="Fecha de registro" value={seleccionado.fechaRegistro} />
+          <div className="pf-modal-datos">
+            <DatoModal label="Nombre" valor={seleccionado.nombre} />
+            <DatoModal label="Email" valor={seleccionado.email} mono />
+            <DatoModal label="Edad" valor={seleccionado.edad ? `${seleccionado.edad} años` : null} />
+            <DatoModal label="Peso" valor={seleccionado.peso ? `${seleccionado.peso} kg` : null} />
+            <DatoModal label="Altura" valor={seleccionado.altura ? `${seleccionado.altura} m` : null} />
+            <DatoModal label="Sexo" valor={seleccionado.sexo === 'masculino' ? 'Masculino' : seleccionado.sexo === 'femenino' ? 'Femenino' : null} />
+            <DatoModal label="Nivel de actividad" valor={nivelLabels[seleccionado.nivelActividad] || seleccionado.nivelActividad || null} />
+            <DatoModal label="Propósito" valor={seleccionado.propositoEntrenamiento ? labelObjetivo(seleccionado.propositoEntrenamiento) : null} />
+            <DatoModal label="Días disponibles" valor={seleccionado.diasDisponibles ? `${seleccionado.diasDisponibles} días/semana` : null} />
+            <DatoModal label="Fecha de registro" valor={seleccionado.fechaRegistro || null} />
 
-            <div className="field">
-              <label className="field-label">Nivel de experiencia *</label>
-              <select
-                className="field-input"
-                value={editExperiencia}
-                onChange={(e) => setEditExperiencia(e.target.value)}
-              >
-                <option value="">Sin definir</option>
-                <option value="principiante">Principiante</option>
-                <option value="intermedio">Intermedio</option>
-                <option value="avanzado">Avanzado</option>
-              </select>
-              <p className="field-ayuda">
+            <div className="pf-campo">
+              <label className="pf-campo-label">Nivel de experiencia *</label>
+              <div className="pf-selecto">
+                <select
+                  className="pf-campo-input"
+                  value={editExperiencia}
+                  onChange={(e) => setEditExperiencia(e.target.value)}
+                >
+                  <option value="">Sin definir</option>
+                  <option value="principiante">Principiante</option>
+                  <option value="intermedio">Intermedio</option>
+                  <option value="avanzado">Avanzado</option>
+                </select>
+                <Icon name="next" size={14} className="pf-selecto-flecha" />
+              </div>
+              <p className="pf-campo-ayuda">
                 Usado por la IA para generar rutinas acordes a su nivel
               </p>
             </div>
 
             {saveError && (
-              <p className="text-sm text-error">{saveError}</p>
+              <div className="pf-aviso pf-aviso--error">
+                <Icon name="close" size={16} className="pf-icono" />
+                <p>{saveError}</p>
+              </div>
             )}
 
-            <div className="form-acciones">
-              <button className="btn btn-secondary" onClick={() => setSeleccionado(null)}>Cerrar</button>
-              <Button onClick={handleGuardarExperiencia} loading={saving}>
+            <div className="pf-acciones">
+              <Button variant="secondary" onClick={() => setSeleccionado(null)}>Cerrar</Button>
+              <Button variant="primary" loading={saving} onClick={handleGuardarExperiencia}>
                 Guardar Cambios
               </Button>
             </div>
@@ -165,11 +228,38 @@ export function ListaInstruidos() {
   );
 }
 
-function InfoField({ label, value }) {
+/* Chip de nivel de actividad con punto de color; nulo → "Sin definir" gris */
+function ChipNivel({ nivel }) {
+  if (!nivel) {
+    return <span className="pf-chip-exp pf-chip-exp--sin-definir">Sin definir</span>;
+  }
   return (
-    <div className="field">
-      <p className="dato-label">{label}</p>
-      <p className="dato-valor">{value}</p>
+    <span className={`pf-chip-nivel pf-chip-nivel--${nivel}`}>
+      <span className="pf-punto" />
+      {nivelLabels[nivel] || nivel}
+    </span>
+  );
+}
+
+/* Chip de experiencia; nulo/vacío/desconocido → "Sin definir" gris */
+function ChipExperiencia({ nivel }) {
+  const clase = nivel && experienciaLabels[nivel] ? `pf-chip-exp--${nivel}` : 'pf-chip-exp--sin-definir';
+  return (
+    <span className={`pf-chip-exp ${clase}`}>
+      {experienciaLabels[nivel] || 'Sin definir'}
+    </span>
+  );
+}
+
+function DatoModal({ label, valor, mono = false }) {
+  return (
+    <div className="pf-dato">
+      <p className="pf-dato-label">{label}</p>
+      {valor ? (
+        <p className={`pf-dato-valor ${mono ? 'pf-dato-valor--mono' : ''}`}>{valor}</p>
+      ) : (
+        <p className="pf-dato-valor pf-dato-valor--vacio">—</p>
+      )}
     </div>
   );
 }

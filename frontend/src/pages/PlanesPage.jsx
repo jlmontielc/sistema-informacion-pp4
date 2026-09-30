@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { Loading } from '../components/common/Loading';
-import { EmptyState } from '../components/common/EmptyState';
+import { Icon } from '../components/common/Icon';
 import { Modal } from '../components/common/Modal';
 import {
   planesPagoApi,
@@ -202,37 +201,37 @@ export default function PlanesPage() {
 
   if (error) {
     return (
-      <div className="page">
-        <div className="page-header">
-          <div className="page-header-text">
-            <h2 className="page-title">Planes y Mensualidades</h2>
-          </div>
-        </div>
-        <Card>
-          <div className="empty-state">
-            <p className="empty-state-icono" aria-hidden="true">⚠️</p>
-            <p className="text-lg text-medium text-error">{error}</p>
-            <Button onClick={cargarDatos}>
+      <div className="pg-pagina">
+        <div className="pg-seccion pg-card">
+          <div className="pg-estado">
+            <div className="pg-estado-icono pg-estado-icono--error">
+              <Icon name="close" size={32} />
+            </div>
+            <h2 className="pg-estado-titulo">Error</h2>
+            <p className="pg-estado-descripcion">{error}</p>
+            <Button variant="primary" onClick={cargarDatos}>
               Reintentar
             </Button>
           </div>
-        </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h2 className="page-title">Planes y Mensualidades</h2>
-          <p className="page-subtitle">
-            Define tus planes, métodos de pago y verifica los pagos de tus clientes
-          </p>
-        </div>
-        {(tab === 'planes' || tab === 'metodos') && (
-          <div className="page-actions">
+    <div className="pg-pagina">
+      {/* Cabecera */}
+      <div className="pg-seccion pg-cabecera">
+        <div className="pg-cabecera-fila">
+          <div className="pg-cabecera-texto">
+            <h1 className="pg-titulo">Planes y Mensualidades</h1>
+            <p className="pg-subtitulo">
+              Define tus planes, métodos de pago y verifica los pagos de tus clientes
+            </p>
+          </div>
+          {(tab === 'planes' || tab === 'metodos') && (
             <Button
+              variant="primary"
               onClick={() => {
                 if (tab === 'planes') {
                   setPlanEdit(null);
@@ -243,74 +242,77 @@ export default function PlanesPage() {
                 }
               }}
             >
-              {tab === 'planes' ? '+ Nuevo Plan' : '+ Nuevo Método'}
+              {tab === 'planes' ? 'Nuevo Plan' : 'Nuevo Método'}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="tabs-container">
-        <button type="button" className={`tab-button ${tab === 'planes' ? 'active' : ''}`} onClick={() => setTab('planes')}>
-          Planes ({planes.length})
+      {/* Tabs */}
+      <div className="pg-seccion pg-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={tab === 'planes'} className={`pg-tab ${tab === 'planes' ? 'pg-tab--activa' : ''}`} onClick={() => setTab('planes')}>
+          Planes
+          <span className="pg-badge-contador">{planes.length}</span>
         </button>
-        <button type="button" className={`tab-button ${tab === 'metodos' ? 'active' : ''}`} onClick={() => setTab('metodos')}>
-          Métodos de Pago ({metodos.length})
+        <button type="button" role="tab" aria-selected={tab === 'metodos'} className={`pg-tab ${tab === 'metodos' ? 'pg-tab--activa' : ''}`} onClick={() => setTab('metodos')}>
+          Métodos de Pago
+          <span className="pg-badge-contador">{metodos.length}</span>
         </button>
-        <button type="button" className={`tab-button ${tab === 'tasa' ? 'active' : ''}`} onClick={() => setTab('tasa')}>
+        <button type="button" role="tab" aria-selected={tab === 'tasa'} className={`pg-tab ${tab === 'tasa' ? 'pg-tab--activa' : ''}`} onClick={() => setTab('tasa')}>
           Tasa de Cambio
         </button>
-        <button type="button" className={`tab-button ${tab === 'pagos' ? 'active' : ''}`} onClick={() => setTab('pagos')}>
-          Pagos Recibidos ({historial.length})
+        <button type="button" role="tab" aria-selected={tab === 'pagos'} className={`pg-tab ${tab === 'pagos' ? 'pg-tab--activa' : ''}`} onClick={() => setTab('pagos')}>
+          Pagos Recibidos
+          <span className="pg-badge-contador">{historial.length}</span>
         </button>
       </div>
 
       {tab === 'planes' && (
         planes.length === 0 ? (
-          <Card>
-            <EmptyState
-              icon="💳"
-              title="Sin planes"
-              description="Crea tu primer plan de mensualidad para que tus clientes puedan pagarlo."
-              action={
-                <Button
-                  onClick={() => {
-                    setPlanEdit(null);
-                    setFormPlanOpen(true);
-                  }}
-                >
-                  Crear Plan
-                </Button>
-              }
-            />
-          </Card>
+          <div className="pg-seccion pg-card">
+            <div className="pg-estado">
+              <div className="pg-estado-icono">
+                <Icon name="creditcard" size={32} />
+              </div>
+              <h3 className="pg-estado-titulo">Sin planes</h3>
+              <p className="pg-estado-descripcion">
+                Crea tu primer plan de mensualidad para que tus clientes puedan pagarlo.
+              </p>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setPlanEdit(null);
+                  setFormPlanOpen(true);
+                }}
+              >
+                Crear Plan
+              </Button>
+            </div>
+          </div>
         ) : (
-          <div className="grid-auto">
+          <div className="pg-seccion pg-grid">
             {planes.map((plan) => (
-              <Card key={plan.id}>
-                <div className="stack">
-                  <div className="row-between">
-                    <strong>{plan.nombre}</strong>
-                    <span className={`badge ${plan.activo ? 'badge-success' : 'badge-neutral'}`}>
+              <div key={plan.id} className="pg-card">
+                <div className="pg-card-cuerpo pg-plan-cuerpo">
+                  <div className="pg-fila">
+                    <p className="pg-plan-nombre">{plan.nombre}</p>
+                    <span className={`pg-chip-estado ${plan.activo ? 'pg-chip-estado--activo' : 'pg-chip-estado--inactivo'}`}>
                       {plan.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                   <div>
-                    <div className="valor-destacado">
+                    <div className="pg-valor">
                       {formatUsd(plan.montoUsd)}
-                      <span className="text-sm text-muted ml-sm">
-                        / mes aprox.
-                      </span>
+                      <span className="pg-valor-unidad">/ mes aprox.</span>
                     </div>
-                    <div className="text-sm text-muted">
+                    <p className="pg-plan-subtexto">
                       ≈ {formatBs(plan.montoUsd, tasaCambio)} · {plan.diasVigencia} días de vigencia
-                    </div>
+                    </p>
                   </div>
                   {plan.descripcion && (
-                    <p className="text-sm text-muted">
-                      {plan.descripcion}
-                    </p>
+                    <p className="pg-plan-descripcion">{plan.descripcion}</p>
                   )}
-                  <div className="row">
+                  <div className="pg-acciones">
                     <Button variant="secondary" size="sm" onClick={() => { setPlanEdit(plan); setFormPlanOpen(true); }}>
                       Editar
                     </Button>
@@ -319,13 +321,13 @@ export default function PlanesPage() {
                         Desactivar
                       </Button>
                     ) : (
-                      <Button size="sm" onClick={() => handleReactivarPlan(plan)}>
+                      <Button variant="primary" size="sm" onClick={() => handleReactivarPlan(plan)}>
                         Reactivar
                       </Button>
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )
@@ -333,37 +335,40 @@ export default function PlanesPage() {
 
       {tab === 'metodos' && (
         metodos.length === 0 ? (
-          <Card>
-            <EmptyState
-              icon="🏦"
-              title="Sin métodos de pago"
-              description="Configura al menos un método (pago móvil, transferencia, Zelle…) para recibir pagos."
-              action={
-                <Button
-                  onClick={() => {
-                    setMetodoEdit(null);
-                    setFormMetodoOpen(true);
-                  }}
-                >
-                  Agregar Método
-                </Button>
-              }
-            />
-          </Card>
+          <div className="pg-seccion pg-card">
+            <div className="pg-estado">
+              <div className="pg-estado-icono">
+                <Icon name="receipt" size={32} />
+              </div>
+              <h3 className="pg-estado-titulo">Sin métodos de pago</h3>
+              <p className="pg-estado-descripcion">
+                Configura al menos un método (pago móvil, transferencia, Zelle…) para recibir pagos.
+              </p>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setMetodoEdit(null);
+                  setFormMetodoOpen(true);
+                }}
+              >
+                Agregar Método
+              </Button>
+            </div>
+          </div>
         ) : (
-          <div className="grid-auto">
+          <div className="pg-seccion pg-grid">
             {metodos.map((metodo) => (
-              <Card key={metodo.id}>
-                <div className="stack">
-                  <div className="row-between">
-                    <strong>{labelTipo(metodo.tipo)}</strong>
-                    <span className={`badge ${metodo.activo ? 'badge-success' : 'badge-neutral'}`}>
+              <div key={metodo.id} className="pg-card">
+                <div className="pg-card-cuerpo pg-plan-cuerpo">
+                  <div className="pg-fila">
+                    <p className="pg-plan-nombre">{labelTipo(metodo.tipo)}</p>
+                    <span className={`pg-chip-estado ${metodo.activo ? 'pg-chip-estado--activo' : 'pg-chip-estado--inactivo'}`}>
                       {metodo.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </div>
                   <DatosMetodo datos={metodo.datos} />
                   {metodo.activo && (
-                    <div className="row">
+                    <div className="pg-acciones">
                       <Button variant="secondary" size="sm" onClick={() => { setMetodoEdit(metodo); setFormMetodoOpen(true); }}>
                         Editar
                       </Button>
@@ -373,26 +378,31 @@ export default function PlanesPage() {
                     </div>
                   )}
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )
       )}
 
       {tab === 'tasa' && (
-        <Card className="form-estrecho">
-          <form onSubmit={handleGuardarTasa}>
-            <div className="stack">
-              <div>
-                <h3 className="card-titulo card-titulo-md">Tasa de cambio ($ → Bs)</h3>
-                <p className="text-sm text-muted">
-                  Bolívares por cada 1 USD. Se usa para calcular los montos en Bs de tus planes y pagos.
-                </p>
-              </div>
-              <div className="text-lg">
-                Tasa actual:{' '}
-                <strong>{tasaCambio !== null ? formatBs(1, tasaCambio).replace('Bs ', '') : '-'} Bs/USD</strong>
-              </div>
+        <div className="pg-seccion pg-card">
+          <div className="pg-card-cabecera">
+            <h2 className="pg-card-titulo">
+              <Icon name="monitoring" size={20} className="pg-icono" />
+              Tasa de cambio ($ → Bs)
+            </h2>
+          </div>
+          <div className="pg-card-cuerpo">
+            <p className="pg-subtitulo">
+              Bolívares por cada 1 USD. Se usa para calcular los montos en Bs de tus planes y pagos.
+            </p>
+            <div className="pg-tasa-actual">
+              <span className="pg-tasa-valor">
+                {tasaCambio !== null ? formatBs(1, tasaCambio).replace('Bs ', '') : '-'}
+              </span>
+              <span className="pg-tasa-unidad">Bs/USD</span>
+            </div>
+            <form onSubmit={handleGuardarTasa} className="pg-form">
               <Input
                 label="Nueva tasa"
                 name="tasaCambio"
@@ -409,60 +419,75 @@ export default function PlanesPage() {
                 required
               />
               {mensajeTasa && (
-                <div className="alerta alerta-success text-center">
-                  {mensajeTasa}
+                <div className="pg-aviso pg-aviso--ok">
+                  <Icon name="check" size={16} className="pg-icono" />
+                  <p>{mensajeTasa}</p>
                 </div>
               )}
               {errorTasa && (
-                <div className="alerta alerta-error text-center">
-                  {errorTasa}
+                <div className="pg-aviso pg-aviso--error">
+                  <Icon name="close" size={16} className="pg-icono" />
+                  <p>{errorTasa}</p>
                 </div>
               )}
-              <div>
-                <Button type="submit" loading={guardandoTasa}>
+              <div className="pg-acciones">
+                <Button type="submit" variant="primary" loading={guardandoTasa}>
                   Guardar tasa
                 </Button>
               </div>
-            </div>
-          </form>
-        </Card>
+            </form>
+          </div>
+        </div>
       )}
 
       {tab === 'pagos' && (
-        <Card>
-          <div className="toolbar row-between">
-            <h3 className="card-titulo card-titulo-md">Historial de pagos</h3>
-            <select
-              className="field-input select-filtro"
-              value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value)}
-              aria-label="Filtrar por estado"
-            >
-              {ESTADOS_FILTRO.map((f) => (
-                <option key={f.value} value={f.value}>
-                  {f.label}
-                </option>
-              ))}
-            </select>
+        <div className="pg-seccion pg-card">
+          <div className="pg-card-cabecera">
+            <h2 className="pg-card-titulo">
+              <Icon name="history" size={20} className="pg-icono" />
+              Historial de pagos
+            </h2>
+            <div className="pg-selecto">
+              <select
+                value={filtroEstado}
+                onChange={(e) => setFiltroEstado(e.target.value)}
+                aria-label="Filtrar por estado"
+              >
+                {ESTADOS_FILTRO.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+              <Icon name="next" size={14} className="pg-selecto-flecha" />
+            </div>
           </div>
 
           {cargandoHistorial ? (
             <Loading text="Cargando pagos..." />
           ) : errorHistorial ? (
-            <EmptyState icon="⚠️" title="Error" description={errorHistorial} />
+            <div className="pg-estado">
+              <div className="pg-estado-icono pg-estado-icono--error">
+                <Icon name="close" size={32} />
+              </div>
+              <h3 className="pg-estado-titulo">Error</h3>
+              <p className="pg-estado-descripcion">{errorHistorial}</p>
+            </div>
           ) : historial.length === 0 ? (
-            <EmptyState
-              icon="🧾"
-              title="Sin pagos"
-              description={
-                filtroEstado
+            <div className="pg-estado">
+              <div className="pg-estado-icono">
+                <Icon name="receipt" size={32} />
+              </div>
+              <h3 className="pg-estado-titulo">Sin pagos</h3>
+              <p className="pg-estado-descripcion">
+                {filtroEstado
                   ? `No hay pagos con estado "${ESTADOS_FILTRO.find((f) => f.value === filtroEstado)?.label}".`
-                  : 'Cuando tus clientes registren pagos aparecerán aquí.'
-              }
-            />
+                  : 'Cuando tus clientes registren pagos aparecerán aquí.'}
+              </p>
+            </div>
           ) : (
-            <div className="table-wrapper">
-              <table>
+            <div className="pg-tabla-scroll">
+              <table className="pg-tabla">
                 <thead>
                   <tr>
                     <th>Fecha</th>
@@ -496,13 +521,13 @@ export default function PlanesPage() {
                         )}
                       </td>
                       <td>
-                        <div className="row row-gap-sm">
+                        <div className="pg-acciones">
                           <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
                             Ver
                           </Button>
                           {pago.estado === 'pendiente' && (
                             <>
-                              <Button size="sm" loading={procesandoId === pago.id} onClick={() => handleVerificar(pago)}>
+                              <Button variant="primary" size="sm" loading={procesandoId === pago.id} onClick={() => handleVerificar(pago)}>
                                 Verificar
                               </Button>
                               <Button
@@ -526,7 +551,7 @@ export default function PlanesPage() {
               </table>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       <PlanFormModal

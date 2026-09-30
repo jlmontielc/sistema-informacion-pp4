@@ -196,27 +196,27 @@ export default function ReportesPage() {
     : 'Reportes';
 
   return (
-    <div className="reportes-pagina">
-      <header className="reportes-encabezado">
-        <div className="reportes-encabezado-fila">
-          <div className="reportes-titulo">
-            <h1>{tituloInstruido}</h1>
-            <p className="reportes-subtitulo">
+    <div className="rp-pagina">
+      <header className="rp-seccion rp-cabecera">
+        <div className="rp-cabecera-fila">
+          <div className="rp-cabecera-texto">
+            <h1 className="rp-titulo">{tituloInstruido}</h1>
+            <p className="rp-subtitulo">
               Analiza el rendimiento y la evolución del entrenamiento.
             </p>
           </div>
           <FiltroTiempo periodo={periodo} onChange={handleCambiarPeriodo} />
         </div>
         {!esInstruido && instruidoSeleccionado && (
-          <span className="reportes-subtitulo-instruido">
+          <span className="rp-pill-contexto">
             Viendo reportes de: {instruidoSeleccionado.nombre || instruidoSeleccionado.email}
           </span>
         )}
       </header>
 
-      <div className="reportes-layout">
+      <div className="rp-layout">
         {esEntrenadorOAdmin && (
-          <aside className="reportes-sidebar">
+          <aside className="rp-sidebar">
             <ListaInstruidos
               instruidos={instruidos}
               seleccionado={instruidoSeleccionado}
@@ -227,7 +227,7 @@ export default function ReportesPage() {
           </aside>
         )}
 
-        <main className="reportes-contenido">
+        <main className="rp-contenido">
           <GraficaGruposMusculares
             datos={gruposMusculares}
             cargando={cargandoGrupos}

@@ -284,7 +284,7 @@ export function EjercicioCatalogoModal({ isOpen, onClose, onSelect, seleccionado
   }, []);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Catálogo de Ejercicios" size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Catálogo de Ejercicios" size="xl" className="modal-cyber">
       <div className="catalogo-contenido">
         <div className="filtros-bar">
           <input

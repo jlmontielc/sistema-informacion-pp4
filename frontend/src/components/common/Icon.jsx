@@ -95,6 +95,92 @@ const icons = {
     path: 'M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01',
     fill: 'none',
   },
+  /* Reloj: descanso y duraciones (reemplaza el emoji de cronómetro) */
+  clock: {
+    path: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
+    fill: 'none',
+  },
+  /* ===== Iconos del Dashboard del Atleta (Material 3 oscuro) ===== */
+  /* Báscula: pesa con asa superior */
+  scale: {
+    path: 'M9 6a3 3 0 1 0 6 0 3 3 0 0 0-6 0M12 6L4 21h16L12 6',
+    fill: 'none',
+  },
+  /* Regla inclinada con marcas */
+  ruler: {
+    path: 'M22 7L7 22l-5-5L17 2l5 5zM9 13.5l1.5 1.5M12 10.5l1.5 1.5M15 7.5l1.5 1.5',
+    fill: 'none',
+  },
+  /* Llama */
+  flame: {
+    path: 'M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z',
+    fill: 'none',
+  },
+  /* Monitoreo: pantalla con línea de progreso y base */
+  monitoring: {
+    path: 'M2 4h20v12H2zM6 11l3-3 3 3 4-5M8 20h8',
+    fill: 'none',
+  },
+  /* Historial: reloj con flecha circular */
+  history: {
+    path: 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M12 7v5l4 2',
+    fill: 'none',
+  },
+  /* Calendario */
+  calendar: {
+    path: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+    fill: 'none',
+  },
+  /* Más (añadir) */
+  plus: {
+    path: 'M12 5v14M5 12h14',
+    fill: 'none',
+  },
+  /* Tendencia a la baja */
+  'trending-down': {
+    path: 'M22 17l-8.5-8.5-5 5L2 7M16 17h6v-6',
+    fill: 'none',
+  },
+  /* Engranaje de ajustes */
+  settings: {
+    path: 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+    fill: 'none',
+  },
+  /* Evento: calendario con punto */
+  event: {
+    path: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM12 18a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+    fill: 'none',
+  },
+  /* Restaurante: cubiertos */
+  restaurant: {
+    path: 'M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zM21 15v7',
+    fill: 'none',
+  },
+  /* Reproducir: triángulo */
+  play: {
+    path: 'M6 3l14 9-14 9V3z',
+    fill: 'none',
+  },
+  /* Grupo de tres personas (usado en KPI de clientes del entrenador) */
+  groups: {
+    path: 'M12 3a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM6.5 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17.5 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM1 20a5.5 5.5 0 0 1 11 0M6.5 14.5c-1.9 0-4 1-4.5 3M23 20a5.5 5.5 0 0 0-11 0M17.5 14.5c1.9 0 4 1 4.5 3',
+    fill: 'none',
+  },
+  /* Tendencia ascendente con eje (usado en KPI de nuevos clientes) */
+  'trending-up': {
+    path: 'M22 7l-8.5 8.5-5-5L2 17M16 7h6v6',
+    fill: 'none',
+  },
+  /* Candado con arco (guard de acceso del módulo de metabolismo) */
+  lock: {
+    path: 'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4',
+    fill: 'none',
+  },
+  /* Ojo: ver y revisar recomendaciones IA */
+  eye: {
+    path: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    fill: 'none',
+  },
 };
 
 export function Icon({ name, size = 24, color = 'currentColor', className = '' }) {

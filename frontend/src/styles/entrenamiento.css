@@ -1,4 +1,4 @@
-.tabs-container {
+﻿.tabs-container {
   display: flex;
   gap: var(--space-1);
   background: var(--color-neutral-100);
@@ -552,239 +552,6 @@
 }
 
 /* =============================================================
-   REGISTRO DE ENTRENAMIENTO - ESTILO HEVY LIMPIO
-   ============================================================= */
-
-.registro-modal {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.registro-modal-header {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--color-bg-card);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.registro-modal-stats {
-  display: flex;
-  justify-content: space-around;
-  gap: var(--space-4);
-}
-
-.registro-modal-stat {
-  text-align: center;
-  min-width: 80px;
-}
-
-.registro-modal-stat-value {
-  display: block;
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-primary-600);
-  line-height: 1;
-}
-
-.registro-modal-stat-label {
-  display: block;
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  margin-top: var(--space-1);
-}
-
-.registro-modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  max-height: 55vh;
-  overflow-y: auto;
-  padding-right: var(--space-2);
-}
-
-.registro-modal-footer {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
-}
-
-.registro-modal-error {
-  text-align: center;
-  color: var(--color-error);
-  padding: var(--space-8);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  align-items: center;
-}
-
-.ejercicio-registro-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.ejercicio-registro-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.ejercicio-registro-title {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
-}
-
-.ejercicio-registro-meta {
-  margin: var(--space-1) 0 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-
-.ejercicio-registro-resumen {
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.ejercicio-registro-volumen {
-  display: block;
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--color-primary-600);
-}
-
-.ejercicio-registro-series {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-
-.ejercicio-registro-footer {
-  display: flex;
-  justify-content: flex-start;
-  padding-top: var(--space-2);
-}
-
-.serie-row {
-  display: grid;
-  grid-template-columns: 32px 1fr 1fr 1fr 60px 76px;
-  gap: var(--space-2);
-  align-items: center;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-alt);
-}
-
-.serie-row-header {
-  background: transparent;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.serie-row-header .serie-field,
-.serie-row-header .serie-numero {
-  color: var(--color-text-secondary);
-}
-
-.serie-row-guardada {
-  background: var(--color-neutral-50);
-}
-
-.serie-numero {
-  font-weight: var(--font-bold);
-  color: var(--color-primary-600);
-  text-align: center;
-  font-size: var(--text-sm);
-}
-
-.serie-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.serie-field label {
-  font-size: 10px;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.serie-field input {
-  width: 100%;
-  min-width: 0;
-  padding: var(--space-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
-  background: var(--color-bg-card);
-  text-align: center;
-}
-
-.serie-field input:focus {
-  border-color: var(--color-primary-500);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-100);
-}
-
-.serie-field-rpe {
-  max-width: 60px;
-}
-
-.serie-acciones {
-  display: flex;
-  gap: var(--space-1);
-  justify-content: flex-end;
-}
-
-.serie-empty {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-  padding: var(--space-4);
-  margin: 0;
-}
-
-@media (max-width: 640px) {
-  .serie-row {
-    grid-template-columns: 28px 1fr 1fr 1fr 52px 68px;
-    gap: var(--space-1);
-    padding: var(--space-2);
-  }
-
-  .serie-field input {
-    padding: var(--space-1);
-    font-size: var(--text-xs);
-  }
-
-  .registro-modal-stat-value {
-    font-size: var(--text-xl);
-  }
-
-  .registro-modal-footer {
-    flex-direction: column;
-  }
-}
-
-/* =============================================================
    Refinamientos responsive (Fase 3 - Lote A)
    No reemplazan las clases anteriores; solo las complementan.
    ============================================================= */
@@ -797,11 +564,6 @@
   gap: var(--space-2);
 }
 
-/* Flecha rotada para "Anadir serie" (apunta hacia abajo/plus) */
-.icono-rotado {
-  transform: rotate(90deg);
-}
-
 /* Nombre del cliente en tarjetas de rutina asignada */
 .rutina-cliente-nombre {
   font-size: var(--text-sm);
@@ -809,7 +571,7 @@
   font-weight: var(--font-medium);
 }
 
-/* ===== Catálogo de ejercicios: layout y responsive ===== */
+/* ===== CatÃ¡logo de ejercicios: layout y responsive ===== */
 .catalogo-contenido {
   display: flex;
   flex-direction: column;
@@ -978,4 +740,1421 @@
   gap: var(--space-3);
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* =============================================================
+   MI RUTINA (instruido) - mockups dia / semana
+   Tarjeta de workout siempre oscura + superficies internas claras,
+   con variante dark para tablas, toggle y barras de progreso.
+   ============================================================= */
+
+.mi-rutina {
+  --_gap: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  font-family: var(--rutina-fuente);
+}
+
+/* ---------- Cabecera ---------- */
+
+/* El mockup deja el titulo sobre la pagina clara y el workout card en oscuro,
+   asi que la cabecera no lleva fondo propio: solo el chip de estado. */
+.mi-rutina-cabecera {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mi-rutina-cabecera-titulos {
+  min-width: 0;
+}
+
+.mi-rutina-cabecera-titulo {
+  margin: 0;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-cabecera-subtitulo {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-cabecera-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--rutina-claro-borde);
+  border-radius: var(--rutina-radio-s);
+  background: var(--rutina-claro);
+  box-shadow: var(--rutina-sombra);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-claro-suave);
+  white-space: nowrap;
+}
+
+.mi-rutina-cabecera-pulso {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--rutina-exito);
+  animation: mi-rutina-parpadeo 1.8s ease-in-out infinite;
+}
+
+.mi-rutina-cabecera-separador {
+  color: var(--rutina-claro-borde);
+}
+
+.mi-rutina-cabecera-reloj {
+  font-family: var(--font-mono);
+  font-weight: var(--font-bold);
+  color: var(--rutina-marca-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-cabecera-rango {
+  font-weight: var(--font-normal);
+  color: var(--rutina-texto-claro-suave);
+}
+
+
+/* ---------- Pestanas ---------- */
+
+/* El toggle del mockup es un carril gris con la pastilla activa en morado.
+   Se reaprovecha `.tabs-container` / `.tab-button` de la app y aqui solo se
+   ajustan los tokens. */
+.mi-rutina-pestanas.tabs-container {
+  display: flex;
+  align-self: stretch;
+  gap: var(--space-1);
+  margin-bottom: 0;
+  padding: var(--space-1);
+  border-radius: var(--rutina-radio);
+  background: var(--rutina-claro-tenue);
+  border: 1px solid var(--rutina-claro-borde);
+  box-shadow: inset 0 1px 3px rgba(24, 24, 27, 0.08);
+}
+
+.mi-rutina-pestanas .tab-button {
+  flex: 1;
+  border: 0;
+  border-radius: var(--rutina-radio-s);
+  background: transparent;
+  color: var(--rutina-texto-claro);
+  font-weight: var(--font-medium);
+}
+
+.mi-rutina-pestanas .tab-button:hover:not(.active) {
+  background: color-mix(in srgb, var(--rutina-texto-claro) 6%, transparent);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-pestanas .tab-button.active {
+  background: var(--rutina-marca);
+  color: #ffffff;
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- Panel ---------- */
+
+.mi-rutina-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ---------- Tarjeta de workout (siempre oscura) ---------- */
+
+.mi-rutina-workout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--rutina-radio);
+  background: linear-gradient(135deg, var(--rutina-oscuro) 0%, var(--rutina-oscuro-alto) 100%);
+  color: var(--rutina-texto);
+  border: 1px solid var(--rutina-superficie-alta);
+  box-shadow: var(--rutina-sombra);
+  animation: mi-rutina-fade-up 0.35s ease both;
+}
+
+.mi-rutina-workout-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--rutina-superficie-alta);
+}
+
+.mi-rutina-workout-dia {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.01em;
+  color: var(--rutina-texto);
+}
+
+.mi-rutina-workout-badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--rutina-radio-chip);
+  background: color-mix(in srgb, var(--rutina-marca) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rutina-marca) 65%, transparent);
+  color: #e3d5ff;
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mi-rutina-workout-fecha {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-suave);
+}
+
+
+/* ---------- Selector de dia ---------- */
+
+/* Reutiliza `DiaSelector`; aqui solo se reescriben los tokens para que las
+   pastillas se vean como en el mockup (contenedor claro + activo morado). */
+.mi-rutina-dias .dias-semana-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--rutina-radio);
+  background: var(--rutina-claro-tenue);
+  border: 1px solid var(--rutina-claro-borde);
+  box-shadow: inset 0 1px 3px rgba(24, 24, 27, 0.08);
+}
+
+.mi-rutina-dias .dia-item {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  border-radius: var(--rutina-radio-s);
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-dias .dia-item:hover {
+  background: color-mix(in srgb, var(--rutina-texto-claro) 6%, transparent);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-dias .dia-item.seleccionado {
+  background: var(--rutina-marca);
+  color: #ffffff;
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- Progreso del dia ---------- */
+
+.mi-rutina-progreso {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.mi-rutina-progreso-etiqueta {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--rutina-radio-chip);
+  background: var(--rutina-marca-tenue);
+  color: var(--rutina-marca-texto);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+}
+
+.mi-rutina-progreso-cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mi-rutina-progreso-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-progreso-titulo {
+  font-weight: var(--font-semibold);
+}
+
+.mi-rutina-progreso-cifras {
+  font-variant-numeric: tabular-nums;
+  color: var(--rutina-marca-texto);
+  font-weight: var(--font-semibold);
+}
+
+.mi-rutina-progreso-vistos {
+  color: var(--rutina-texto-claro-suave);
+  font-weight: var(--font-normal);
+}
+
+.mi-rutina-barra {
+  height: 8px;
+  border-radius: var(--rutina-radio-chip);
+  background: var(--rutina-claro-tenue);
+  overflow: hidden;
+}
+
+.mi-rutina-barra-relleno {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rutina-marca) 0%, var(--rutina-marca-fuerte) 100%);
+  transition: width 0.35s ease;
+}
+
+.mi-rutina-barra-clara {
+  background: var(--rutina-claro-tenue);
+  border: 1px solid var(--rutina-claro-borde);
+}
+
+
+/* ---------- Lista de ejercicios ---------- */
+
+.mi-rutina-ejercicios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mi-rutina-ejercicio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--rutina-radio);
+  background: var(--rutina-claro);
+  border: 1px solid var(--rutina-claro-borde);
+  animation: mi-rutina-fade-up 0.3s ease both;
+}
+
+.mi-rutina-ejercicio-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mi-rutina-ejercicio-etiqueta {
+  display: block;
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-ejercicio-nombre {
+  margin: 2px 0 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-resumen {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+  white-space: nowrap;
+}
+
+.mi-rutina-resumen-num {
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto-claro);
+}
+
+/* ---------- Accion primaria ---------- */
+
+.mi-rutina-acciones {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-2);
+}
+
+.mi-rutina-acciones .btn-primary {
+  background: var(--rutina-marca);
+  border-color: var(--rutina-marca);
+}
+
+.mi-rutina-acciones .btn-primary:hover {
+  background: var(--rutina-marca-fuerte);
+  border-color: var(--rutina-marca-fuerte);
+}
+
+.mi-rutina-acciones-nota {
+  margin: var(--space-3) 0 0;
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-suave);
+}
+
+/* ---------- Vista semanal ---------- */
+
+
+.mi-rutina-semanal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Cabecera de la semana: tarjeta oscura con el avance real. No se incluyen
+   kcal ni series planeadas por grupo porque el backend no las expone. */
+.mi-rutina-semana-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--rutina-radio);
+  background: linear-gradient(135deg, var(--rutina-oscuro) 0%, var(--rutina-oscuro-alto) 100%);
+  border: 1px solid var(--rutina-superficie-alta);
+  color: var(--rutina-texto);
+  box-shadow: var(--rutina-sombra);
+  animation: mi-rutina-fade-up 0.35s ease both;
+}
+
+.mi-rutina-semana-cabecera-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.mi-rutina-semana-cabecera-titulos {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mi-rutina-semana-cabecera-etiquetas {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.mi-rutina-semana-tipo {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--rutina-texto-suave);
+}
+
+.mi-rutina-semana-titulo {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.01em;
+  color: var(--rutina-texto);
+}
+
+.mi-rutina-semana-progreso {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-suave);
+}
+
+.mi-rutina-semana-cajas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.mi-rutina-caja {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--rutina-radio-s);
+  background: var(--rutina-superficie);
+  border: 1px solid color-mix(in srgb, var(--rutina-texto) 8%, transparent);
+}
+
+.mi-rutina-caja-etiqueta {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-caja-valor {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-caja-destacada .mi-rutina-caja-valor {
+  color: #c4b0f0;
+}
+
+/* Barra de cumplimiento semanal */
+.mi-rutina-cumplimiento {
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--rutina-radio-s);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--rutina-superficie-alta);
+}
+
+.mi-rutina-cumplimiento-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-suave);
+}
+
+.mi-rutina-cumplimiento-etiqueta {
+  font-weight: var(--font-medium);
+  color: var(--rutina-texto-suave);
+}
+
+.mi-rutina-cumplimiento-valor {
+  font-weight: var(--font-bold);
+  color: #c4b0f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-semana-cabecera .mi-rutina-barra {
+  background: var(--rutina-superficie-alta);
+}
+
+
+.mi-rutina-semana-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-4);
+}
+
+.mi-rutina-dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--rutina-radio);
+  background: var(--rutina-claro);
+  border: 1px solid var(--rutina-claro-borde);
+  animation: mi-rutina-fade-up 0.3s ease both;
+}
+
+.mi-rutina-dia-hoy {
+  border-color: var(--rutina-marca);
+  box-shadow: 0 0 0 1px var(--rutina-marca);
+}
+
+.mi-rutina-dia-completado {
+  background: var(--rutina-claro-tenue);
+}
+
+.mi-rutina-dia-pendiente {
+  opacity: 0.75;
+}
+
+.mi-rutina-dia-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.mi-rutina-dia-nombre {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-dia-estado {
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-dia-estado-ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--rutina-exito);
+  color: #ffffff;
+}
+
+.mi-rutina-dia-fecha {
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-dia-sesion {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-marca-texto);
+}
+
+.mi-rutina-dia-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.mi-rutina-chip {
+  padding: 2px var(--space-2);
+  border-radius: var(--rutina-radio-chip);
+  background: var(--rutina-claro);
+  border: 1px solid var(--rutina-claro-borde);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mi-rutina-dia-detalle {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--rutina-texto-claro);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Iconos en linea dentro de un texto (reloj, check) */
+.mi-rutina-dia-detalle svg,
+.mi-rutina-dia-estado svg,
+.mi-rutina-leyenda-item svg {
+  vertical-align: -2px;
+  flex-shrink: 0;
+}
+
+
+.mi-rutina-dia-ejercicios {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--rutina-texto-claro-suave);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mi-rutina-dia-placeholder {
+
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-dia-acciones {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mi-rutina-dia-acciones .btn-primary {
+  background: var(--rutina-marca);
+  border-color: var(--rutina-marca);
+}
+
+.mi-rutina-dia-acciones .btn-ghost {
+  color: var(--rutina-marca-texto);
+  border: 1px solid var(--rutina-claro-borde);
+}
+
+.mi-rutina-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mi-rutina-leyenda-punto {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full);
+  background: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-leyenda-hoy {
+  background: var(--rutina-marca);
+}
+
+.mi-rutina-dia-hoy-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-marca-texto);
+}
+
+/* ---------- Grupos musculares ---------- */
+
+.mi-rutina-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rutina-claro-borde);
+}
+
+.mi-rutina-grupos-titulo {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-grupos-nota {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+  opacity: 0.85;
+}
+
+.mi-rutina-grupos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mi-rutina-grupos-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mi-rutina-grupos-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.mi-rutina-grupos-nombre {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-grupos-cifras {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------- Historial ---------- */
+
+.mi-rutina-historial {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mi-rutina-historial-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--rutina-radio);
+  background: var(--rutina-claro);
+  border: 1px solid var(--rutina-claro-borde);
+}
+
+.mi-rutina-historial-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.mi-rutina-historial-fecha {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-historial-estado {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-historial-badge {
+  flex-shrink: 0;
+  padding: 2px var(--space-3);
+  border-radius: var(--rutina-radio-chip);
+  background: var(--rutina-claro-tenue);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-historial-badge-ok {
+  background: var(--rutina-exito);
+  color: #ffffff;
+}
+
+.mi-rutina-historial-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin: 0;
+}
+
+.mi-rutina-historial-datos dt {
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+}
+
+.mi-rutina-historial-datos dd {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto-claro);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-historial-notas {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rutina-claro-borde);
+  font-size: var(--text-sm);
+  color: var(--rutina-texto-claro-suave);
+}
+
+/* ---------- Errores ---------- */
+
+.mi-rutina-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.mi-rutina-error-linea {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--rutina-radio-s);
+  background: color-mix(in srgb, var(--rutina-error) 12%, transparent);
+  color: var(--rutina-error);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Modal de registro ---------- */
+
+.mi-rutina-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mi-rutina-banda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--rutina-radio);
+  background: linear-gradient(135deg, var(--rutina-oscuro) 0%, var(--rutina-oscuro-alto) 100%);
+  color: var(--rutina-texto);
+  border: 1px solid var(--rutina-superficie-alta);
+}
+
+.mi-rutina-banda-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--rutina-superficie-alta);
+}
+
+.mi-rutina-banda-kicker {
+  margin: 0;
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-banda-nombre {
+  margin: 2px 0 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto);
+}
+
+.mi-rutina-banda-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.mi-rutina-banda-semana {
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-banda-tiempo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.mi-rutina-banda-tiempo-label {
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-banda-tiempo-valor {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: 1;
+  color: #d9c8ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-banda-cuerpo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mi-rutina-banda-dia {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-suave);
+}
+
+.mi-rutina-banda-sesion {
+  margin: 2px 0 0;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--rutina-texto);
+}
+
+.mi-rutina-banda-fecha {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-banda-cifras {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mi-rutina-banda-nota {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rutina-superficie-alta);
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-tenue);
+}
+
+.mi-rutina-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.mi-rutina-notas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mi-rutina-notas-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
+.mi-rutina-notas-area {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--rutina-radio-s);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  resize: vertical;
+}
+
+.mi-rutina-notas-area:focus {
+  outline: none;
+  border-color: var(--rutina-marca);
+  box-shadow: 0 0 0 2px var(--rutina-marca-tenue);
+}
+
+.mi-rutina-pie {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.mi-rutina-pie .btn-primary {
+  background: var(--rutina-marca);
+  border-color: var(--rutina-marca);
+}
+
+.mi-rutina-pie .btn-primary:hover {
+  background: var(--rutina-marca-fuerte);
+  border-color: var(--rutina-marca-fuerte);
+}
+
+/* ---------- Tabla de series ---------- */
+
+.mi-rutina-ejercicio-tabla {
+  background: var(--rutina-claro);
+  border-color: var(--rutina-claro-borde);
+}
+
+.mi-rutina-tabla-envoltura {
+  overflow-x: auto;
+}
+
+.mi-rutina-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.mi-rutina-tabla th {
+  padding: var(--space-2) var(--space-2);
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rutina-texto-claro-suave);
+  border-bottom: 1px solid var(--rutina-claro-borde);
+  white-space: nowrap;
+}
+
+.mi-rutina-tabla td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--rutina-claro-tenue);
+  color: var(--rutina-texto-claro);
+}
+
+.mi-rutina-centro {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.mi-rutina-col-serie,
+.mi-rutina-tabla-serie {
+  width: 52px;
+  text-align: left;
+  font-weight: var(--font-bold);
+  color: var(--rutina-marca-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-col-listo {
+  width: 64px;
+}
+
+.mi-rutina-anterior-columna,
+.mi-rutina-anterior {
+  width: 130px;
+  text-align: left;
+  font-size: var(--text-xs);
+  color: var(--rutina-texto-claro-suave);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mi-rutina-sin-dato {
+  color: var(--rutina-texto-claro-suave);
+  opacity: 0.7;
+}
+
+.mi-rutina-campo {
+  width: 100%;
+  min-width: 64px;
+  max-width: 96px;
+  padding: var(--space-2);
+  border: 1px solid var(--rutina-claro-borde);
+  border-radius: var(--rutina-radio-s);
+  background: var(--rutina-claro);
+  color: var(--rutina-texto-claro);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-campo:focus {
+  outline: none;
+  border-color: var(--rutina-marca);
+  box-shadow: 0 0 0 2px var(--rutina-marca-tenue);
+}
+
+.mi-rutina-campo-reps {
+  max-width: 76px;
+}
+
+.mi-rutina-campo-rpe {
+  max-width: 60px;
+}
+
+.mi-rutina-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--rutina-marca);
+  cursor: pointer;
+}
+
+.mi-rutina-fila-lista {
+  background: var(--rutina-marca-tenue);
+}
+
+.mi-rutina-fila-lista .mi-rutina-tabla-serie {
+  color: var(--rutina-exito);
+}
+
+.mi-rutina-sin-filas {
+  margin: 0;
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--rutina-texto-claro-suave);
+}
+
+/* ---------- Pie de la tarjeta de series ---------- */
+
+.mi-rutina-ejercicio-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--rutina-claro-tenue);
+}
+
+/* En la vista diaria el unico enlace del pie se alinea a la derecha */
+.mi-rutina-ejercicios .mi-rutina-ejercicio-pie {
+  justify-content: flex-end;
+  border-top: 0;
+  padding-top: 0;
+}
+
+
+.mi-rutina-enlace {
+  color: var(--rutina-marca-texto);
+  font-weight: var(--font-medium);
+}
+
+.mi-rutina-enlace:hover:not(:disabled) {
+  color: var(--rutina-marca-fuerte);
+}
+
+.mi-rutina-mas {
+
+  transform: rotate(90deg);
+}
+
+/* ---------- Temporizador de descanso ---------- */
+
+.mi-rutina-temporizador {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mi-rutina-anillo {
+  width: 26px;
+  height: 26px;
+  transform: rotate(-90deg);
+}
+
+.mi-rutina-anillo-circono {
+  transition: stroke-dashoffset 0.9s linear, stroke 0.3s ease;
+}
+
+.mi-rutina-temporizador-texto {
+  min-width: 62px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--rutina-texto-claro);
+  font-variant-numeric: tabular-nums;
+}
+
+.mi-rutina-temporizador-listo {
+  color: var(--rutina-error);
+  animation: mi-rutina-pop 0.4s ease;
+}
+
+.mi-rutina-aviso {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--rutina-radio-s);
+  background: color-mix(in srgb, var(--rutina-alerta) 14%, transparent);
+  color: var(--rutina-alerta);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  animation: mi-rutina-fade-up 0.25s ease both;
+}
+
+/* ---------- Utilidades ---------- */
+
+.mi-rutina-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Animaciones ---------- */
+
+@keyframes mi-rutina-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mi-rutina-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes mi-rutina-pulso {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--rutina-marca) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--rutina-marca) 0%, transparent);
+  }
+}
+
+@keyframes mi-rutina-parpadeo {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.mi-rutina-dia-hoy .mi-rutina-barra-relleno {
+  animation: mi-rutina-pulso 2.4s ease-in-out infinite;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .mi-rutina-semana-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .mi-rutina-workout {
+    padding: var(--space-5);
+  }
+
+
+  .mi-rutina-cabecera-titulo {
+    font-size: var(--text-2xl);
+  }
+
+  .mi-rutina-workout-cabecera,
+  .mi-rutina-semana-cabecera-fila {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mi-rutina-banda {
+    padding: var(--space-4);
+  }
+
+  .mi-rutina-banda-cabecera,
+  .mi-rutina-banda-cuerpo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mi-rutina-banda-estado,
+  .mi-rutina-banda-cifras {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .mi-rutina-cabecera {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mi-rutina-semana-cajas {
+    width: 100%;
+  }
+
+  .mi-rutina-caja {
+    flex: 1 1 auto;
+    align-items: flex-start;
+  }
+
+  .mi-rutina-pestanas {
+    align-self: stretch;
+  }
+
+
+  .mi-rutina-pestanas .tab-button {
+    flex: 1;
+  }
+
+  .mi-rutina-semana-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mi-rutina-ejercicio,
+  .mi-rutina-historial-item,
+  .mi-rutina-dia {
+    padding: var(--space-4);
+  }
+
+  .mi-rutina-banda-tiempo-valor {
+    font-size: var(--text-xl);
+  }
+
+  .mi-rutina-pie {
+    flex-direction: column;
+  }
+
+  .mi-rutina-pie .btn {
+    width: 100%;
+  }
+
+  .mi-rutina-campo {
+    min-width: 52px;
+    padding: var(--space-1);
+    font-size: var(--text-xs);
+  }
+
+  .mi-rutina-cuerpo {
+    max-height: 50vh;
+  }
+
+  /* "ANTERIOR" no cabe en movil: la serie se lee igual desde la tabla */
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* ---------- Accesibilidad: menos movimiento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mi-rutina-cabecera,
+  .mi-rutina-cabecera-pulso,
+  .mi-rutina-workout,
+  .mi-rutina-semana-cabecera,
+  .mi-rutina-dia,
+  .mi-rutina-ejercicio,
+  .mi-rutina-aviso,
+  .mi-rutina-temporizador-listo,
+  .mi-rutina-dia-hoy .mi-rutina-barra-relleno {
+    animation: none;
+  }
+
+
+  .mi-rutina-anillo-circono,
+  .mi-rutina-barra-relleno {
+    transition: none;
+  }
 }

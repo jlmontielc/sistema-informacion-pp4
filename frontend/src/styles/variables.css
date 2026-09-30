@@ -132,6 +132,151 @@
 
   /* Escala fluida extendida (Fase 3 - Lote C, titular de portada) */
   --text-fluid-hero: clamp(2rem, 5vw, 3.5rem);
+
+  /* ===== Tokens de la landing (diseno YanTraining) =====
+     Extienden el sistema anterior; no reemplazan ningun token existente.
+     El diseno de Figma es light-first (fondo blanco, texto violeta #33105d),
+     por eso los valores base viven en :root y el tema oscuro los sobreescribe. */
+
+  /* Fondos claros (base) */
+  --landing-fondo: #ffffff;
+  --landing-fondo-seccion: #ffffff;
+  --landing-fondo-premium: #ffffff;
+  --landing-fondo-negro: #1b1b1b;
+  --landing-fondo-tarjeta: #ffffff;
+
+  /* Marca */
+  --landing-marca: #33105d;
+  --landing-marca-claro: #491f98;
+  --landing-acento: #fd853a;
+  --landing-gradiente-marca: linear-gradient(180deg, #491f98 0%, #33105d 100%);
+
+  /* Texto */
+  --landing-texto: #33105d;
+  --landing-texto-suave: #667085;
+  --landing-texto-oscuro: #1b1b1b;
+  --landing-texto-sobre-claro: #33105d;
+
+  /* Superficies claras alternas */
+  --landing-fondo-claro: #f4f4f6;
+  --landing-fondo-claro-alt: #ffffff;
+  --landing-texto-claro: #1b1b1b;
+  --landing-texto-claro-suave: #667085;
+
+  /* Bordes y sombra */
+  --landing-borde: #e5e5ea;
+  --landing-sombra: 0 4px 12px rgba(49, 31, 152, 0.12);
+
+  /* Constantes: no cambian con el tema. Se usan sobre superficies que
+     permanecen oscuras o de color de marca en ambos temas (hero, pie,
+     bloques violeta, botones claros). */
+  --landing-blanco: #ffffff;
+  --landing-blanco-hover: #f2f2f7;
+  --landing-blanco-suave: #8a90a0;
+  --landing-hover-superficie: rgba(0, 0, 0, 0.05);
+  --landing-borde-inverso: rgba(0, 0, 0, 0.7);
+  --landing-borde-suave: rgba(0, 0, 0, 0.1);
+  --landing-hover-marca: rgba(49, 31, 152, 0.06);
+
+  /* Radios */
+  --landing-radio-seccion: 80px;
+  --landing-radio-tarjeta: 70px;
+  --landing-radio-media: 78px;
+  --landing-radio-card: 50px;
+  --landing-radio-boton: 18px;
+  --landing-radio-boton-header: 16px;
+  --landing-radio-mobile: 30px;
+  --landing-radio-chip: 50px;
+
+  /* Cabecera: en Figma siempre es oscura, asi que no cambia con el tema */
+  --landing-fondo-cabecera: #1b1b1b;
+  --landing-borde-cabecera: #000000;
+
+  /* Tipografia (familia Inter) */
+  --landing-fuente: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --landing-fuente-logo: 'Koulen', 'Inter', 'Segoe UI', sans-serif;
+  --landing-display: 700 80px/104px var(--landing-fuente);
+  --landing-h1: 700 61px/76px var(--landing-fuente);
+  --landing-h1-alto: 700 61px/82px var(--landing-fuente);
+  --landing-h2: 700 47px/56px var(--landing-fuente);
+  --landing-h3: 700 36px/43px var(--landing-fuente);
+  --landing-h4: 700 27px/32px var(--landing-fuente);
+  --landing-body-lg: 400 27px/45px var(--landing-fuente);
+  --landing-body: 400 23px/28px var(--landing-fuente);
+  --landing-nav: 500 21px/25px var(--landing-fuente);
+  --landing-pequena: 400 16px/19px var(--landing-fuente);
+
+  /* Layout */
+  --landing-ancho: 1920px;
+  --landing-padding-seccion: 84px;
+
+  /* ===== Rutina del instruido (mockups dia/semana) =====
+     Prefijo propio para no pisar la paleta primaria de la aplicacion. */
+  --rutina-fuente: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Marca */
+  --rutina-marca: #5925b4;
+  --rutina-marca-fuerte: #6b2ed4;
+  --rutina-marca-tenue: #f4effd;
+  /* Variante legible de la marca para texto sobre superficie clara */
+  --rutina-marca-texto: #5925b4;
+
+  /* Tarjeta de workout: siempre oscura, en los dos temas */
+  --rutina-oscuro: #18181b;
+  --rutina-oscuro-alto: #111113;
+  --rutina-superficie: #1c142b;
+  --rutina-superficie-alta: #2a2a2f;
+  --rutina-texto: #ffffff;
+  --rutina-texto-suave: #a1a1aa;
+  --rutina-texto-tenue: #71717a;
+
+  /* Superficies internas claras: tablas, toggles, barras de progreso */
+  --rutina-claro: #ffffff;
+  --rutina-claro-tenue: #f7f5fb;
+  --rutina-claro-borde: #d6d9de;
+  --rutina-texto-claro: #18181b;
+  --rutina-texto-claro-suave: #71717a;
+
+  /* Estados */
+  --rutina-exito: #22c55e;
+  --rutina-alerta: #f59e0b;
+  --rutina-error: #ef4444;
+
+  /* Formas */
+  --rutina-radio: 18px;
+  --rutina-radio-s: 12px;
+  --rutina-radio-chip: 999px;
+  --rutina-sombra: 0 10px 30px rgba(24, 24, 27, 0.08);
+
+  --auth-fondo: #0e0e12;
+  --auth-superficie: rgba(27, 27, 31, 0.95);
+  --auth-superficie-input: rgba(14, 14, 18, 0.6);
+  --auth-superficie-input-foco: rgba(14, 14, 18, 0.8);
+  --auth-superficie-chip: rgba(255, 255, 255, 0.04);
+  --auth-superficie-marca: rgba(27, 27, 31, 0.55);
+  --auth-superficie-menu: #1b1b1f;
+  --auth-borde: rgba(73, 68, 84, 0.5);
+  --auth-borde-marca: rgba(73, 68, 84, 0.4);
+  --auth-primario: #d0bcff;
+  --auth-primario-contenedor: #a078ff;
+  --auth-primario-contenedor-hover: #b08bff;
+  --auth-secundario-contenedor: #6001d1;
+  --auth-secundario-contenedor-hover: #7015df;
+  --auth-sobre-primario: #23005c;
+  --auth-texto: #e4e1e7;
+  --auth-texto-secundario: #cbc3d7;
+  --auth-texto-tenue: #958ea0;
+  --auth-radiancia-a: rgba(160, 120, 255, 0.1);
+  --auth-radiancia-b: rgba(96, 1, 209, 0.15);
+  --auth-error-fondo: rgba(147, 0, 10, 0.35);
+  --auth-error-texto: #ffdad6;
+  --auth-error-borde: rgba(255, 180, 171, 0.35);
+  --auth-glow-boton: 0 0 20px rgba(160, 120, 255, 0.35);
+  --auth-glow-boton-hover: 0 0 28px rgba(160, 120, 255, 0.5);
+  --auth-glow-chip: 0 0 12px rgba(160, 120, 255, 0.25);
+  --auth-glow-foco: 0 0 0 2px rgba(160, 120, 255, 0.2);
+  --auth-sombra-tarjeta: 0 24px 60px -12px rgba(0, 0, 0, 0.6);
+  --auth-fuente-titulos: 'Space Grotesk', 'Inter', 'Segoe UI', sans-serif;
 }
 
 [data-theme="dark"] {
@@ -154,4 +299,33 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+
+  /* Overrides de la landing en modo oscuro. La base es light-first, asi que
+     aqui se recuperan los fondos y textos oscuros de la variante. */
+  --landing-fondo: #181818;
+  --landing-fondo-seccion: #1b1b1b;
+  --landing-fondo-premium: #1d1b20;
+  --landing-fondo-negro: #000000;
+  --landing-fondo-tarjeta: #000000;
+  --landing-fondo-claro: #ffffff;
+  --landing-fondo-claro-alt: #f9f9f9;
+  --landing-texto: #ffffff;
+  --landing-texto-suave: #8a90a0;
+  --landing-texto-claro: #1b1b1b;
+  --landing-texto-claro-suave: #667085;
+  --landing-borde: #33363f;
+  --landing-sombra: 0 4px 4px rgba(0, 0, 0, 0.25);
+  --landing-hover-superficie: rgba(255, 255, 255, 0.1);
+  --landing-borde-suave: rgba(255, 255, 255, 0.16);
+
+  /* Rutina: la tarjeta de workout sigue oscura, pero las superficies internas
+     (tablas, toggles, barras) invierten para no quedar blindingas. */
+  --rutina-marca-tenue: #241a38;
+  --rutina-marca-texto: #c4b0f0;
+  --rutina-claro: #1f1f24;
+  --rutina-claro-tenue: #26262c;
+  --rutina-claro-borde: #35353c;
+  --rutina-texto-claro: #f4f4f5;
+  --rutina-texto-claro-suave: #a1a1aa;
+  --rutina-sombra: 0 10px 30px rgba(0, 0, 0, 0.45);
 }

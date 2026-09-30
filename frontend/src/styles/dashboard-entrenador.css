@@ -1,0 +1,773 @@
+/* ==========================================================================
+   Dashboard del Entrenador — Estética Material 3 oscura (siempre oscura)
+   Prefijo exclusivo: de-  |  No reutiliza ni modifica clases globales
+   ========================================================================== */
+
+/* El fondo del área de contenido se oscurece SOLO cuando la página del
+   entrenador está montada (mismo patrón que atleta.css con :has). */
+body:has(.de-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.de-pagina) {
+  background: #131317;
+}
+
+.de-pagina {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ---------- Cabecera ---------- */
+
+.de-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.de-cabecera-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e4e1e7;
+}
+
+.de-cabecera-subtitulo {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+/* ---------- KPIs ---------- */
+
+.de-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.de-kpi {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 150ms ease;
+}
+
+.de-kpi:hover {
+  border-color: rgba(208, 188, 255, 0.5);
+}
+
+/* Variante de color por tarjeta (icono y texto secundario) */
+.de-kpi--primario .de-kpi-icono {
+  color: #d0bcff;
+}
+.de-kpi--primario .de-kpi-sub strong {
+  color: #4cd7f6;
+}
+
+.de-kpi--secundario .de-kpi-icono {
+  color: #d2bbff;
+}
+
+.de-kpi--terciario .de-kpi-icono {
+  color: #4cd7f6;
+}
+
+.de-kpi--contenedor .de-kpi-icono {
+  color: #a078ff;
+}
+
+.de-kpi--neutro .de-kpi-icono {
+  color: #958ea0;
+}
+
+.de-kpi-icono {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.de-kpi-contenido {
+  min-width: 0;
+}
+
+.de-kpi-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+}
+
+.de-kpi-valor {
+  margin: 2px 0 4px;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 700;
+  color: #e4e1e7;
+}
+
+.de-kpi-sub {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.de-kpi-sub strong {
+  font-weight: 600;
+  color: #4cd7f6;
+}
+
+.de-kpi-sub--apagado {
+  color: #958ea0;
+}
+
+/* Texto de reemplazo cuando el backend no envía un valor */
+.de-sin-valor {
+  color: #958ea0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* ---------- Cards base (tabla y widgets) ---------- */
+
+.de-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.de-card-cabecera {
+  padding: 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.de-card-titulo {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.de-card-titulo .de-icono {
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.de-card-cuerpo {
+  padding: 20px;
+}
+
+/* ---------- Badges píldora ---------- */
+
+.de-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.de-badge--principal {
+  background: #1f1f23;
+  border: 1px solid rgba(208, 188, 255, 0.2);
+  color: #d0bcff;
+}
+
+.de-badge--cian {
+  background: rgba(76, 215, 246, 0.1);
+  border: 1px solid rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+/* ---------- Buscador ---------- */
+
+.de-buscador {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.de-buscador-icono {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #cbc3d7;
+  pointer-events: none;
+}
+
+.de-buscador-input {
+  width: 192px;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 6px 12px 6px 36px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #e4e1e7;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.de-buscador-input::placeholder {
+  color: rgba(203, 195, 215, 0.5);
+}
+
+.de-buscador-input:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+/* ---------- Tabla de clientes ---------- */
+
+.de-tabla-envoltura {
+  /* Scroll horizontal en móvil (la clase global .table-wrapper ya lo habilita;
+     aquí se ajusta la barra de scroll fina solo dentro de la tabla) */
+  width: 100%;
+  /* La clase global .table-wrapper pinta fondo/borde claros; se anulan para
+     que la tabla quede sobre la superficie oscura de la tarjeta */
+  background: #1b1b1f;
+  border: none;
+  border-radius: 0;
+}
+
+.de-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.de-tabla thead th {
+  padding: 14px 24px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  text-align: left;
+  white-space: nowrap;
+  background: #1f1f23;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+}
+
+.de-tabla thead th.de-col-derecha {
+  text-align: right;
+}
+
+.de-tabla tbody td {
+  padding: 16px 24px 14px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  vertical-align: middle;
+}
+
+.de-tabla tbody td.de-col-derecha {
+  text-align: right;
+}
+
+.de-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.de-tabla tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.de-tabla tbody tr:hover {
+  background: rgba(31, 31, 35, 0.6);
+}
+
+/* Scrollbar fino solo dentro de la tabla */
+.de-tabla-envoltura::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.de-tabla-envoltura::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.de-tabla-envoltura::-webkit-scrollbar-thumb {
+  background: #2a292e;
+  border-radius: 999px;
+}
+
+.de-tabla-envoltura::-webkit-scrollbar-thumb:hover {
+  background: #494454;
+}
+
+/* Celda nombre: avatar + nombre + email */
+.de-celda-nombre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.de-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.de-avatar--0 {
+  background: rgba(160, 120, 255, 0.2);
+  color: #d0bcff;
+  border: 1px solid rgba(208, 188, 255, 0.3);
+}
+
+.de-avatar--1 {
+  background: rgba(96, 1, 209, 0.25);
+  color: #d2bbff;
+  border: 1px solid rgba(210, 187, 255, 0.3);
+}
+
+.de-avatar--2 {
+  background: rgba(0, 158, 185, 0.2);
+  color: #4cd7f6;
+  border: 1px solid rgba(76, 215, 246, 0.3);
+}
+
+.de-nombre {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #e4e1e7;
+  transition: color 150ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.de-tabla tbody tr:hover .de-nombre {
+  color: #d0bcff;
+}
+
+.de-email {
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Peso */
+.de-peso {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e4e1e7;
+  white-space: nowrap;
+}
+
+.de-peso-unidad {
+  font-size: 12px;
+  font-weight: 400;
+  color: #cbc3d7;
+  margin-left: 3px;
+}
+
+/* Chips de nivel de actividad */
+.de-chip-nivel {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.de-chip-nivel--sedentario {
+  background: rgba(73, 68, 84, 0.3);
+  border-color: #494454;
+  color: #cbc3d7;
+}
+
+.de-chip-nivel--ligero {
+  background: rgba(160, 120, 255, 0.1);
+  border-color: rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+}
+
+.de-chip-nivel--moderado,
+.de-chip-nivel--activo {
+  background: rgba(76, 215, 246, 0.1);
+  border-color: rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+}
+
+.de-chip-nivel--muy_activo {
+  background: rgba(210, 187, 255, 0.15);
+  border-color: rgba(210, 187, 255, 0.3);
+  color: #d2bbff;
+}
+
+/* Fecha de registro */
+.de-registro {
+  font-size: 13px;
+  line-height: 18px;
+  color: #cbc3d7;
+  white-space: nowrap;
+}
+
+/* Chips de estado (con punto) */
+.de-chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.de-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.de-chip-estado--activo {
+  color: #4cd7f6;
+}
+
+.de-chip-estado--activo .de-punto {
+  background: #4cd7f6;
+  animation: de-pulso-dot 2s infinite;
+}
+
+.de-chip-estado--pausa {
+  color: #958ea0;
+}
+
+.de-chip-estado--pausa .de-punto {
+  background: #958ea0;
+}
+
+/* Botón de acción "Ver Perfil" */
+.de-boton-perfil {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #1f1f23;
+  border: 1px solid rgba(208, 188, 255, 0.3);
+  color: #d0bcff;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.de-boton-perfil:hover {
+  background: #2a292e;
+}
+
+/* Pie de la tabla */
+.de-tabla-pie {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+}
+
+.de-ver-todos {
+  color: #d0bcff;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.de-ver-todos:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Widgets ---------- */
+
+.de-widgets {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+/* Cabecera de widget: borde un poco más sutil que la card de tabla */
+.de-widget-cabecera {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Actividad reciente (lista del widget "Nuevos este mes") */
+.de-actividad-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.de-actividad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+  background: #1f1f23;
+  border: 1px solid rgba(73, 68, 84, 0.3);
+  transition: border-color 150ms ease;
+}
+
+.de-actividad:hover {
+  border-color: rgba(208, 188, 255, 0.4);
+}
+
+.de-actividad .de-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.de-actividad-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.de-actividad-nombre {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: #e4e1e7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.de-actividad-detalle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.de-actividad-estado {
+  flex-shrink: 0;
+}
+
+/* Distribución por nivel (barras) */
+.de-niveles-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px;
+}
+
+.de-nivel-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.de-nivel-etiqueta {
+  flex-shrink: 0;
+  width: 92px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #cbc3d7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.de-barra {
+  flex: 1;
+  height: 6px;
+  background: #0e0e12;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.de-barra-relleno {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 600ms ease;
+}
+
+.de-barra-relleno--0 {
+  background: #d0bcff;
+}
+
+.de-barra-relleno--1 {
+  background: #4cd7f6;
+}
+
+.de-barra-relleno--2 {
+  background: #d2bbff;
+}
+
+.de-barra-relleno--3 {
+  background: #a078ff;
+}
+
+.de-barra-relleno--4 {
+  background: #958ea0;
+}
+
+.de-nivel-contador {
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: right;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  color: #e4e1e7;
+}
+
+/* ---------- Animaciones ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes de-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .de-seccion {
+    animation: de-aparecer 350ms ease-out backwards;
+  }
+
+  /* Escalonado: cada sección entra 60ms después de la anterior */
+  .de-seccion:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .de-seccion:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .de-seccion:nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  @keyframes de-pulso-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(1.2);
+    }
+  }
+}
+
+/* ---------- Foco visible ---------- */
+
+.de-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .de-widgets {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .de-pagina {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .de-kpis {
+    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  }
+
+  .de-buscador,
+  .de-buscador .de-buscador-input {
+    width: 100%;
+  }
+
+  .de-card-cabecera {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .de-nivel-etiqueta {
+    width: 80px;
+  }
+}

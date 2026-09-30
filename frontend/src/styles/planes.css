@@ -1,0 +1,873 @@
+/* ==========================================================================
+   Módulo Planes y Mensualidades (/planes y /mi-plan)
+   Estética Material 3 oscura (siempre oscura). Prefijo exclusivo: pg-
+   No reutiliza ni modifica clases globales. Los modales compartidos de
+   components/pagos se oscurecen con overrides scoped a body:has(.pg-pagina)
+   (solo activos mientras este módulo está montado).
+   ========================================================================== */
+
+/* El fondo del área de contenido se oscurece SOLO cuando el módulo está
+   montado (:has no requiere tocar Layout.jsx). */
+body:has(.pg-pagina) {
+  background: #131317;
+}
+
+.app-content:has(.pg-pagina) {
+  background: #131317;
+}
+
+.pg-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  color: #e4e1e7;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* Foco visible naranja (mismo patrón que clientes.css y reportes.css) */
+.pg-pagina :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ---------- Aparición escalonada (solo sin reduce-motion) ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pg-aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .pg-seccion {
+    animation: pg-aparecer 350ms ease-out backwards;
+  }
+
+  .pg-seccion:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .pg-seccion:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .pg-seccion:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .pg-seccion:nth-child(5) {
+    animation-delay: 240ms;
+  }
+}
+
+/* ---------- Cabecera ---------- */
+
+.pg-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pg-cabecera-fila {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pg-cabecera-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pg-titulo {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e4e1e7;
+}
+
+.pg-subtitulo {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #cbc3d7;
+}
+
+/* Título de sección interna (h3) */
+.pg-titulo-seccion {
+  margin: 0;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+/* ---------- Tabs ---------- */
+
+.pg-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pg-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #1b1b1f;
+  border: 1px solid #494454;
+  color: #cbc3d7;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.pg-tab:hover {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+.pg-tab--activa {
+  background: rgba(208, 188, 255, 0.14);
+  border-color: rgba(208, 188, 255, 0.4);
+  color: #d0bcff;
+}
+
+.pg-tab--activa:hover {
+  background: rgba(208, 188, 255, 0.2);
+  color: #d0bcff;
+}
+
+/* ---------- Card base ---------- */
+
+.pg-card {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pg-card-cabecera {
+  padding: 20px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+  background: rgba(14, 14, 18, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.pg-card-titulo {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pg-card-titulo .pg-icono {
+  color: #d0bcff;
+  flex-shrink: 0;
+}
+
+.pg-card-cuerpo {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pg-badge-contador {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #2a292e;
+  border: 1px solid rgba(208, 188, 255, 0.2);
+  color: #d0bcff;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Grids de tarjetas ---------- */
+
+.pg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Variante fija a dos columnas (planes disponibles del instruido) */
+.pg-grid--dos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* ---------- Tarjetas de plan / método ---------- */
+
+.pg-plan-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.pg-plan-nombre {
+  margin: 0;
+  font-size: 16px;
+  line-height: 22px;
+  font-weight: 600;
+  color: #e4e1e7;
+  overflow-wrap: anywhere;
+}
+
+.pg-plan-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+/* Valor destacado: monto USD */
+.pg-valor {
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  color: #d0bcff;
+  overflow-wrap: anywhere;
+}
+
+.pg-valor--exito {
+  color: #4ade80;
+}
+
+.pg-valor-unidad {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: #958ea0;
+  margin-left: 6px;
+}
+
+.pg-plan-subtexto {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #958ea0;
+}
+
+/* Chip Activo / Inactivo */
+.pg-chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.pg-chip-estado--activo {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.pg-chip-estado--inactivo {
+  background: rgba(73, 68, 84, 0.3);
+  border-color: #494454;
+  color: #958ea0;
+}
+
+/* Chip de ofrecimiento (entrenamiento / dietas / ambos) */
+.pg-chip-ofrecimiento {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(76, 215, 246, 0.1);
+  border: 1px solid rgba(76, 215, 246, 0.3);
+  color: #4cd7f6;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pg-chip-ofrecimiento .pg-icono {
+  flex-shrink: 0;
+}
+
+/* ---------- Suscripción (Mi Plan) ---------- */
+
+.pg-suscripcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 24px;
+}
+
+.pg-suscripcion-principal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.pg-suscripcion-icono {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+.pg-suscripcion-icono--activa {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.pg-suscripcion-icono--vencida {
+  color: #fd853a;
+  border-color: rgba(253, 133, 58, 0.4);
+}
+
+.pg-suscripcion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pg-suscripcion-titulo {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pg-suscripcion-detalle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  overflow-wrap: anywhere;
+}
+
+/* Días restantes a la derecha */
+.pg-suscripcion-dias {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.pg-suscripcion-dias-label {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+  white-space: nowrap;
+}
+
+/* ---------- Tasa de cambio ---------- */
+
+.pg-tasa-actual {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 14px 16px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  border-radius: 10px;
+  align-self: flex-start;
+}
+
+.pg-tasa-valor {
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  color: #d0bcff;
+}
+
+.pg-tasa-unidad {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #958ea0;
+}
+
+/* ---------- Tabla M3 ---------- */
+
+.pg-tabla-scroll {
+  overflow-x: auto;
+}
+
+.pg-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pg-tabla thead th {
+  padding: 14px 16px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbc3d7;
+  text-align: left;
+  white-space: nowrap;
+  background: #1f1f23;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.4);
+}
+
+.pg-tabla tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(73, 68, 84, 0.3);
+  vertical-align: middle;
+}
+
+.pg-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pg-tabla tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.pg-tabla tbody tr:hover {
+  background: rgba(31, 31, 35, 0.6);
+}
+
+.pg-tabla-scroll::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+.pg-tabla-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pg-tabla-scroll::-webkit-scrollbar-thumb {
+  background: #2a292e;
+  border-radius: 999px;
+}
+
+.pg-tabla-scroll::-webkit-scrollbar-thumb:hover {
+  background: #494454;
+}
+
+/* Select de filtro con chevron propio */
+.pg-selecto {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pg-selecto select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #0e0e12;
+  border: 1px solid #494454;
+  border-radius: 8px;
+  padding: 8px 36px 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #e4e1e7;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.pg-selecto select:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+.pg-selecto .pg-selecto-flecha {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: #cbc3d7;
+  pointer-events: none;
+}
+
+/* ---------- Estados locales (vacío / error, sin emojis) ---------- */
+
+.pg-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.pg-estado-icono {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #958ea0;
+}
+
+.pg-estado-icono--error {
+  color: #ffb4ab;
+}
+
+.pg-estado-titulo {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  color: #e4e1e7;
+}
+
+.pg-estado-descripcion {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: #cbc3d7;
+  max-width: 420px;
+}
+
+/* ---------- Avisos (éxito / error) ---------- */
+
+.pg-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 20px;
+  border: 1px solid transparent;
+}
+
+.pg-aviso p {
+  margin: 0;
+}
+
+.pg-aviso--ok {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.pg-aviso--error {
+  background: rgba(255, 180, 171, 0.1);
+  border-color: rgba(255, 180, 171, 0.35);
+  color: #ffb4ab;
+}
+
+/* ---------- Acciones ---------- */
+
+.pg-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pg-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   Overrides oscuros para clases compartidas — SOLO mientras el módulo está
+   montado (body:has(.pg-pagina)). Cubre la página y los modales (portales
+   al body) de components/pagos, sin modificar su código.
+   ========================================================================== */
+
+/* Modales */
+body:has(.pg-pagina) .modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+body:has(.pg-pagina) .modal-content {
+  background: #1b1b1f;
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+body:has(.pg-pagina) .modal-header {
+  border-bottom: 1px solid rgba(73, 68, 84, 0.6);
+}
+
+body:has(.pg-pagina) .modal-title {
+  color: #e4e1e7;
+}
+
+body:has(.pg-pagina) .header-button {
+  color: #cbc3d7;
+}
+
+body:has(.pg-pagina) .header-button:hover {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+/* Campos de formulario (Input component y fields crudos) */
+body:has(.pg-pagina) .field-label {
+  color: #cbc3d7;
+}
+
+body:has(.pg-pagina) .field-input {
+  background: #0e0e12;
+  border-color: #494454;
+  color: #e4e1e7;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+body:has(.pg-pagina) .field-input::placeholder {
+  color: rgba(149, 142, 160, 0.6);
+}
+
+body:has(.pg-pagina) .field-input:focus {
+  outline: none;
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+body:has(.pg-pagina) select.field-input {
+  cursor: pointer;
+}
+
+body:has(.pg-pagina) select.field-input option {
+  background: #0e0e12;
+  color: #e4e1e7;
+}
+
+body:has(.pg-pagina) .field-ayuda {
+  color: #958ea0;
+}
+
+body:has(.pg-pagina) .field-error {
+  color: #ffb4ab;
+}
+
+/* Textos utilitarios */
+body:has(.pg-pagina) .text-muted {
+  color: #958ea0;
+}
+
+body:has(.pg-pagina) .text-error {
+  color: #ffb4ab;
+}
+
+/* Badges de estado de pago (EstadoBadge) */
+body:has(.pg-pagina) .badge-success {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+body:has(.pg-pagina) .badge-warning {
+  background: rgba(253, 133, 58, 0.12);
+  color: #fd853a;
+}
+
+body:has(.pg-pagina) .badge-danger {
+  background: rgba(255, 180, 171, 0.1);
+  color: #ffb4ab;
+}
+
+body:has(.pg-pagina) .badge-neutral {
+  background: rgba(73, 68, 84, 0.3);
+  color: #cbc3d7;
+}
+
+body:has(.pg-pagina) .badge-info {
+  background: rgba(76, 215, 246, 0.1);
+  color: #4cd7f6;
+}
+
+/* Alertas (éxito/error en formularios y modales) */
+body:has(.pg-pagina) .alerta-success {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+body:has(.pg-pagina) .alerta-error {
+  background: rgba(255, 180, 171, 0.1);
+  color: #ffb4ab;
+}
+
+/* Bloques informativos del modal de registro de pago */
+body:has(.pg-pagina) .nota-informativa {
+  background: #0e0e12;
+  border: 1px solid rgba(73, 68, 84, 0.4);
+  color: #e4e1e7;
+}
+
+body:has(.pg-pagina) .detalle-panel {
+  background: #0e0e12;
+  border: 1px solid #494454;
+}
+
+body:has(.pg-pagina) .valor-destacado {
+  color: #d0bcff;
+}
+
+body:has(.pg-pagina) .valor-destacado-exito {
+  color: #4ade80;
+}
+
+/* Tablas: subtextos y nota de error */
+body:has(.pg-pagina) .tabla-subtexto {
+  color: #958ea0;
+}
+
+body:has(.pg-pagina) .tabla-nota-error {
+  color: #ffb4ab;
+}
+
+/* Botones */
+body:has(.pg-pagina) .btn-primary {
+  background: #d0bcff;
+  border: none;
+  color: #381e72;
+}
+
+body:has(.pg-pagina) .btn-primary:hover:not(:disabled) {
+  background: #dcc8ff;
+}
+
+body:has(.pg-pagina) .btn-secondary {
+  background: #2a292e;
+  border: 1px solid #494454;
+  color: #e4e1e7;
+}
+
+body:has(.pg-pagina) .btn-secondary:hover:not(:disabled) {
+  background: #33323a;
+  border-color: rgba(208, 188, 255, 0.5);
+  color: #d0bcff;
+}
+
+body:has(.pg-pagina) .btn-danger {
+  background: rgba(255, 180, 171, 0.12);
+  border: 1px solid rgba(255, 180, 171, 0.4);
+  color: #ffb4ab;
+}
+
+body:has(.pg-pagina) .btn-danger:hover:not(:disabled) {
+  background: rgba(255, 180, 171, 0.22);
+}
+
+body:has(.pg-pagina) .btn-ghost {
+  color: #cbc3d7;
+}
+
+body:has(.pg-pagina) .btn-ghost:hover:not(:disabled) {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+body:has(.pg-pagina) .btn .spinner {
+  border-color: rgba(56, 30, 114, 0.3);
+  border-top-color: #381e72;
+}
+
+body:has(.pg-pagina) .btn-secondary .spinner,
+body:has(.pg-pagina) .btn-danger .spinner {
+  border-color: rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .pg-pagina {
+    padding: 16px;
+  }
+
+  .pg-titulo {
+    font-size: 26px;
+    line-height: 34px;
+  }
+
+  .pg-grid--dos {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-tabla thead th,
+  .pg-tabla tbody td {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pg-cabecera-fila {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pg-suscripcion {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pg-suscripcion-dias {
+    align-items: flex-start;
+  }
+}

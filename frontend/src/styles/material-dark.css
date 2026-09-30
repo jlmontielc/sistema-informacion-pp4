@@ -1,0 +1,262 @@
+/* ============================================================
+   Chrome global — Material 3 SIEMPRE oscuro
+   Estiliza sidebar y header con la paleta M3 con valores duros:
+   ningún selector depende de [data-theme], así que el resultado
+   es independiente del toggle de tema de ThemeContext.
+   ============================================================ */
+
+/* ===== Sidebar ===== */
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: #0e0e12;
+  border-right: 1px solid #49454;
+}
+
+/* --- Marca --- */
+.sidebar-brand {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6d3bd7, #a078ff);
+  color: #3c0091;
+  box-shadow: 0 6px 16px rgba(109, 59, 215, 0.35);
+}
+
+/* Envoltorio del nombre + punto de estado (columna) */
+.sidebar-brand-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sidebar-brand-name {
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #e4e1e7;
+  white-space: nowrap;
+}
+
+/* Punto de estado bajo el nombre de la marca */
+.sidebar-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4cd7f6;
+  flex-shrink: 0;
+}
+
+/* --- Navegación --- */
+/* El borde izquierdo transparente compensa el del estado activo para que
+   el texto no salte al cambiar de enlace. */
+.sidebar-nav-link {
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  color: #cbc3d7;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+}
+
+.sidebar-nav-link:hover {
+  background: #1f1f23;
+  color: #e4e1e7;
+}
+
+.sidebar-nav-link.active {
+  background: #2a292e;
+  color: #d0bcff;
+  font-weight: 600;
+  border-left-color: #d0bcff;
+}
+
+/* --- Sidebar colapsado (escritorio): solo iconos, sin borde lateral --- */
+.app-sidebar.collapsed .sidebar-brand-texto {
+  display: none;
+}
+
+.app-sidebar.collapsed .sidebar-nav-link {
+  border-left: none;
+}
+
+/* --- Tarjeta de usuario (pie del sidebar) --- */
+.sidebar-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.sidebar-usuario-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1f1f23;
+  border: 1px solid #49454;
+  color: #d0bcff;
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.sidebar-usuario-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-usuario-nombre {
+  color: #e4e1e7;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-usuario-email {
+  color: #958ea0;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-usuario-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  color: #cbc3d7;
+  flex-shrink: 0;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.sidebar-usuario-boton:hover {
+  background: #1f1f23;
+  color: #d0bcff;
+}
+
+/* Colapsado: solo avatar centrado */
+.app-sidebar.collapsed .sidebar-usuario {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+.app-sidebar.collapsed .sidebar-usuario-texto,
+.app-sidebar.collapsed .sidebar-usuario-boton {
+  display: none;
+}
+
+/* ===== Header ===== */
+.app-header {
+  background: #1b1b1f;
+  border-bottom: 1px solid #49454;
+}
+
+.header-title {
+  font-family: 'Plus Jakarta Sans', 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #e4e1e7;
+}
+
+.header-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #cbc3d7;
+}
+
+.header-button:hover {
+  background: #1f1f23;
+  color: #d0bcff;
+}
+
+/* --- Pill de conexión --- */
+.header-conexion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #1f1f23;
+  border: 1px solid #49454;
+  color: #cbc3d7;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.header-conexion-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4cd7f6;
+  flex-shrink: 0;
+}
+
+/* Estado sin conexión: punto rojo con pulso */
+.header-conexion.off {
+  color: #ffb4ab;
+  border-color: rgba(255, 180, 171, 0.35);
+}
+
+.header-conexion.off .header-conexion-dot {
+  background: #ffb4ab;
+}
+
+/* Ocultar en pantallas muy angostas: prioridad al título y acciones */
+@media (max-width: 640px) {
+  .header-conexion {
+    display: none;
+  }
+}
+
+/* ===== Animaciones (respetan prefers-reduced-motion) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-status-dot {
+    animation: material-pulso 2s ease-in-out infinite;
+  }
+
+  .header-conexion.off .header-conexion-dot {
+    animation: material-pulso 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes material-pulso {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.4;
+  }
+}

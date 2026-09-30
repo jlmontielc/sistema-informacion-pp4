@@ -42,7 +42,7 @@ export function getSidebarItems(user) {
 }
 
 export const APP_NAME = 'Entrenador Personal';
-export const APP_SHORT_NAME = 'Entrenador';
+export const APP_SHORT_NAME = 'YanTraining';
 
 // Títulos de página para el header (ruta → título en español). El orden no
 // es crítico: la coincidencia es exacta o por prefijo de segmento completo.

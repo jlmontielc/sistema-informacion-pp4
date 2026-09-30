@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { Loading } from '../common/Loading';
+import { Icon } from '../common/Icon';
 import { DiaSelector } from '../entrenamiento/DiaSelector';
 import { CertificacionCard } from './CertificacionCard';
 import api from '../../services/api';
@@ -43,6 +41,14 @@ const CERTIFICACION_VACIA = {
 const MIMES_VALIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const TAMANIO_MAX = 2 * 1024 * 1024;
 
+const PROPOSITO_LABELS = {
+  perdida_peso: 'Perder peso',
+  ganancia_muscular: 'Ganar masa muscular',
+  mantenimiento: 'Mantenimiento / Salud y bienestar',
+  rendimiento: 'Rendimiento deportivo',
+  rehabilitacion: 'Rehabilitación',
+};
+
 const leerArchivoBase64 = (archivo) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -51,8 +57,35 @@ const leerArchivoBase64 = (archivo) =>
     reader.readAsDataURL(archivo);
   });
 
+/* Devuelve 2 iniciales en mayúsculas (nombre y apellido);
+   si solo hay una palabra, una sola letra */
+function iniciales(nombre) {
+  if (typeof nombre !== 'string') return '—';
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return '—';
+  if (palabras.length === 1) return palabras[0].charAt(0).toUpperCase();
+  return (palabras[0].charAt(0) + palabras[1].charAt(0)).toUpperCase();
+}
+
+/* Etiqueta y clase del chip de rol */
+function rolEtiqueta(perfil) {
+  if (perfil.rol === 'administrador') return 'Administrador';
+  if (perfil.rol === 'entrenador') return 'Entrenador';
+  return 'Instruido';
+}
+
+function rolClase(perfil) {
+  if (perfil.rol === 'administrador') return 'pf-chip-rol--administrador';
+  if (perfil.rol === 'entrenador') return 'pf-chip-rol--entrenador';
+  return 'pf-chip-rol--instruido';
+}
+
+/* Valor seguro para texto: null/undefined → guion largo */
+function textoSeguro(valor) {
+  return valor || '—';
+}
+
 export function MiPerfil({ perfil, onActualizar }) {
-  const navigate = useNavigate();
   const [editando, setEditando] = useState(false);
   const [datos, setDatos] = useState({});
   const [guardando, setGuardando] = useState(false);
@@ -326,251 +359,288 @@ export function MiPerfil({ perfil, onActualizar }) {
     }
   };
 
+  /* ---------- Modo edición (inline: reemplaza la vista) ---------- */
+
   if (editando) {
     return (
-      <Card header="Editar Mi Perfil">
-        <div className="stack">
-          <div className="datos-grid">
+      <div className="pf-seccion pf-card">
+        <div className="pf-card-cabecera">
+          <h2 className="pf-card-titulo">
+            <Icon name="settings" size={20} className="pf-icono" />
+            Editar Mi Perfil
+          </h2>
+        </div>
+        <div className="pf-card-cuerpo">
+          <div className="pf-campos-grid">
             <Field label="Nombre" name="nombre" value={datos.nombre} onChange={handleChange} />
             <Field label="Email" name="email" type="email" value={datos.email} onChange={handleChange} />
             {perfil.rol === 'entrenador' && (
               <Field label="Especialidad" name="especialidad" value={datos.especialidad} onChange={handleChange} />
             )}
           </div>
+
           {perfil.tipo === 'instruido' && (
-            <div className="datos-grid">
+            <div className="pf-campos-grid">
+              <p className="pf-grupo-titulo">Datos físicos y actividad</p>
               <Field label="Edad" name="edad" type="number" value={datos.edad} onChange={handleChange} />
               <Field label="Peso (kg)" name="peso" type="number" step="0.01" value={datos.peso} onChange={handleChange} />
               <Field label="Altura (m)" name="altura" type="number" step="0.01" value={datos.altura} onChange={handleChange} />
               <SelectField label="Sexo" name="sexo" value={datos.sexo} onChange={handleChange} options={sexoLabels} />
               <SelectField label="Nivel de actividad" name="nivelActividad" value={datos.nivelActividad} onChange={handleChange} options={nivelLabels} />
-              <SelectField label="Propósito de entrenamiento" name="propositoEntrenamiento" value={datos.propositoEntrenamiento} onChange={handleChange} options={{ perdida_peso: 'Perder peso', ganancia_muscular: 'Ganar masa muscular', mantenimiento: 'Mantenimiento / Salud y bienestar', rendimiento: 'Rendimiento deportivo', rehabilitacion: 'Rehabilitación' }} />
+              <SelectField label="Propósito de entrenamiento" name="propositoEntrenamiento" value={datos.propositoEntrenamiento} onChange={handleChange} options={PROPOSITO_LABELS} />
               <SelectField label="Nivel de experiencia" name="nivelExperiencia" value={datos.nivelExperiencia} onChange={handleChange} options={{ principiante: 'Principiante', intermedio: 'Intermedio', avanzado: 'Avanzado' }} />
-              <div className="field grid-full">
-                <span className="field-label">Días disponibles para entrenar</span>
+              <div className="pf-campo pf-campo--ancho">
+                <span className="pf-campo-label">Días disponibles para entrenar</span>
                 <DiaSelector seleccionados={datos.diasSemana || []} onToggle={handleToggleDia} />
-                <p className="text-xs text-muted">
+                <p className="pf-campo-ayuda">
                   Has seleccionado {(datos.diasSemana || []).length} {(datos.diasSemana || []).length === 1 ? 'día' : 'días'}
                 </p>
               </div>
             </div>
           )}
+
           {(perfil.tipo === 'instruido' || perfil.rol === 'entrenador') && (
-            <div className="datos-grid seccion-dividida">
+            <div className="pf-campos-grid">
+              <p className="pf-grupo-titulo">Seguridad</p>
               <Field label="Nueva contraseña (opcional)" name="contrasena" type="password" value={datos.contrasena} onChange={handleChange} minLength="8" />
               {datos.contrasena && datos.contrasena.length < 8 && (
-                <p className="field-error">Mínimo 8 caracteres</p>
+                <p className="pf-campo-error">Mínimo 8 caracteres</p>
               )}
               {datos.contrasena && (
                 <Field label="Contraseña actual (requerida)" name="contrasenaActual" type="password" value={datos.contrasenaActual} onChange={handleChange} />
               )}
             </div>
           )}
-          {error && <p className="text-sm text-error">{error}</p>}
-          <div className="form-acciones">
+
+          {error && (
+            <div className="pf-aviso pf-aviso--error">
+              <Icon name="close" size={16} className="pf-icono" />
+              <p>{error}</p>
+            </div>
+          )}
+
+          <div className="pf-acciones">
             <Button variant="secondary" onClick={cancelar}>Cancelar</Button>
             <Button variant="primary" loading={guardando} onClick={guardar}>Guardar</Button>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
+
+  /* ---------- Modo vista ---------- */
 
   return (
     <>
       {success && (
-        <div className="alerta alerta-success">
-          <span aria-hidden="true">✅</span>
-          <span>{success}</span>
+        <div className="pf-seccion pf-aviso pf-aviso--ok">
+          <Icon name="check" size={16} className="pf-icono" />
+          <p>{success}</p>
         </div>
       )}
-    <Card header="Mi Perfil">
-      <div className="stack">
-        <div className="datos-grid">
-          <InfoField label="Nombre" value={perfil.nombre} />
-          <InfoField label="Email" value={perfil.email} />
-          {perfil.rol && perfil.tipo !== 'instruido' && <InfoField label="Rol" value={perfil.rol} />}
-          {perfil.especialidad && <InfoField label="Especialidad" value={perfil.especialidad} />}
-        </div>
-        {perfil.tipo === 'instruido' && (
-          <div className="datos-grid seccion-dividida">
-            <InfoField label="Edad" value={perfil.edad ? `${perfil.edad} años` : '—'} />
-            <InfoField label="Peso" value={perfil.peso ? `${perfil.peso} kg` : '—'} />
-            <InfoField label="Altura" value={perfil.altura ? `${perfil.altura} m` : '—'} />
-            <InfoField label="Sexo" value={sexoLabels[perfil.sexo] || '—'} />
-            <InfoField label="Nivel de actividad" value={nivelLabels[perfil.nivelActividad] || '—'} />
-            <div className="dato">
-              <p className="dato-label">Días disponibles</p>
-              {Array.isArray(perfil.diasSemana) && perfil.diasSemana.length > 0 ? (
-                <DiaSelector modo="vista" seleccionados={perfil.diasSemana} />
-              ) : (
-                <p className="dato-valor">{perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'}</p>
-              )}
-            </div>
-            <InfoField label="Propósito" value={perfil.propositoEntrenamiento ? labelObjetivo(perfil.propositoEntrenamiento) : '—'} />
-            <InfoField label="Nivel de experiencia" value={perfil.nivelExperiencia ? labelNivelExperiencia(perfil.nivelExperiencia) : '—'} />
-            <InfoField label="Fecha de registro" value={perfil.fechaRegistro || '—'} />
+
+      {/* Hero de identidad */}
+      <div className="pf-seccion pf-card pf-hero">
+        <div className="pf-avatar" aria-hidden="true">{iniciales(perfil.nombre)}</div>
+        <div className="pf-hero-info">
+          <p className="pf-hero-nombre">{textoSeguro(perfil.nombre)}</p>
+          <p className="pf-hero-email">{textoSeguro(perfil.email)}</p>
+          <div className="pf-hero-chips">
+            <span className={`pf-chip-rol ${rolClase(perfil)}`}>{rolEtiqueta(perfil)}</span>
+            {perfil.especialidad && (
+              <span className="pf-chip-especialidad">
+                <Icon name="dumbbell" size={12} />
+                {perfil.especialidad}
+              </span>
+            )}
           </div>
-        )}
-        <div className="form-acciones">
-          <Button variant="primary" onClick={iniciarEdicion}>Editar perfil</Button>
         </div>
       </div>
-    </Card>
 
+      {/* Datos personales */}
+      <div className="pf-seccion pf-card">
+        <div className="pf-card-cabecera">
+          <h2 className="pf-card-titulo">
+            <Icon name="user" size={20} className="pf-icono" />
+            Datos personales
+          </h2>
+          <Button variant="primary" size="sm" onClick={iniciarEdicion}>Editar perfil</Button>
+        </div>
+        <div className="pf-card-cuerpo">
+          <div className="pf-datos-grid">
+            <Dato label="Nombre" valor={perfil.nombre} />
+            <Dato label="Email" valor={perfil.email} mono />
+            {perfil.rol && perfil.tipo !== 'instruido' && <Dato label="Rol" valor={rolEtiqueta(perfil)} />}
+            {perfil.especialidad && <Dato label="Especialidad" valor={perfil.especialidad} />}
+          </div>
+          {perfil.tipo === 'instruido' && (
+            <div className="pf-datos-grid">
+              <Dato label="Edad" valor={perfil.edad ? `${perfil.edad} años` : null} />
+              <Dato label="Peso" valor={perfil.peso ? `${perfil.peso} kg` : null} />
+              <Dato label="Altura" valor={perfil.altura ? `${perfil.altura} m` : null} />
+              <Dato label="Sexo" valor={sexoLabels[perfil.sexo] || null} />
+              <Dato label="Nivel de actividad" valor={nivelLabels[perfil.nivelActividad] || null} />
+              <div className="pf-dato pf-datos-grid--ancho">
+                <p className="pf-dato-label">Días disponibles</p>
+                {Array.isArray(perfil.diasSemana) && perfil.diasSemana.length > 0 ? (
+                  <DiaSelector modo="vista" seleccionados={perfil.diasSemana} />
+                ) : (
+                  <p className="pf-dato-valor">{perfil.diasDisponibles ? `${perfil.diasDisponibles} días/semana` : '—'}</p>
+                )}
+              </div>
+              <Dato label="Propósito" valor={perfil.propositoEntrenamiento ? labelObjetivo(perfil.propositoEntrenamiento) : null} />
+              <Dato label="Nivel de experiencia" valor={perfil.nivelExperiencia ? labelNivelExperiencia(perfil.nivelExperiencia) : null} />
+              <Dato label="Fecha de registro" valor={perfil.fechaRegistro || null} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Certificaciones (solo entrenador) */}
       {perfil.rol === 'entrenador' && successCert && (
-        <div className="alerta alerta-success">
-          <span aria-hidden="true">✅</span>
-          <span>{successCert}</span>
+        <div className="pf-seccion pf-aviso pf-aviso--ok">
+          <Icon name="check" size={16} className="pf-icono" />
+          <p>{successCert}</p>
         </div>
       )}
 
       {perfil.rol === 'entrenador' && (
-        <Card header="Certificaciones">
-          <div className="stack">
-            {cargandoCerts && <p className="text-sm text-muted">Cargando certificaciones...</p>}
+        <div className="pf-seccion pf-card">
+          <div className="pf-card-cabecera">
+            <h2 className="pf-card-titulo">
+              <Icon name="receipt" size={20} className="pf-icono" />
+              Certificaciones
+            </h2>
+            <span className="pf-badge-contador">{certificaciones.length}</span>
+          </div>
+          <div className="pf-card-cuerpo">
+            {cargandoCerts && <p className="pf-campo-ayuda">Cargando certificaciones...</p>}
             {!cargandoCerts && certificaciones.length === 0 && (
-              <p className="text-sm text-muted">Aún no tienes certificaciones registradas.</p>
+              <p className="pf-campo-ayuda">Aún no tienes certificaciones registradas.</p>
             )}
             {!cargandoCerts && certificaciones.length > 0 && (
-              <div className="grid-datos">
+              <div className="pf-cert-grid">
                 {certificaciones.map((c) => (
-                  <div className="stack-sm" key={c.id}>
+                  <div className="pf-cert-item" key={c.id}>
                     <CertificacionCard cert={c} />
-                    <div className="form-acciones">
+                    <div className="pf-cert-acciones">
                       <Button variant="secondary" size="sm" onClick={() => iniciarEdicionCert(c)}>Editar</Button>
-                      <Button variant="secondary" size="sm" onClick={() => eliminarCert(c.id)}>Eliminar</Button>
+                      <Button variant="danger" size="sm" onClick={() => eliminarCert(c.id)}>Eliminar</Button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            {!editandoCert && errorCert && <p className="text-sm text-error">{errorCert}</p>}
-            <div className="form-acciones">
-              <Button variant="primary" onClick={abrirNuevaCert}>Añadir certificación</Button>
-            </div>
+            {!editandoCert && errorCert && (
+              <div className="pf-aviso pf-aviso--error">
+                <Icon name="close" size={16} className="pf-icono" />
+                <p>{errorCert}</p>
+              </div>
+            )}
+            {!editandoCert && (
+              <div className="pf-acciones">
+                <Button variant="primary" onClick={abrirNuevaCert}>Añadir certificación</Button>
+              </div>
+            )}
           </div>
-        </Card>
+        </div>
       )}
 
       {perfil.rol === 'entrenador' && editandoCert && (
-        <Card header={editandoCert.id ? 'Editar certificación' : 'Nueva certificación'}>
-          <div className="stack">
-            <div className="datos-grid">
-              <div className="field">
-                <label className="field-label" htmlFor="cert-nombre">Nombre</label>
-                <input
-                  id="cert-nombre"
-                  name="nombre"
-                  type="text"
-                  className="field-input"
-                  value={formCert.nombre}
-                  onChange={handleChangeCert}
-                />
-              </div>
-              <div className="field">
-                <label className="field-label" htmlFor="cert-institucion">Institución</label>
-                <input
-                  id="cert-institucion"
-                  name="institucion"
-                  type="text"
-                  className="field-input"
-                  value={formCert.institucion}
-                  onChange={handleChangeCert}
-                />
-              </div>
-              <div className="field">
-                <label className="field-label" htmlFor="cert-fecha-obtencion">Fecha de obtención</label>
-                <input
-                  id="cert-fecha-obtencion"
-                  name="fechaObtencion"
-                  type="date"
-                  className="field-input"
-                  value={formCert.fechaObtencion}
-                  onChange={handleChangeCert}
-                />
-              </div>
-              <div className="field">
-                <label className="field-label" htmlFor="cert-fecha-expiracion">Fecha de expiración</label>
-                <input
-                  id="cert-fecha-expiracion"
-                  name="fechaExpiracion"
-                  type="date"
-                  className="field-input"
-                  value={formCert.fechaExpiracion}
-                  onChange={handleChangeCert}
-                />
-              </div>
-              <div className="field grid-full">
-                <label className="field-label" htmlFor="cert-descripcion">Descripción</label>
+        <div className="pf-seccion pf-card">
+          <div className="pf-card-cabecera">
+            <h2 className="pf-card-titulo">
+              <Icon name="receipt" size={20} className="pf-icono" />
+              {editandoCert.id ? 'Editar certificación' : 'Nueva certificación'}
+            </h2>
+          </div>
+          <div className="pf-card-cuerpo">
+            <div className="pf-campos-grid">
+              <Field label="Nombre" name="nombre" value={formCert.nombre} onChange={handleChangeCert} />
+              <Field label="Institución" name="institucion" value={formCert.institucion} onChange={handleChangeCert} />
+              <Field label="Fecha de obtención" name="fechaObtencion" type="date" value={formCert.fechaObtencion} onChange={handleChangeCert} />
+              <Field label="Fecha de expiración" name="fechaExpiracion" type="date" value={formCert.fechaExpiracion} onChange={handleChangeCert} />
+              <div className="pf-campo pf-campo--ancho">
+                <label className="pf-campo-label" htmlFor="cert-descripcion">Descripción</label>
                 <textarea
                   id="cert-descripcion"
                   name="descripcion"
                   rows={2}
-                  className="field-input field-textarea"
+                  className="pf-campo-input"
                   value={formCert.descripcion}
                   onChange={handleChangeCert}
                 />
               </div>
-              <div className="field grid-full">
-                <label className="field-label" htmlFor="cert-archivo">Archivo (imagen o PDF, máx. 2 MB)</label>
+              <div className="pf-campo pf-campo--ancho">
+                <label className="pf-campo-label" htmlFor="cert-archivo">Archivo (imagen o PDF, máx. 2 MB)</label>
                 <input
                   id="cert-archivo"
                   key={inputArchivoKey}
                   name="archivo"
                   type="file"
-                  className="field-input"
+                  className="pf-campo-input"
                   accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
                   onChange={handleArchivoCertChange}
                 />
                 {archivoNuevo && (
-                  <p className="text-sm text-muted">Seleccionado: {archivoNuevo.name}</p>
+                  <p className="pf-campo-ayuda">Seleccionado: {archivoNuevo.name}</p>
                 )}
                 {editandoCert && editandoCert.id && !archivoNuevo && editandoCert.tieneArchivo && (
-                  <p className="text-sm text-muted">
+                  <p className="pf-campo-ayuda">
                     La certificación ya tiene un archivo adjunto; se conservará si no eliges otro.
                   </p>
                 )}
               </div>
             </div>
-            {errorCert && <p className="text-sm text-error">{errorCert}</p>}
-            <div className="form-acciones">
+            {errorCert && (
+              <div className="pf-aviso pf-aviso--error">
+                <Icon name="close" size={16} className="pf-icono" />
+                <p>{errorCert}</p>
+              </div>
+            )}
+            <div className="pf-acciones">
               <Button variant="secondary" onClick={cancelarCert}>Cancelar</Button>
               <Button variant="primary" loading={guardandoCert} onClick={guardarCert}>Guardar</Button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
+      {/* Datos médicos (solo instruido) */}
       {perfil.tipo === 'instruido' && !editandoMedico && (
-        <Card header="Datos Médicos">
-          <div className="stack">
-            <span className={`badge ${perfilMedico?.perfilMedicoCompleto ? 'badge-success' : 'badge-warning'}`}>
-              <span aria-hidden="true">{perfilMedico?.perfilMedicoCompleto ? '✅' : '⏳'}</span>
-              <span>{perfilMedico?.perfilMedicoCompleto ? 'Perfil médico completo' : 'Perfil médico pendiente'}</span>
+        <div className="pf-seccion pf-card">
+          <div className="pf-card-cabecera">
+            <h2 className="pf-card-titulo">
+              <Icon name="heart" size={20} className="pf-icono" />
+              Datos Médicos
+            </h2>
+            <span className={`pf-pill-estado ${perfilMedico?.perfilMedicoCompleto ? 'pf-pill-estado--completo' : 'pf-pill-estado--pendiente'}`}>
+              {perfilMedico?.perfilMedicoCompleto ? 'Perfil médico completo' : 'Perfil médico pendiente'}
             </span>
-
+          </div>
+          <div className="pf-card-cuerpo">
             {perfilMedico?.datosMedicosCorruptos && (
-              <div className="alerta alerta-error">
-                <div className="stack stack-sm">
-                  <p>
-                    ⚠️ No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.
-                  </p>
+              <div className="pf-aviso pf-aviso--error">
+                <Icon name="wifi-off" size={16} className="pf-icono" />
+                <div className="pf-aviso-cuerpo">
+                  <p>No se pudieron descifrar algunos datos médicos. Es probable que se hayan guardado con una clave anterior.</p>
                   <p>Regístralos nuevamente para restaurar la información.</p>
                 </div>
               </div>
             )}
 
-            <div className="datos-grid">
+            <div className="pf-datos-grid">
               {CAMPOS_MEDICOS.map(({ name, label }) => (
-                <InfoField
+                <Dato
                   key={name}
                   label={label}
-                  value={mostrarMedicos ? (perfilMedico?.[name] || '—') : (perfilMedico?.[name] ? '••••••' : '—')}
+                  valor={mostrarMedicos ? (perfilMedico?.[name] || null) : (perfilMedico?.[name] ? '••••••' : null)}
+                  mono={!mostrarMedicos && !!perfilMedico?.[name]}
                 />
               ))}
             </div>
-            <div className="form-acciones">
+
+            <div className="pf-acciones">
               <Button variant="secondary" onClick={() => setMostrarMedicos((prev) => !prev)}>
                 {mostrarMedicos ? 'Ocultar datos médicos' : 'Ver datos médicos'}
               </Button>
@@ -579,32 +649,45 @@ export function MiPerfil({ perfil, onActualizar }) {
               </Button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {perfil.tipo === 'instruido' && editandoMedico && (
-        <Card header="Editar Datos Médicos">
-          <div className="stack">
-            {CAMPOS_MEDICOS.map(({ name, label }) => (
-              <div className="field" key={name}>
-                <label className="field-label" htmlFor={name}>{label}</label>
-                <textarea
-                  id={name}
-                  name={name}
-                  className="field-input field-textarea"
-                  value={datosMedicos[name] || ''}
-                  onChange={handleChangeMedico}
-                  rows={2}
-                />
+        <div className="pf-seccion pf-card">
+          <div className="pf-card-cabecera">
+            <h2 className="pf-card-titulo">
+              <Icon name="heart" size={20} className="pf-icono" />
+              Editar Datos Médicos
+            </h2>
+          </div>
+          <div className="pf-card-cuerpo">
+            <div className="pf-campos-grid">
+              {CAMPOS_MEDICOS.map(({ name, label }) => (
+                <div className="pf-campo pf-campo--ancho" key={name}>
+                  <label className="pf-campo-label" htmlFor={name}>{label}</label>
+                  <textarea
+                    id={name}
+                    name={name}
+                    className="pf-campo-input"
+                    value={datosMedicos[name] || ''}
+                    onChange={handleChangeMedico}
+                    rows={2}
+                  />
+                </div>
+              ))}
+            </div>
+            {errorMedico && (
+              <div className="pf-aviso pf-aviso--error">
+                <Icon name="close" size={16} className="pf-icono" />
+                <p>{errorMedico}</p>
               </div>
-            ))}
-            {errorMedico && <p className="text-sm text-error">{errorMedico}</p>}
-            <div className="form-acciones">
+            )}
+            <div className="pf-acciones">
               <Button variant="secondary" onClick={cancelarEdicionMedico}>Cancelar</Button>
               <Button variant="primary" loading={guardandoMedico} onClick={guardarMedico}>Guardar</Button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </>
   );
@@ -612,32 +695,40 @@ export function MiPerfil({ perfil, onActualizar }) {
 
 function Field({ label, name, type = 'text', value, onChange, ...props }) {
   return (
-    <div className="field">
-      <label className="field-label">{label}</label>
-      <input className="field-input" type={type} name={name} value={value} onChange={onChange} {...props} />
+    <div className="pf-campo">
+      <label className="pf-campo-label">{label}</label>
+      <input className="pf-campo-input" type={type} name={name} value={value} onChange={onChange} {...props} />
     </div>
   );
 }
 
 function SelectField({ label, name, value, onChange, options }) {
   return (
-    <div className="field">
-      <label className="field-label">{label}</label>
-      <select className="field-input" name={name} value={value} onChange={onChange}>
-        <option value="">Seleccionar...</option>
-        {Object.entries(options).map(([key, text]) => (
-          <option key={key} value={key}>{text}</option>
-        ))}
-      </select>
+    <div className="pf-campo">
+      <label className="pf-campo-label">{label}</label>
+      <div className="pf-selecto">
+        <select className="pf-campo-input" name={name} value={value} onChange={onChange}>
+          <option value="">Seleccionar...</option>
+          {Object.entries(options).map(([key, text]) => (
+            <option key={key} value={key}>{text}</option>
+          ))}
+        </select>
+        <Icon name="next" size={14} className="pf-selecto-flecha" />
+      </div>
     </div>
   );
 }
 
-function InfoField({ label, value }) {
+/* Dato de solo lectura; valor nulo → guion largo en gris */
+function Dato({ label, valor, mono = false }) {
   return (
-    <div className="dato">
-      <p className="dato-label">{label}</p>
-      <p className="dato-valor">{value}</p>
+    <div className="pf-dato">
+      <p className="pf-dato-label">{label}</p>
+      {valor ? (
+        <p className={`pf-dato-valor ${mono ? 'pf-dato-valor--mono' : ''}`}>{valor}</p>
+      ) : (
+        <p className="pf-dato-valor pf-dato-valor--vacio">—</p>
+      )}
     </div>
   );
 }

@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Input } from '../common/Input';
-import { Button } from '../common/Button';
-import { Card } from '../common/Card';
+import { Icon } from '../common/Icon';
 import { metabolismoApi } from '../../services/metabolismoApi';
 import { instruidosApi } from '../../services/rutinasApi';
 import { ResultadoMetabolico } from './ResultadoMetabolico';
 
+/* ---------------------------------------------------------------------------
+   Constantes de la vista (los VALUES se envían al backend intactos)
+   --------------------------------------------------------------------------- */
+
 const NIVELES_ACTIVIDAD = [
   { value: 'sedentario', label: 'Sedentario (poco o nada de ejercicio)' },
-  { value: 'ligero', label: 'Ligero (ejercicio 1-3 dias/semana)' },
-  { value: 'moderado', label: 'Moderado (ejercicio 3-5 dias/semana)' },
-  { value: 'activo', label: 'Activo (ejercicio 6-7 dias/semana)' },
+  { value: 'ligero', label: 'Ligero (ejercicio 1-3 días/semana)' },
+  { value: 'moderado', label: 'Moderado (ejercicio 3-5 días/semana)' },
+  { value: 'activo', label: 'Activo (ejercicio 6-7 días/semana)' },
   { value: 'muy_activo', label: 'Muy activo (ejercicio intenso diario)' },
 ];
 
@@ -35,7 +37,7 @@ export function CalculadoraMetabolica({ rol }) {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
-  // Cargar lista de instruidos (solo admin/entrenador)
+  // Cargar lista de instruidos (solo admin/entrenador, fallo silencioso)
   useEffect(() => {
     if (!esAdminOEntrenador) return;
     instruidosApi.listar()
@@ -43,7 +45,7 @@ export function CalculadoraMetabolica({ rol }) {
       .catch(() => {});
   }, [esAdminOEntrenador]);
 
-  // Rellenar datos del cliente al seleccionarlo
+  // Rellenar datos del cliente al seleccionarlo; limpiar si se vacía la selección
   useEffect(() => {
     if (instruidoSeleccionado) {
       const cliente = instruidos.find((i) => i.id === Number(instruidoSeleccionado));
@@ -67,7 +69,7 @@ export function CalculadoraMetabolica({ rol }) {
     setError('');
     setResultado(null);
 
-    // Validaciones basicas
+    // Validaciones básicas
     if (!peso || !altura || !edad) {
       setError('Completa todos los campos obligatorios.');
       return;
@@ -113,81 +115,101 @@ export function CalculadoraMetabolica({ rol }) {
   };
 
   return (
-    <div className="stack-lg">
-      {/* Formulario de calculo */}
-      <Card header={<h3 className="card-titulo card-titulo-md">Datos para el calculo</h3>}>
-        <div className="stack">
+    <div className="dm-seccion dm-contenido">
+      {/* Card del formulario de cálculo */}
+      <div className="dm-card">
+        <div className="dm-card-cabecera">
+          <h3>
+            <Icon name="monitoring" size={20} />
+            Datos para el cálculo
+          </h3>
+        </div>
+        <div className="dm-card-cuerpo">
           {/* Selector de instruido (solo admin/entrenador) */}
           {esAdminOEntrenador && (
-            <div className="field">
-              <label className="field-label" htmlFor="cliente-metabolismo">Cliente</label>
-              <select
-                id="cliente-metabolismo"
-                value={instruidoSeleccionado}
-                onChange={(e) => setInstruidoSeleccionado(e.target.value)}
-                className="field-input w-full"
-              >
-                <option value="">Seleccionar cliente...</option>
-                {instruidos.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nombre}
-                  </option>
-                ))}
-              </select>
+            <div className="dm-campo">
+              <label className="dm-etiqueta" htmlFor="cliente-metabolismo">Cliente</label>
+              <div className="dm-select">
+                <select
+                  id="cliente-metabolismo"
+                  value={instruidoSeleccionado}
+                  onChange={(e) => setInstruidoSeleccionado(e.target.value)}
+                >
+                  <option value="">Seleccionar cliente...</option>
+                  {instruidos.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.nombre}
+                    </option>
+                  ))}
+                </select>
+                <Icon name="next" size={14} className="dm-select-flecha" />
+              </div>
               {instruidos.length === 0 && (
-                <span className="text-xs text-muted">
-                  No hay clientes registrados.
-                </span>
+                <span className="dm-aviso">No hay clientes registrados.</span>
               )}
             </div>
           )}
 
-          {/* Campos numericos */}
-          <div className="grid grid-cols-3">
-            <Input
-              label="Peso (kg)"
-              name="peso"
-              type="number"
-              min="1"
-              max="500"
-              step="0.1"
-              placeholder="Ej: 75.5"
-              value={peso}
-              onChange={(e) => setPeso(e.target.value)}
-            />
-            <Input
-              label="Altura (m)"
-              name="altura"
-              type="number"
-              min="0.5"
-              max="2.5"
-              step="0.01"
-              placeholder="Ej: 1.75"
-              value={altura}
-              onChange={(e) => setAltura(e.target.value)}
-            />
-            <Input
-              label="Edad (anos)"
-              name="edad"
-              type="number"
-              min="1"
-              max="120"
-              placeholder="Ej: 30"
-              value={edad}
-              onChange={(e) => setEdad(e.target.value)}
-            />
+          {/* Campos numéricos: estructura nativa (.field/.field-input heredadas
+              del tema compartido, tema oscuro aplicado por cascada desde .dm-pagina) */}
+          <div className="dm-grid-datos">
+            <div className="field">
+              <label className="field-label" htmlFor="peso">Peso (kg)</label>
+              <input
+                id="peso"
+                name="peso"
+                type="number"
+                className="field-input"
+                min="1"
+                max="500"
+                step="0.1"
+                placeholder="Ej: 75.5"
+                value={peso}
+                onChange={(e) => setPeso(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="altura">Altura (m)</label>
+              <input
+                id="altura"
+                name="altura"
+                type="number"
+                className="field-input"
+                min="0.5"
+                max="2.5"
+                step="0.01"
+                placeholder="Ej: 1.75"
+                value={altura}
+                onChange={(e) => setAltura(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="edad">Edad (años)</label>
+              <input
+                id="edad"
+                name="edad"
+                type="number"
+                className="field-input"
+                min="1"
+                max="120"
+                placeholder="Ej: 30"
+                value={edad}
+                onChange={(e) => setEdad(e.target.value)}
+              />
+            </div>
           </div>
 
-          {/* Sexo */}
-          <div className="field">
-            <span className="field-label">Sexo</span>
-            <div className="chip-group">
+          {/* Sexo como segmented control */}
+          <div className="dm-campo">
+            <span className="dm-etiqueta" id="sexo-metabolismo">Sexo</span>
+            <div className="dm-segmentos" role="group" aria-labelledby="sexo-metabolismo">
               {SEXOS.map((s) => (
                 <button
                   key={s.value}
                   type="button"
                   onClick={() => setSexo(s.value)}
-                  className={`chip${sexo === s.value ? ' active' : ''}`}
+                  className={`dm-segmento${sexo === s.value ? ' active' : ''}`}
+                  aria-pressed={sexo === s.value}
                 >
                   {s.label}
                 </button>
@@ -195,47 +217,54 @@ export function CalculadoraMetabolica({ rol }) {
             </div>
           </div>
 
-          {/* Nivel de actividad */}
-          <div className="field">
-            <label className="field-label" htmlFor="nivel-actividad-metabolismo">
-              Nivel de actividad fisica
+          {/* Nivel de actividad física */}
+          <div className="dm-campo">
+            <label className="dm-etiqueta" htmlFor="nivel-actividad-metabolismo">
+              Nivel de actividad física
             </label>
-            <select
-              id="nivel-actividad-metabolismo"
-              value={nivelActividad}
-              onChange={(e) => setNivelActividad(e.target.value)}
-              className="field-input w-full"
-            >
-              {NIVELES_ACTIVIDAD.map((n) => (
-                <option key={n.value} value={n.value}>
-                  {n.label}
-                </option>
-              ))}
-            </select>
+            <div className="dm-select">
+              <select
+                id="nivel-actividad-metabolismo"
+                value={nivelActividad}
+                onChange={(e) => setNivelActividad(e.target.value)}
+              >
+                {NIVELES_ACTIVIDAD.map((n) => (
+                  <option key={n.value} value={n.value}>
+                    {n.label}
+                  </option>
+                ))}
+              </select>
+              <Icon name="next" size={14} className="dm-select-flecha" />
+            </div>
           </div>
 
-          {/* Error */}
+          {/* Error de validación o de servidor */}
           {error && (
-            <div className="alerta alerta-error">
-              {error}
-            </div>
+            <div className="dm-alerta" role="alert">{error}</div>
           )}
 
-          {/* Botones de accion */}
-          <div className="form-acciones">
-            <Button variant="secondary" onClick={limpiar}>
-              Limpiar
-            </Button>
-            <Button
-              variant="primary"
-              loading={cargando}
-              onClick={calcular}
+          {/* Botones de acción */}
+          <div className="dm-form-acciones">
+            <button
+              type="button"
+              className="dm-boton dm-boton-secundario"
+              onClick={limpiar}
             >
-              Calcular metabolismo
-            </Button>
+              Limpiar
+            </button>
+            <button
+              type="button"
+              className="dm-boton dm-boton-primario"
+              onClick={calcular}
+              disabled={cargando}
+              aria-busy={cargando}
+            >
+              {cargando && <span className="dm-spinner" aria-hidden="true" />}
+              {cargando ? 'Calculando...' : 'Calcular metabolismo'}
+            </button>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Resultado */}
       {resultado && (

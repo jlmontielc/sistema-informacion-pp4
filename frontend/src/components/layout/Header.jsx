@@ -3,6 +3,7 @@ import { useUI } from '../../context/UIContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { Icon } from '../common/Icon';
 import { getTituloRuta } from '../../utils/constants';
 
@@ -15,6 +16,7 @@ export function Header() {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const enLinea = useOnlineStatus();
 
   // En móvil (≤768px) el botón hamburguesa abre el drawer; en escritorio
   // colapsa/expande el sidebar fijo.
@@ -50,6 +52,12 @@ export function Header() {
       <div className="header-spacer" />
 
       <div className="header-actions">
+        {/* Pill de conexión (online/offline), oculta en ≤640px vía CSS */}
+        <div className={`header-conexion${enLinea ? '' : ' off'}`} role="status">
+          <span className="header-conexion-dot" aria-hidden="true" />
+          <span>{enLinea ? 'En línea' : 'Sin conexión'}</span>
+        </div>
+
         <button
           className="header-button"
           onClick={toggleTheme}

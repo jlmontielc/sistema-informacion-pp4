@@ -32,6 +32,18 @@ export function AuthProvider({ children }) {
       });
   }, []);
 
+  const cargarPerfilCompleto = useCallback(async (usuarioBase) => {
+    setUser(usuarioBase);
+    try {
+      const res = await api.get('/auth/me');
+      const perfilCompleto = { ...usuarioBase, ...res.data };
+      setUser(perfilCompleto);
+      return perfilCompleto;
+    } catch {
+      return usuarioBase;
+    }
+  }, []);
+
   const login = useCallback(async (email, contrasena) => {
     setLoading(true);
     try {
@@ -40,12 +52,11 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-      setUser(userData);
-      return userData;
+      return await cargarPerfilCompleto(userData);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cargarPerfilCompleto]);
 
   const register = useCallback(async (datos) => {
     setLoading(true);
@@ -55,12 +66,11 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-      setUser(userData);
-      return userData;
+      return await cargarPerfilCompleto(userData);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cargarPerfilCompleto]);
 
   const logout = useCallback(async () => {
     try {

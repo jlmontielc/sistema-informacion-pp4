@@ -1,5 +1,6 @@
-import { Card } from '../common/Card';
+import { Icon } from '../common/Icon';
 
+/* Etiquetas legibles por nivel de actividad (el VALUE llega del backend) */
 const NIVELES_ACTIVIDAD_LABELS = {
   sedentario: 'Sedentario',
   ligero: 'Ligero',
@@ -12,50 +13,76 @@ export function ResultadoMetabolico({ datos, datosEntrada }) {
   const { tmb, gct, nivelActividad } = datos;
 
   return (
-    <Card header={<h3 className="card-titulo card-titulo-md">Resultado del metabolismo</h3>}>
-      <div className="stack-lg">
-        {/* Resumen de datos de entrada */}
-        <div className="nota-informativa row">
-          <span><strong>{datosEntrada.peso}</strong> kg</span>
-          <span><strong>{datosEntrada.altura}</strong> m</span>
-          <span><strong>{datosEntrada.edad}</strong> anos</span>
-          <span><strong>{datosEntrada.sexo === 'masculino' ? 'Masculino' : 'Femenino'}</strong></span>
-          <span><strong>{NIVELES_ACTIVIDAD_LABELS[nivelActividad] || nivelActividad}</strong></span>
-        </div>
-
-        {/* Valores calculados */}
-        <div className="grid grid-cols-2">
+    <div className="dm-seccion dm-card">
+      <div className="dm-card-cabecera">
+        <h3>
+          <Icon name="monitoring" size={20} />
+          Resultado del metabolismo
+        </h3>
+      </div>
+      <div className="dm-card-cuerpo">
+        {/* KPIs con los valores calculados */}
+        <div className="dm-resultado">
           {/* TMB */}
-          <div className="stat-card stat-card-primary">
-            <span className="stat-card-label">Tasa Metabolica Basal (TMB)</span>
-            <span className="stat-card-value">
-              {Number(tmb).toFixed(1)}
-            </span>
-            <span className="stat-card-label">kcal/dia</span>
+          <div className="dm-kpi dm-kpi--tmb">
+            <div className="dm-kpi-cabecera">
+              <span className="dm-kpi-icono" aria-hidden="true">
+                <Icon name="flame" size={20} />
+              </span>
+              <span className="dm-kpi-etiqueta">
+                Tasa Metabólica Basal (TMB)
+              </span>
+            </div>
+            <span className="dm-kpi-valor">{Number(tmb).toFixed(1)}</span>
+            <span className="dm-kpi-unidad">kcal/día</span>
           </div>
 
           {/* GCT */}
-          <div className="stat-card stat-card-success">
-            <span className="stat-card-label">Gasto Calorico Total (GCT)</span>
-            <span className="stat-card-value">
-              {Number(gct).toFixed(1)}
-            </span>
-            <span className="stat-card-label">kcal/dia</span>
+          <div className="dm-kpi dm-kpi--gct">
+            <div className="dm-kpi-cabecera">
+              <span className="dm-kpi-icono" aria-hidden="true">
+                <Icon name="bolt" size={20} />
+              </span>
+              <span className="dm-kpi-etiqueta">
+                Gasto Calórico Total (GCT)
+              </span>
+            </div>
+            <span className="dm-kpi-valor">{Number(gct).toFixed(1)}</span>
+            <span className="dm-kpi-unidad">kcal/día</span>
           </div>
         </div>
 
-        {/* Explicacion */}
-        <div className="nota-informativa stack stack-sm">
+        {/* Resumen de datos de entrada */}
+        <div className="dm-entrada">
+          <span className="dm-chip-entrada">
+            <strong>{datosEntrada.peso}</strong> kg
+          </span>
+          <span className="dm-chip-entrada">
+            <strong>{datosEntrada.altura}</strong> m
+          </span>
+          <span className="dm-chip-entrada">
+            <strong>{datosEntrada.edad}</strong> años
+          </span>
+          <span className="dm-chip-entrada">
+            <strong>{datosEntrada.sexo === 'masculino' ? 'Masculino' : 'Femenino'}</strong>
+          </span>
+          <span className="dm-chip-entrada">
+            <strong>{NIVELES_ACTIVIDAD_LABELS[nivelActividad] || nivelActividad}</strong>
+          </span>
+        </div>
+
+        {/* Explicación de los indicadores */}
+        <div className="dm-notas">
           <p>
-            <strong>TMB (Tasa Metabolica Basal):</strong> Cantidad de energia que tu cuerpo necesita en reposo
-            para funcionar (respirar, circular sangre, regenerar celulas). Se calcula con la ecuacion de Harris-Benedict.
+            <strong>TMB (Tasa Metabólica Basal):</strong> Cantidad de energía que tu cuerpo necesita en reposo
+            para funcionar (respirar, circular sangre, regenerar células). Se calcula con la ecuación de Harris-Benedict.
           </p>
           <p>
-            <strong>GCT (Gasto Calorico Total):</strong> TMB multiplicada por el factor de actividad fisica.
-            Representa las calorias diarias necesarias para mantener tu peso actual segun tu nivel de actividad.
+            <strong>GCT (Gasto Calórico Total):</strong> TMB multiplicada por el factor de actividad física.
+            Representa las calorías diarias necesarias para mantener tu peso actual según tu nivel de actividad.
           </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

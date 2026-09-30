@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
-import { Card } from '../components/common/Card';
 import { DiaSelector } from '../components/entrenamiento/DiaSelector';
 import { OBJETIVOS_ENTRENAMIENTO, NIVELES_EXPERIENCIA } from '../utils/constants';
 
@@ -95,41 +93,50 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="contenedor-centrado">
-      <Card className="form-estrecho form-estrecho-md">
-        <Card.Body>
-          <div className="stack stack-md">
-            <div className="stack stack-sm text-center">
-              <h1 className="page-title">Crear Cuenta</h1>
-              <p className="page-subtitle">
-                Regístrate para empezar a usar el sistema
-              </p>
+    <div className="auth-flujo">
+      <div className="auth-radiancia-and" aria-hidden="true" />
+      <div className="auth-radiancia-at" aria-hidden="true" />
+
+      <header className="auth-marca">
+        <div className="auth-marca-pildora">
+          <span className="material-symbols-outlined">fitness_center</span>
+          <span className="auth-marca-texto">Yantraining</span>
+        </div>
+      </header>
+
+      <main className="auth-contenido">
+        <section className="auth-tarjeta">
+          <div className="auth-encabezado-centrado">
+            <h1 className="auth-titulo">Crear Cuenta</h1>
+            <p className="auth-subtitulo">Regístrate para empezar a usar el sistema</p>
+          </div>
+
+          {error && (
+            <div className="auth-error" role="alert">
+              {error}
             </div>
+          )}
 
-            {error && (
-              <div className="alerta alerta-error text-center" role="alert">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleSubmit} className="auth-formulario">
+            <Input
+              label="Nombre completo"
+              name="nombre"
+              placeholder="Juan Pérez"
+              value={form.nombre}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="tu@email.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
 
-            <form onSubmit={handleSubmit} className="stack stack-md">
-              <Input
-                label="Nombre completo"
-                name="nombre"
-                placeholder="Juan Pérez"
-                value={form.nombre}
-                onChange={handleChange}
-                required
-              />
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                placeholder="tu@email.com"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
+            <div className="auth-grid-2">
               <Input
                 label="Contraseña"
                 name="contrasena"
@@ -150,7 +157,9 @@ export default function RegisterPage() {
                 minLength={8}
                 required
               />
+            </div>
 
+            <div className="auth-grid-3">
               <Input
                 label="Edad"
                 name="edad"
@@ -162,30 +171,31 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
               />
-              <div className="grid grid-cols-2">
-                <Input
-                  label="Peso (kg)"
-                  name="peso"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="70.5"
-                  value={form.peso}
-                  onChange={handleChange}
-                  required
-                />
-                <Input
-                  label="Altura (m)"
-                  name="altura"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="1.75"
-                  value={form.altura}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <Input
+                label="Peso (kg)"
+                name="peso"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="70.5"
+                value={form.peso}
+                onChange={handleChange}
+                required
+              />
+              <Input
+                label="Altura (m)"
+                name="altura"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="1.75"
+                value={form.altura}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="auth-grid-2">
               <div className="field">
                 <label className="field-label" htmlFor="sexo">Sexo</label>
                 <select
@@ -218,7 +228,9 @@ export default function RegisterPage() {
                   ))}
                 </select>
               </div>
+            </div>
 
+            <div className="auth-grid-2">
               <div className="field">
                 <label className="field-label" htmlFor="propositoEntrenamiento">Propósito de entrenamiento</label>
                 <select
@@ -235,7 +247,6 @@ export default function RegisterPage() {
                   ))}
                 </select>
               </div>
-
               <div className="field">
                 <label className="field-label" htmlFor="nivelExperiencia">Nivel de experiencia</label>
                 <select
@@ -251,29 +262,32 @@ export default function RegisterPage() {
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="field">
-                <label className="field-label">Días disponibles para entrenar</label>
-                <DiaSelector seleccionados={diasSemana} onToggle={toggleDia} />
-                <p className="text-xs text-muted mt-sm">
-                  Has seleccionado {diasSemana.length} {diasSemana.length === 1 ? 'día' : 'días'}
-                </p>
-              </div>
+            <div className="field auth-grupo-dias">
+              <label className="field-label">Días disponibles para entrenar</label>
+              <DiaSelector seleccionados={diasSemana} onToggle={toggleDia} />
+              <p className="auth-contador-dias">
+                Has seleccionado {diasSemana.length} {diasSemana.length === 1 ? 'día' : 'días'}
+              </p>
+            </div>
 
-              <Button type="submit" loading={loading} className="w-full">
-                Crear Cuenta
-              </Button>
-            </form>
+            <button type="submit" className="auth-boton-principal" disabled={loading}>
+              Crear Cuenta
+              {loading ? <span className="spinner spinner-sm" /> : <span className="material-symbols-outlined">arrow_forward</span>}
+            </button>
+          </form>
 
-            <p className="text-center text-sm text-muted">
-              ¿Ya tienes cuenta?{' '}
-              <Link to="/login" className="enlace-sin-subrayado text-primario">
-                Inicia sesión
-              </Link>
-            </p>
-          </div>
-        </Card.Body>
-      </Card>
+          <p className="auth-alternativa">
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" className="auth-enlace">Inicia sesión</Link>
+          </p>
+        </section>
+      </main>
+
+      <footer className="auth-pie">
+        © {new Date().getFullYear()} Yantraining. Todos los derechos reservados.
+      </footer>
     </div>
   );
 }

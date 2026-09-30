@@ -2,10 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Loading } from '../components/common/Loading';
-import { EmptyState } from '../components/common/EmptyState';
+import { Icon } from '../components/common/Icon';
 import { pagosApi } from '../services/pagosApi';
 import { formatUsd, formatBs } from '../utils/formatters';
 import { RegistrarPagoModal, ComprobanteModal, EstadoBadge, TIPOS_METODO } from '../components/pagos';
@@ -26,15 +25,6 @@ const labelOfrecimiento = (valor) => {
     ambos: 'Entrenamiento + Dietas',
   };
   return mapa[valor] || valor;
-};
-
-const iconoOfrecimiento = (valor) => {
-  const mapa = {
-    entrenamiento: '🏋️',
-    dietas: '🥗',
-    ambos: '🏋️🥗',
-  };
-  return mapa[valor] || '📦';
 };
 
 export default function MiPlanPage() {
@@ -121,45 +111,61 @@ export default function MiPlanPage() {
   const suscripcionActiva = suscripcion?.activa === true;
   const suscripcionVencida = suscripcion?.vencida === true;
 
+  const iconoSuscripcion = suscripcionActiva ? 'check' : suscripcionVencida ? 'clock' : 'receipt';
+  const claseSuscripcion = suscripcionActiva
+    ? 'pg-suscripcion-icono--activa'
+    : suscripcionVencida
+    ? 'pg-suscripcion-icono--vencida'
+    : '';
+
   return (
-    <div className="page">
-      <div className="page-header">
-        <div className="page-header-text">
-          <h2 className="page-title">Mi Plan</h2>
-          <p className="page-subtitle">Consulta tu mensualidad y realiza tus pagos</p>
+    <div className="pg-pagina">
+      {/* Cabecera */}
+      <div className="pg-seccion pg-cabecera">
+        <div className="pg-cabecera-texto">
+          <h1 className="pg-titulo">Mi Plan</h1>
+          <p className="pg-subtitulo">Consulta tu mensualidad y realiza tus pagos</p>
         </div>
       </div>
 
       {error && (
-        <Card>
-          <div className="empty-state">
-            <p className="empty-state-icono" aria-hidden="true">⚠️</p>
-            <p className="text-lg text-error text-medium">{error}</p>
+        <div className="pg-seccion pg-card">
+          <div className="pg-estado">
+            <div className="pg-estado-icono pg-estado-icono--error">
+              <Icon name="close" size={32} />
+            </div>
+            <h2 className="pg-estado-titulo">Error</h2>
+            <p className="pg-estado-descripcion">{error}</p>
           </div>
-        </Card>
+        </div>
       )}
 
       {sinEntrenador ? (
-        <Card>
-          <EmptyState
-            icon="👨‍🏫"
-            title="Sin entrenador asignado"
-            description="Aún no tienes un entrenador asignado. Cuando te asignen uno podrás ver sus planes aquí."
-          />
-        </Card>
+        <div className="pg-seccion pg-card">
+          <div className="pg-estado">
+            <div className="pg-estado-icono">
+              <Icon name="user" size={32} />
+            </div>
+            <h3 className="pg-estado-titulo">Sin entrenador asignado</h3>
+            <p className="pg-estado-descripcion">
+              Aún no tienes un entrenador asignado. Cuando te asignen uno podrás ver sus planes aquí.
+            </p>
+          </div>
+        </div>
       ) : (
         <>
-          <Card>
-            <div className="row-between">
-              <div className="row">
-                <span className="icono-mediano" aria-hidden="true">
-                  {suscripcionActiva ? '✅' : suscripcionVencida ? '⏰' : '📭'}
-                </span>
-                <div>
-                  <h3 className="card-titulo card-titulo-md">
+          {/* Estado de la suscripción */}
+          <div className="pg-seccion pg-card">
+            <div className="pg-suscripcion">
+              <div className="pg-suscripcion-principal">
+                <div className={`pg-suscripcion-icono ${claseSuscripcion}`} aria-hidden="true">
+                  <Icon name={iconoSuscripcion} size={26} />
+                </div>
+                <div className="pg-suscripcion-info">
+                  <h2 className="pg-suscripcion-titulo">
                     {suscripcionActiva ? 'Mensualidad activa' : suscripcionVencida ? 'Mensualidad vencida' : 'Sin mensualidad'}
-                  </h3>
-                  <p className="page-subtitle">
+                  </h2>
+                  <p className="pg-suscripcion-detalle">
                     {suscripcionActiva &&
                       `Plan ${suscripcion.plan || ''} · hasta el ${formatearFechaISO(suscripcion.fechaFin)}`}
                     {suscripcionVencida && (suscripcion.mensaje || `Venció el ${formatearFechaISO(suscripcion.fechaFin)}`)}
@@ -168,120 +174,129 @@ export default function MiPlanPage() {
                 </div>
               </div>
               {suscripcionActiva && (
-                <div className="text-center">
-                  <div className="valor-destacado valor-destacado-exito">
-                    {suscripcion.diasRestantes}
-                  </div>
-                  <div className="text-xs text-muted">
+                <div className="pg-suscripcion-dias">
+                  <span className="pg-valor pg-valor--exito">{suscripcion.diasRestantes}</span>
+                  <span className="pg-suscripcion-dias-label">
                     {suscripcion.diasRestantes === 1 ? 'día restante' : 'días restantes'}
-                  </div>
+                  </span>
                 </div>
               )}
             </div>
-          </Card>
+          </div>
 
-          <div className="stack">
-            <h3 className="card-titulo card-titulo-md">Planes disponibles</h3>
-            {error && planes.length === 0 ? null : planes.length === 0 ? (
-              <Card>
-                <EmptyState
-                  icon="💳"
-                  title="Sin planes publicados"
-                  description="Tu entrenador aún no ha publicado planes de mensualidad."
-                />
-              </Card>
-            ) : (
-              <div className="grid grid-cols-2">
-                {planes.map((plan) => (
-                  <Card key={plan.id}>
-                    <div className="card-body stack w-full">
-                      <strong>{plan.nombre}</strong>
-                      {plan.ofrecimiento && (
-                        <span className="badge badge-info">
-                          {iconoOfrecimiento(plan.ofrecimiento)} {labelOfrecimiento(plan.ofrecimiento)}
-                        </span>
-                      )}
-                      <div>
-                        <div className="valor-destacado">
-                          {formatUsd(plan.montoUsd)}
-                        </div>
-                        <div className="text-sm text-muted">
-                          ≈ {tasaCambio ? formatBs(plan.montoUsd, tasaCambio) : '—'} · {plan.diasVigencia} días
-                        </div>
-                      </div>
-                      {plan.descripcion && (
-                        <p className="text-sm text-muted flex-1">
-                          {plan.descripcion}
-                        </p>
-                      )}
-                      <Button className="w-full" onClick={() => setPlanAPagar(plan)} disabled={metodos.length === 0}>
-                        Pagar este plan
-                      </Button>
+          {/* Planes disponibles */}
+          <div className="pg-seccion">
+            <h2 className="pg-titulo-seccion">Planes disponibles</h2>
+          </div>
+          {error && planes.length === 0 ? null : planes.length === 0 ? (
+            <div className="pg-seccion pg-card">
+              <div className="pg-estado">
+                <div className="pg-estado-icono">
+                  <Icon name="creditcard" size={32} />
+                </div>
+                <h3 className="pg-estado-titulo">Sin planes publicados</h3>
+                <p className="pg-estado-descripcion">
+                  Tu entrenador aún no ha publicado planes de mensualidad.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="pg-seccion pg-grid pg-grid--dos">
+              {planes.map((plan) => (
+                <div key={plan.id} className="pg-card">
+                  <div className="pg-card-cuerpo pg-plan-cuerpo">
+                    <p className="pg-plan-nombre">{plan.nombre}</p>
+                    {plan.ofrecimiento && (
+                      <span className="pg-chip-ofrecimiento">
+                        <Icon name={plan.ofrecimiento === 'dietas' ? 'apple' : 'dumbbell'} size={12} />
+                        {plan.ofrecimiento === 'ambos' && <Icon name="apple" size={12} />}
+                        {labelOfrecimiento(plan.ofrecimiento)}
+                      </span>
+                    )}
+                    <div>
+                      <div className="pg-valor">{formatUsd(plan.montoUsd)}</div>
+                      <p className="pg-plan-subtexto">
+                        ≈ {tasaCambio ? formatBs(plan.montoUsd, tasaCambio) : '—'} · {plan.diasVigencia} días
+                      </p>
                     </div>
-                  </Card>
-                ))}
+                    {plan.descripcion && (
+                      <p className="pg-plan-descripcion">{plan.descripcion}</p>
+                    )}
+                    <Button className="w-full" variant="primary" onClick={() => setPlanAPagar(plan)} disabled={metodos.length === 0}>
+                      Pagar este plan
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Mis pagos */}
+          <div className="pg-seccion pg-card">
+            <div className="pg-card-cabecera">
+              <h2 className="pg-card-titulo">
+                <Icon name="history" size={20} className="pg-icono" />
+                Mis pagos
+              </h2>
+            </div>
+            {misPagos.length === 0 ? (
+              <div className="pg-estado">
+                <div className="pg-estado-icono">
+                  <Icon name="receipt" size={32} />
+                </div>
+                <h3 className="pg-estado-titulo">Sin pagos registrados</h3>
+                <p className="pg-estado-descripcion">
+                  Cuando realices un pago aparecerá aquí con su estado.
+                </p>
+              </div>
+            ) : (
+              <div className="pg-tabla-scroll">
+                <table className="pg-tabla">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Plan</th>
+                      <th>Método</th>
+                      <th>Monto</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {misPagos.map((pago) => (
+                      <tr key={pago.id}>
+                        <td>{formatearFechaISO(pago.fechaPago)}</td>
+                        <td>{pago.plan?.nombre || '-'}</td>
+                        <td>{labelTipo(pago.metodo?.tipo)}</td>
+                        <td>
+                          {formatUsd(pago.montoUsd)}
+                          <span className="tabla-subtexto">
+                            {formatBs(pago.montoUsd, pago.tasaAplicada)}
+                          </span>
+                        </td>
+                        <td>
+                          <EstadoBadge estado={pago.estado} />
+                          {pago.estado === 'rechazado' && pago.comentarioRechazo && (
+                            <span
+                              className="tabla-nota-error"
+                              title={pago.comentarioRechazo}
+                            >
+                              Motivo: {pago.comentarioRechazo}
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
+                            Ver comprobante
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
-
-          <Card>
-            <div className="card-body stack">
-              <h3 className="card-titulo card-titulo-md">Mis pagos</h3>
-              {misPagos.length === 0 ? (
-                <EmptyState
-                  icon="🧾"
-                  title="Sin pagos registrados"
-                  description="Cuando realices un pago aparecerá aquí con su estado."
-                />
-              ) : (
-                <div className="table-wrapper">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Fecha</th>
-                        <th>Plan</th>
-                        <th>Método</th>
-                        <th>Monto</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {misPagos.map((pago) => (
-                        <tr key={pago.id}>
-                          <td>{formatearFechaISO(pago.fechaPago)}</td>
-                          <td>{pago.plan?.nombre || '-'}</td>
-                          <td>{labelTipo(pago.metodo?.tipo)}</td>
-                          <td>
-                            {formatUsd(pago.montoUsd)}
-                            <span className="tabla-subtexto">
-                              {formatBs(pago.montoUsd, pago.tasaAplicada)}
-                            </span>
-                          </td>
-                          <td>
-                            <EstadoBadge estado={pago.estado} />
-                            {pago.estado === 'rechazado' && pago.comentarioRechazo && (
-                              <span
-                                className="tabla-nota-error"
-                                title={pago.comentarioRechazo}
-                              >
-                                Motivo: {pago.comentarioRechazo}
-                              </span>
-                            )}
-                          </td>
-                          <td>
-                            <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
-                              Ver comprobante
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </Card>
 
           <RegistrarPagoModal
             isOpen={planAPagar !== null}

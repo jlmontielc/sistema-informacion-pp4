@@ -74,6 +74,7 @@ async function statsEntrenador(entrenadorId) {
     dietasActivas,
     clientesNuevosMes,
     clientesRecientes,
+    rutinasActivasPorCliente,
   ] = await Promise.all([
     Instruido.count({ where: { entrenadorId } }),
     sequelize.query(
@@ -87,18 +88,32 @@ async function statsEntrenador(entrenadorId) {
     Instruido.count({ where: { entrenadorId, fechaRegistro: { [Op.gte]: mesActual } } }),
     Instruido.findAll({
       where: { entrenadorId },
-      attributes: ['id', 'nombre', 'peso', 'nivelActividad', 'fechaRegistro'],
+      attributes: ['id', 'nombre', 'email', 'peso', 'nivelActividad', 'fechaRegistro'],
       order: [['createdAt', 'DESC']],
       limit: 5,
     }),
+    // Ids de clientes con rutina asignada activa del entrenador
+    sequelize.query(
+      'SELECT cliente_id as instruidoId FROM rutinas_asignadas WHERE activa = 1 AND entrenador_id = ?',
+      { replacements: [entrenadorId], type: 'SELECT' }
+    ),
   ]);
+
+  // Estado del cliente: Activo = tiene rutina asignada activa; En pausa = no tiene rutina activa
+  const clientesConRutinaActiva = new Set(
+    rutinasActivasPorCliente.map(fila => fila.instruidoId)
+  );
+  const clientesRecientesConEstado = clientesRecientes.map(cliente => ({
+    ...cliente.toJSON(),
+    estado: clientesConRutinaActiva.has(cliente.id) ? 'activo' : 'pausa',
+  }));
 
   return {
     totalClientes,
     rutinasActivas: rutinasActivas[0].total,
     dietasActivas: dietasActivas[0].total,
     clientesNuevosMes,
-    clientesRecientes,
+    clientesRecientes: clientesRecientesConEstado,
   };
 }
 
@@ -170,6 +185,7 @@ async function statsInstruido(instruidoId) {
       : null;
     medicion = {
       peso: instruido.peso,
+      altura: instruido.altura,
       imc,
       fecha: instruido.updatedAt,
     };

@@ -1,0 +1,236 @@
+/* ==========================================================================
+   MI RUTINA (vista del instruido) — Capa de re-tema Material 3 oscuro
+   ---------------------------------------------------------------------------
+   El módulo ya tiene su lenguaje "workout" (clases mi-rutina-*) pintado con
+   variables --rutina-*. Esta capa NO toca JSX ni endpoints: redefinice los
+   tokens sobre body:has(.mi-rutina) para que la página y el modal de registro
+   (portal al body) hereden la paleta M3 del sistema, y anula los ~15 colores
+   duros que no se pueden remapear por variables.
+   Alcance: solo activo mientras .mi-rutina está montada (no afecta a
+   GestionRutinasView ni a otras páginas).
+   ========================================================================== */
+
+/* ---------- Fondo de página + redefinición de tokens ---------- */
+
+body:has(.mi-rutina) {
+  background: #131317;
+
+  /* Paleta M3 del sistema para los tokens del módulo */
+  --rutina-marca: #d0bcff;
+  --rutina-marca-fuerte: #dcc8ff;
+  --rutina-marca-tenue: rgba(208, 188, 255, 0.14);
+  --rutina-marca-texto: #d0bcff;
+  --rutina-oscuro: #1b1b1f;
+  --rutina-oscuro-alto: #141418;
+  --rutina-superficie: #0e0e12;
+  --rutina-superficie-alta: rgba(73, 68, 84, 0.6);
+  --rutina-texto: #e4e1e7;
+  --rutina-texto-suave: #cbc3d7;
+  --rutina-texto-tenue: #958ea0;
+  --rutina-claro: #1b1b1f;
+  --rutina-claro-tenue: #0e0e12;
+  --rutina-claro-borde: rgba(73, 68, 84, 0.6);
+  --rutina-texto-claro: #e4e1e7;
+  --rutina-texto-claro-suave: #958ea0;
+  --rutina-exito: #4ade80;
+  --rutina-alerta: #fd853a;
+  --rutina-error: #ffb4ab;
+  --rutina-sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* Tokens globales re-tematizados para el subtree del módulo (Card,
+     EmptyState, Loading, Modal y el anillo de descanso los heredan) */
+  --color-bg-card: #1b1b1f;
+  --color-border: rgba(73, 68, 84, 0.6);
+  --color-text: #e4e1e7;
+  --color-text-secondary: #cbc3d7;
+  --color-error: #ffb4ab;
+  --color-bg-overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* Foco visible naranja (mismo patrón que clientes.css y perfil.css) */
+.mi-rutina :focus-visible,
+.mi-rutina-modal :focus-visible {
+  outline: 2px solid #fd853a;
+  outline-offset: 2px;
+}
+
+/* ---------- Tipografía de la cabecera (estándar M3 del sistema) ---------- */
+
+body:has(.mi-rutina) .mi-rutina-cabecera-titulo {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Overrides de colores duros del bloque mi-rutina ---------- */
+
+/* Pestañas: pastilla activa lila con texto oscuro (antes blanco) */
+body:has(.mi-rutina) .mi-rutina-pestanas {
+  box-shadow: none;
+}
+
+body:has(.mi-rutina) .mi-rutina-pestanas .tab-button.active {
+  background: #d0bcff;
+  color: #381e72;
+  box-shadow: none;
+}
+
+/* Selector de días: activo lila con texto oscuro */
+body:has(.mi-rutina) .mi-rutina-dias .dias-semana-grid {
+  box-shadow: none;
+}
+
+body:has(.mi-rutina) .mi-rutina-dias .dia-item.seleccionado {
+  background: #d0bcff;
+  color: #381e72;
+  box-shadow: none;
+}
+
+/* Badge de sesión ("Día de Empuje") sobre la tarjeta oscura */
+body:has(.mi-rutina) .mi-rutina-workout-badge {
+  background: rgba(208, 188, 255, 0.16);
+  border-color: rgba(208, 188, 255, 0.4);
+  color: #d0bcff;
+}
+
+/* Métricas y cumplimiento: acento lila del sistema */
+body:has(.mi-rutina) .mi-rutina-caja-destacada .mi-rutina-caja-valor {
+  color: #d0bcff;
+}
+
+body:has(.mi-rutina) .mi-rutina-cumplimiento {
+  background: #0e0e12;
+}
+
+body:has(.mi-rutina) .mi-rutina-cumplimiento-valor {
+  color: #d0bcff;
+}
+
+body:has(.mi-rutina) .mi-rutina-banda-tiempo-valor {
+  color: #d0bcff;
+}
+
+/* Badges de estado completado: texto oscuro sobre verde (contraste AA) */
+body:has(.mi-rutina) .mi-rutina-dia-estado-ok {
+  background: #4ade80;
+  color: #11361f;
+}
+
+body:has(.mi-rutina) .mi-rutina-historial-badge-ok {
+  background: #4ade80;
+  color: #11361f;
+}
+
+/* Superficies internas dentro de tarjetas #1b1b1f pasan a #0e0e12 */
+body:has(.mi-rutina) .mi-rutina-ejercicio,
+body:has(.mi-rutina) .mi-rutina-ejercicio-tabla {
+  background: #0e0e12;
+}
+
+body:has(.mi-rutina) .mi-rutina-chip {
+  background: #26262c;
+  border-color: #494454;
+  color: #cbc3d7;
+}
+
+/* Campos de series (peso/reps/RPE) dentro del modal */
+body:has(.mi-rutina) .mi-rutina-campo {
+  background: #0e0e12;
+  border-color: #494454;
+  color: #e4e1e7;
+}
+
+body:has(.mi-rutina) .mi-rutina-campo:focus {
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+/* Textarea de notas del entrenamiento */
+body:has(.mi-rutina) .mi-rutina-notas-area::placeholder {
+  color: rgba(149, 142, 160, 0.6);
+}
+
+body:has(.mi-rutina) .mi-rutina-notas-area:focus {
+  border-color: #d0bcff;
+  box-shadow: 0 0 0 1px #d0bcff;
+}
+
+body:has(.mi-rutina) .mi-rutina-pie {
+  border-top-color: rgba(73, 68, 84, 0.6);
+}
+
+/* ---------- Chrome compartido oscuro (scoped al módulo montado) ---------- */
+
+/* Botones */
+body:has(.mi-rutina) .btn-primary {
+  background: #d0bcff;
+  border: none;
+  color: #381e72;
+}
+
+body:has(.mi-rutina) .btn-primary:hover:not(:disabled) {
+  background: #dcc8ff;
+}
+
+body:has(.mi-rutina) .btn-secondary {
+  background: #2a292e;
+  border: 1px solid #494454;
+  color: #e4e1e7;
+}
+
+body:has(.mi-rutina) .btn-secondary:hover:not(:disabled) {
+  background: #33323a;
+  border-color: rgba(208, 188, 255, 0.5);
+  color: #d0bcff;
+}
+
+body:has(.mi-rutina) .btn-ghost {
+  color: #cbc3d7;
+}
+
+body:has(.mi-rutina) .btn-ghost:hover:not(:disabled) {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+body:has(.mi-rutina) .btn .spinner {
+  border-color: rgba(56, 30, 114, 0.3);
+  border-top-color: #381e72;
+}
+
+body:has(.mi-rutina) .btn-secondary .spinner {
+  border-color: rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+}
+
+/* Spinner del Loading global */
+body:has(.mi-rutina) .spinner {
+  border-color: rgba(208, 188, 255, 0.3);
+  border-top-color: #d0bcff;
+}
+
+/* Modal de registro (portal al body) */
+body:has(.mi-rutina) .modal-content {
+  border: 1px solid rgba(73, 68, 84, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+body:has(.mi-rutina) .header-button {
+  color: #cbc3d7;
+}
+
+body:has(.mi-rutina) .header-button:hover {
+  background: #2a292e;
+  color: #e4e1e7;
+}
+
+/* Card + EmptyState (usados en "Sin rutina", descanso e historial vacío) */
+body:has(.mi-rutina) .card {
+  box-shadow: none;
+}
+
+body:has(.mi-rutina) .empty-state {
+  color: #cbc3d7;
+}
