@@ -23,7 +23,7 @@ const httpRequest = (path, method, body, timeout) => new Promise((resolve, rejec
     port: parsedUrl.port || (esHttps ? 443 : 80),
     path,
     method,
-    timeout: timeout || 15000,
+    timeout: timeout || 60000,
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(data),

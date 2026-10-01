@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./shared/swagger/swaggerConfig');
 const { manejadorErrores } = require('./shared/middleware/errorHandler');
+const config = require('./shared/constants');
 
 require('./shared/database/associations');
 
@@ -19,7 +20,13 @@ const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 const app = express();
 
-app.use(cors());
+// Necesario para que express-rate-limit identifique la IP real del cliente
+// detrás del proxy inverso de la plataforma de despliegue (Render/Railway).
+app.set('trust proxy', 1);
+
+app.use(cors({
+  origin: config.CORS_ORIGINS,
+}));
 // Límite elevado SOLO para /api/pagos y /api/auth/certifications: admiten archivos en base64 (~2 MB decodificados).
 // Las certificaciones aceptan imagen JPG/PNG/WebP o PDF adjunta; el resto de la API conserva el límite por defecto (100kb).
 app.use('/api/pagos', express.json({ limit: '5mb' }));

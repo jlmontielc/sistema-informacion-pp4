@@ -37,6 +37,9 @@ module.exports = {
   ENC_KEY: process.env.ENC_KEY,
   ENC_IV: process.env.ENC_IV,
   FLASK_IA_URL: process.env.FLASK_IA_URL || 'http://localhost:5000',
+  CORS_ORIGINS: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : true,
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379/0',
   REDIS_ENABLED: process.env.REDIS_ENABLED === 'true',
   ADMIN_EMAIL,
