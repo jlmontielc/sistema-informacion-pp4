@@ -37,7 +37,7 @@ Eres el agente experto del nucleo del sistema PP4: el backend Node.js. Tu ambito
 ```bash
 cd backend-node && npm run dev    # desarrollo con nodemon
 cd backend-node && npm test       # jest --coverage
-cd backend-node && npm run seed   # ***REDACTADO*** / ***ROTADA***
+cd backend-node && npm run seed   # usa ADMIN_EMAIL/ADMIN_PASSWORD del .env (nunca hardcodear credenciales)
 cd backend-node && npm run seed:ejercicios
 ```
 
