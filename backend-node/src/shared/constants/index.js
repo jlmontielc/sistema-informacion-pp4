@@ -23,6 +23,7 @@ if (ADMIN_PASSWORD && process.env.NODE_ENV === 'production' && ADMIN_PASSWORD.le
 }
 
 module.exports = {
+  NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: process.env.PORT || 3000,
   DB: {
     HOST: process.env.DB_HOST || 'localhost',

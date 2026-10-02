@@ -54,8 +54,10 @@ def health_detailed():
         conn = get_connection()
         conn.close()
         db_status = 'connected'
-    except Exception as e:
-        db_status = f'error: {str(e)}'
+    except Exception:
+        # No se expone el detalle del error (podria filtrar credenciales/host de la BD)
+        logger.exception('Error de conexion a la base de datos en /api/health/detailed')
+        db_status = 'error'
 
     return {
         'status': 'ok',

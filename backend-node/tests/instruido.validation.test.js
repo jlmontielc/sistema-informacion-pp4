@@ -28,6 +28,21 @@ describe('InstruidoValidation - esquemaCrear', () => {
     expect(error).toBeDefined();
   });
 
+  test('rechaza cuando falta email (el modelo lo exige NOT NULL)', () => {
+    const { error } = esquemaCrear.validate({ ...instruidoBase, email: undefined });
+    expect(error).toBeDefined();
+  });
+
+  test('rechaza cuando falta contrasena (el modelo la exige NOT NULL)', () => {
+    const { error } = esquemaCrear.validate({ ...instruidoBase, contrasena: undefined });
+    expect(error).toBeDefined();
+  });
+
+  test('rechaza contrasena corta', () => {
+    const { error } = esquemaCrear.validate({ ...instruidoBase, contrasena: '123' });
+    expect(error).toBeDefined();
+  });
+
   test('rechaza cuando falta diasSemana', () => {
     const { error } = esquemaCrear.validate({ ...instruidoBase, diasSemana: undefined });
     expect(error).toBeDefined();

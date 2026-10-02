@@ -66,8 +66,11 @@ const obtenerPorIdPropio = async (id, instruidoId) => {
   return cache.envolver(clave, () => _obtenerPorIdPropio(id, instruidoId), TTL_RUTINAS);
 };
 
-const crear = async (datos, entrenadorId) => {
-  const instruido = await Instruido.findOne({ where: { id: datos.instruidoId, entrenadorId } });
+const crear = async (datos, entrenadorId, usuario = null) => {
+  // El administrador puede asignar rutinas a clientes de cualquier entrenador
+  const whereInstruido = { id: datos.instruidoId };
+  if (!(usuario && usuario.rol === 'administrador')) whereInstruido.entrenadorId = entrenadorId;
+  const instruido = await Instruido.findOne({ where: whereInstruido });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');
     err.status = 404;

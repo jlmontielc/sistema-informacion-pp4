@@ -62,9 +62,13 @@ const persistRoutineFromPrediction = async (clienteId, entrenadorId, resultado) 
   return borradorIa;
 };
 
-const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = { persistir: true }) => {
+const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = { persistir: true }, usuario = null) => {
+  // El administrador puede generar recomendaciones para clientes de cualquier entrenador
+  const esAdmin = usuario && usuario.rol === 'administrador';
+  const whereInstruido = { id: clienteId };
+  if (!esAdmin) whereInstruido.entrenadorId = entrenadorId;
   const instruido = await Instruido.findOne({
-    where: { id: clienteId, entrenadorId },
+    where: whereInstruido,
   });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');
@@ -90,8 +94,10 @@ const sugerirRutina = async (clienteId, entrenadorId, preferencias = {}, opts = 
     duracionMinutos: reg.duracionMinutos,
   }));
 
+  const wherePlantillas = { activa: true };
+  if (!esAdmin) wherePlantillas.entrenadorId = entrenadorId;
   const plantillas = await PlantillaEntrenamiento.findAll({
-    where: { entrenadorId, activa: true },
+    where: wherePlantillas,
     attributes: ['id', 'nombre', 'tipo', 'objetivo', 'nivelDificultad', 'frecuenciaSemanal', 'duracionSemanas', 'diasSemana'],
     order: [['nombre', 'ASC']],
   });
@@ -225,9 +231,13 @@ const persistDietaFromPrediction = async (clienteId, entrenadorId, resultado) =>
   return borradorDieta;
 };
 
-const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {}) => {
+const sugerirDieta = async (clienteId, entrenadorId, preferencias = {}, opts = {}, usuario = null) => {
+  // El administrador puede generar recomendaciones para clientes de cualquier entrenador
+  const esAdmin = usuario && usuario.rol === 'administrador';
+  const whereInstruido = { id: clienteId };
+  if (!esAdmin) whereInstruido.entrenadorId = entrenadorId;
   const instruido = await Instruido.findOne({
-    where: { id: clienteId, entrenadorId },
+    where: whereInstruido,
   });
   if (!instruido) {
     const err = new Error('Instruido no encontrado o no pertenece al entrenador');

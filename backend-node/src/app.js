@@ -56,14 +56,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'backend-node' });
 });
 
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  explorer: true,
-  customSiteTitle: 'Sistema de Información - API Docs',
-}));
+// La documentacion de la API solo se expone fuera de produccion
+if (config.NODE_ENV !== 'production') {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customSiteTitle: 'Sistema de Información - API Docs',
+  }));
 
-app.get('/api/docs.json', (req, res) => {
-  res.json(swaggerSpec);
-});
+  app.get('/api/docs.json', (req, res) => {
+    res.json(swaggerSpec);
+  });
+}
 
 app.use('/api/auth', authRoutes);
 app.use('/api/instruidos', instruidosRoutes);

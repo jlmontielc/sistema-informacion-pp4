@@ -26,8 +26,8 @@ const validarCoherenciaDias = (value, helpers) => {
 
 const esquemaCrear = Joi.object({
   nombre: Joi.string().max(100).required(),
-  email: Joi.string().email().max(100).optional(),
-  contrasena: Joi.string().min(8).max(100).optional(),
+  email: Joi.string().email().max(100).required(),
+  contrasena: Joi.string().min(8).max(100).required(),
   edad: Joi.number().integer().min(1).max(120).required(),
   peso: Joi.number().positive().required(),
   altura: Joi.number().positive().required(),

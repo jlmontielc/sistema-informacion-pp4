@@ -47,7 +47,7 @@ const obtenerPorId = async (req, res, next) => {
 
 const crear = async (req, res, next) => {
   try {
-    const rutina = await rutinasAsignadasService.crear(req.body, req.usuario.id);
+    const rutina = await rutinasAsignadasService.crear(req.body, req.usuario.id, req.usuario);
     await invalidarCacheRutina(rutina.id, req.usuario, rutina.instruidoId);
     res.status(201).json(rutina);
   } catch (err) {

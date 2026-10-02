@@ -9,6 +9,7 @@ const sugerirRutina = async (req, res, next) => {
       req.usuario.id,
       preferencias,
       { persistir: true },
+      req.usuario,
     );
     res.json(resultado);
   } catch (err) {
@@ -47,6 +48,7 @@ const sugerirDieta = async (req, res, next) => {
       req.usuario.id,
       preferencias,
       { persistir: true },
+      req.usuario,
     );
     res.json(resultado);
   } catch (err) {

@@ -1278,6 +1278,34 @@ def test_no_loguea_datos_medicos():
     print("[PASS] test_no_loguea_datos_medicos")
 
 
+def test_health_detailed_no_expone_detalles_de_error():
+    from unittest.mock import patch
+    import app as flask_app
+
+    with patch('services.db_connector.get_connection',
+               side_effect=Exception('Conectando a mysql://admin:secreto@host.db')):
+        respuesta = flask_app.health_detailed()
+
+    estado_bd = str(respuesta['database'])
+    assert estado_bd == 'error'
+    assert 'secreto' not in estado_bd
+    assert 'error:' not in estado_bd
+    assert respuesta['status'] == 'ok'
+    print("[PASS] test_health_detailed_no_expone_detalles_de_error")
+
+
+def test_health_detailed_conexion_ok():
+    from unittest.mock import MagicMock, patch
+    import app as flask_app
+
+    with patch('services.db_connector.get_connection', return_value=MagicMock()):
+        respuesta = flask_app.health_detailed()
+
+    assert respuesta['database'] == 'connected'
+    assert respuesta['status'] == 'ok'
+    print("[PASS] test_health_detailed_conexion_ok")
+
+
 if __name__ == '__main__':
     test_detectar_grupo_lesion()
     test_evaluar_ejercicio_por_lesiones_rodilla()
@@ -1325,4 +1353,6 @@ if __name__ == '__main__':
     test_ejercicio_permitido_sin_lesiones()
     test_flag_sin_lesiones()
     test_no_loguea_datos_medicos()
+    test_health_detailed_no_expone_detalles_de_error()
+    test_health_detailed_conexion_ok()
     print("\n=== TODOS LOS TESTS PASARON ===")

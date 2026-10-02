@@ -27,6 +27,7 @@ jest.mock('../src/modules/instruidos/instruido.model', () => ({
 }));
 
 const { RutinaAsignada } = require('../src/modules/entrenamiento/entrenamiento.model');
+const { Instruido } = require('../src/modules/instruidos/instruido.model');
 
 describe('RutinasAsignadasService - caché', () => {
   beforeEach(() => {
@@ -53,5 +54,51 @@ describe('RutinasAsignadasService - caché', () => {
 
     expect(RutinaAsignada.findAll).toHaveBeenCalledTimes(1);
     expect(resultado).toEqual([{ id: 1, nombre: 'Fuerza' }]);
+  });
+});
+
+describe('RutinasAsignadasService - crear (acceso por rol)', () => {
+  beforeEach(() => {
+    Instruido.findOne.mockReset();
+    RutinaAsignada.create.mockReset();
+  });
+
+  const datosRutina = {
+    instruidoId: 2,
+    nombre: 'Fuerza Test',
+    tipo: 'fuerza',
+    ejercicios: [],
+    diasSemana: { 1: { diaSemana: 1, nombre: 'Lunes' } },
+  };
+
+  const instruidoMock = { id: 2, nombre: 'Cliente', entrenadorId: 2 };
+
+  test('entrenador solo puede asignar rutinas a sus instruidos', async () => {
+    Instruido.findOne.mockResolvedValue(instruidoMock);
+    RutinaAsignada.create.mockResolvedValue({ id: 10 });
+
+    await rutinasService.crear(datosRutina, 2);
+
+    expect(Instruido.findOne).toHaveBeenCalledWith({ where: { id: 2, entrenadorId: 2 } });
+    expect(RutinaAsignada.create).toHaveBeenCalledWith(expect.objectContaining({ entrenadorId: 2 }));
+  });
+
+  test('entrenador recibe 404 con instruido ajeno', async () => {
+    Instruido.findOne.mockResolvedValue(null);
+
+    await expect(rutinasService.crear(datosRutina, 2))
+      .rejects
+      .toMatchObject({ status: 404, message: 'Instruido no encontrado o no pertenece al entrenador' });
+  });
+
+  test('administrador puede asignar rutina a un instruido de otro entrenador', async () => {
+    const admin = { id: 1, rol: 'administrador' };
+    Instruido.findOne.mockResolvedValue(instruidoMock);
+    RutinaAsignada.create.mockResolvedValue({ id: 11 });
+
+    await rutinasService.crear(datosRutina, 1, admin);
+
+    expect(Instruido.findOne).toHaveBeenCalledWith({ where: { id: 2 } });
+    expect(RutinaAsignada.create).toHaveBeenCalledWith(expect.objectContaining({ entrenadorId: 1 }));
   });
 });
