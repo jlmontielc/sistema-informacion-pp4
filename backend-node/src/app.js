@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const compression = require('compression');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./shared/swagger/swaggerConfig');
 const { manejadorErrores } = require('./shared/middleware/errorHandler');
@@ -23,6 +24,8 @@ const app = express();
 // Necesario para que express-rate-limit identifique la IP real del cliente
 // detrás del proxy inverso de la plataforma de despliegue (Render/Railway).
 app.set('trust proxy', 1);
+
+app.use(compression());
 
 app.use(cors({
   origin: config.CORS_ORIGINS,

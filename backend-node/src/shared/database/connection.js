@@ -6,11 +6,20 @@ const sequelize = new Sequelize(config.DB.NAME, config.DB.USER, config.DB.PASSWO
   port: config.DB.PORT,
   dialect: 'mysql',
   logging: false,
+  pool: {
+    max: 10,
+    min: 1,
+    idle: 180000,
+    acquire: 30000,
+    evict: 60000
+  },
   dialectOptions: {
     ssl: {
       require: true,
       rejectUnauthorized: false
-    }
+    },
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000
   }
 });
 

@@ -14,6 +14,8 @@ const crearCliente = () => {
     maxRetriesPerRequest: 3,
     enableOfflineQueue: false,
     lazyConnect: true,
+    keepAlive: 30000,
+    connectTimeout: 5000,
   });
 
   redis.on('connect', () => {

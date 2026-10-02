@@ -7,6 +7,9 @@ const { descifrar } = require('./crypto');
 
 const FLASK_URL = config.FLASK_IA_URL || 'http://localhost:5000';
 
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+
 const generarTokenServicio = () => jwt.sign(
   { service: 'backend-node' },
   config.JWT_SECRET,
@@ -24,6 +27,7 @@ const httpRequest = (path, method, body, timeout) => new Promise((resolve, rejec
     path,
     method,
     timeout: timeout || 60000,
+    agent: esHttps ? httpsAgent : httpAgent,
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(data),
