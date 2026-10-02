@@ -344,7 +344,8 @@ export default function InstruidoDashboard() {
               </Link>
             </div>
 
-            <div className="table-wrapper">
+            {/* Tabla; en ≤640px se apila en tarjetas vía .rw-tabla */}
+            <div className="table-wrapper rw-tabla">
               <table className="da-tabla">
                 <thead>
                   <tr>
@@ -367,8 +368,8 @@ export default function InstruidoDashboard() {
                           className={`da-fila${abierto ? ' abierta' : ''}`}
                           onClick={() => alternarFila(sesion.id)}
                         >
-                          <td>{formatoCorto(sesion.fecha)}</td>
-                          <td>
+                          <td data-label="Fecha">{formatoCorto(sesion.fecha)}</td>
+                          <td data-label="Rutina">
                             <span className="da-rutina-nombre">
                               <span
                                 className="da-punto-color"
@@ -378,16 +379,16 @@ export default function InstruidoDashboard() {
                               {sesion.rutina_nombre || SIN_DATO}
                             </span>
                           </td>
-                          <td>{sesion.duracion_minutos ? `${sesion.duracion_minutos} min` : SIN_DATO}</td>
-                          <td>
+                          <td data-label="Duración">{sesion.duracion_minutos ? `${sesion.duracion_minutos} min` : SIN_DATO}</td>
+                          <td data-label="Esfuerzo (RPE)">
                             {sesion.percepcion_esfuerzo != null ? (
                               <ChipRpe valor={sesion.percepcion_esfuerzo} />
                             ) : (
                               SIN_DATO
                             )}
                           </td>
-                          <td className="da-celda-observaciones">{sesion.observaciones || SIN_DATO}</td>
-                          <td className="da-col-accion">
+                          <td className="da-celda-observaciones" data-label="Observaciones">{sesion.observaciones || SIN_DATO}</td>
+                          <td className="da-col-accion" data-label="">
                             <button
                               type="button"
                               className={`da-fila-toggle${abierto ? ' abierto' : ''}`}
@@ -507,7 +508,7 @@ export default function InstruidoDashboard() {
                     <Tooltip
                       contentStyle={{
                         background: '#2a292e',
-                        border: '1px solid #49454',
+                        border: '1px solid #49454f',
                         borderRadius: 8,
                         color: '#e4e1e7',
                       }}

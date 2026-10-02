@@ -213,6 +213,7 @@
   .app-sidebar.mobile-open {
     transform: translateX(0);
     width: var(--sidebar-width);
+    box-shadow: var(--shadow-xl);
   }
 
   /* Anula los estilos del colapsado dentro del drawer móvil */
@@ -259,7 +260,15 @@
   }
 
   .app-header {
-    padding: 0 var(--space-3);
+    height: var(--header-height-movil);
+    padding: 0 var(--space-2);
+    gap: var(--space-1);
+  }
+
+  /* Botones del header con área táctil completa (≥44px) */
+  .app-header .header-button {
+    width: var(--touch-target);
+    height: var(--touch-target);
   }
 
   .app-content {
@@ -267,10 +276,35 @@
   }
 }
 
+/* ===== Móvil angosto (≤640px) ===== */
+@media (max-width: 640px) {
+  /* El drawer cubre todo el ancho del viewport */
+  .app-sidebar.mobile-open {
+    width: 100%;
+  }
+
+  /* El pill de conexión se compacta: solo el punto indicador.
+     Prefijo .app-header para ganar a display:none de material-dark.css */
+  .app-header .header-conexion {
+    display: inline-flex;
+    gap: 0;
+    padding: 5px;
+  }
+
+  .header-conexion > span:not(.header-conexion-dot) {
+    display: none;
+  }
+
+  /* Contenido con padding mínimo para aprovechar el ancho */
+  .app-content {
+    padding: var(--space-3);
+  }
+}
+
 /* Título del header oculto solo en pantallas muy angostas, donde los
    botones de acción ya no dejan espacio útil */
 @media (max-width: 360px) {
   .header-title {
-    display: none;
+    font-size: var(--text-sm);
   }
 }

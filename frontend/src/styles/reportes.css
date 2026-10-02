@@ -562,7 +562,7 @@ body:has(.rp-pagina) .btn .spinner {
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .rp-layout {
     flex-direction: column;
   }

@@ -199,8 +199,8 @@ export default function ClientesPage() {
             />
           ) : (
             <>
-              {/* Tabla (scroll horizontal en móvil vía .table-wrapper) */}
-              <div className="table-wrapper dc-tabla-envoltura">
+              {/* Tabla; en ≤640px se apila en tarjetas vía .rw-tabla */}
+              <div className="table-wrapper rw-tabla dc-tabla-envoltura">
                 <table className="dc-tabla">
                   <thead>
                     <tr>
@@ -216,7 +216,7 @@ export default function ClientesPage() {
                   <tbody>
                     {instruidosFiltrados.map((inst) => (
                       <tr key={inst?.id}>
-                        <td>
+                        <td data-label="Nombre">
                           <div className="dc-cliente">
                             <span className="dc-avatar" aria-hidden="true">
                               {iniciales(inst?.nombre)}
@@ -224,15 +224,15 @@ export default function ClientesPage() {
                             <span className="dc-nombre">{textoSeguro(inst?.nombre)}</span>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Email">
                           <span className="dc-email">{textoSeguro(inst?.email)}</span>
                         </td>
-                        <td>
+                        <td data-label="Edad">
                           <span className="dc-valor">
                             {inst?.edad ? inst.edad : <span className="dc-sin-valor">—</span>}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Peso">
                           {inst?.peso ? (
                             <span className="dc-valor">
                               {inst.peso}
@@ -242,7 +242,7 @@ export default function ClientesPage() {
                             <span className="dc-sin-valor">—</span>
                           )}
                         </td>
-                        <td>
+                        <td data-label="Nivel actividad">
                           {etiquetasNivel(inst?.nivelActividad) ? (
                             <span
                               className={`dc-chip-nivel ${claseColorNivel(inst.nivelActividad)}`}
@@ -254,14 +254,14 @@ export default function ClientesPage() {
                             <span className="dc-sin-valor">—</span>
                           )}
                         </td>
-                        <td>
+                        <td data-label="Experiencia">
                           <span
                             className={`dc-chip-exp ${claseColorExperiencia(inst?.nivelExperiencia)}`}
                           >
                             {etiquetasExperiencia(inst?.nivelExperiencia) || 'Sin definir'}
                           </span>
                         </td>
-                        <td className="dc-col-derecha">
+                        <td className="dc-col-derecha" data-label="Acciones">
                           <Link
                             to={`/clientes/${inst?.id}`}
                             className="dc-boton-perfil"

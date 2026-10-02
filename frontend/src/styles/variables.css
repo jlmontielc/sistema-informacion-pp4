@@ -133,6 +133,15 @@
   /* Escala fluida extendida (Fase 3 - Lote C, titular de portada) */
   --text-fluid-hero: clamp(2rem, 5vw, 3.5rem);
 
+  /* ===== Tokens responsive (Fase 4 - movilidad) =====
+     Breakpoints canónicos de la app: 480 / 640 / 768 / 1024 px.
+     La landing tiene sus propios breakpoints (1200/900/640) y no los usa. */
+  --header-height-movil: 56px;
+  --rsp-2xs: 480px;
+  --rsp-xs: 640px;
+  --rsp-sm: 768px;
+  --rsp-md: 1024px;
+
   /* ===== Tokens de la landing (diseno YanTraining) =====
      Extienden el sistema anterior; no reemplazan ningun token existente.
      El diseno de Figma es light-first (fondo blanco, texto violeta #33105d),

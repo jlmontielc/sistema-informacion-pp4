@@ -471,7 +471,7 @@ body:has(.da-pagina) {
 .da-tabla-card thead th {
   padding: 12px 24px 12px 14px;
   background: rgba(14, 14, 18, 0.6);
-  border-bottom: 1px solid #49454;
+  border-bottom: 1px solid #49454f;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -679,7 +679,7 @@ body:has(.da-pagina) {
   gap: 2px;
   padding: 4px;
   background: #0e0e12;
-  border: 1px solid #49454;
+  border: 1px solid #49454f;
   border-radius: 8px;
   flex-wrap: wrap;
 }

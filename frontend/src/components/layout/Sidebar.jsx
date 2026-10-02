@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUI } from '../../context/UIContext';
 import { useAuth } from '../../context/AuthContext';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { getSidebarItems, APP_SHORT_NAME } from '../../utils/constants';
 import { Icon } from '../common/Icon';
 
@@ -30,17 +31,25 @@ function calcularIniciales(nombre) {
 }
 
 export function Sidebar() {
-  const { sidebarOpen } = useUI();
+  const { sidebarOpen, mobileNavOpen } = useUI();
   const { user } = useAuth();
   const navigate = useNavigate();
   const items = getSidebarItems(user);
   const iniciales = calcularIniciales(user?.nombre);
 
+  // Debe coincidir con la media query del drawer en layout.css (≤768px)
+  const esMovil = useMediaQuery('(max-width: 768px)');
+
   return (
     <aside
-      className={`app-sidebar ${!sidebarOpen ? 'collapsed' : ''}`}
+      className={[
+        'app-sidebar',
+        !sidebarOpen && !esMovil ? 'collapsed' : '',
+        esMovil && mobileNavOpen ? 'mobile-open' : '',
+      ].filter(Boolean).join(' ')}
       aria-label="Navegación lateral"
     >
+
       <div className="sidebar-brand">
         <span className="sidebar-brand-icon">
           <Icon name="dumbbell" size={24} />

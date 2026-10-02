@@ -257,8 +257,8 @@ export default function DietasPage() {
             </p>
           </div>
         ) : (
-          /* Tabla: scroll horizontal en móvil vía .table-wrapper */
-          <div className="table-wrapper dd-tabla-envoltura">
+          /* Tabla; en ≤640px se apila en tarjetas vía .rw-tabla */
+          <div className="table-wrapper rw-tabla dd-tabla-envoltura">
             <table className="dd-tabla">
               <thead>
                 <tr>
@@ -276,7 +276,7 @@ export default function DietasPage() {
                   return (
                     <tr key={dieta.id}>
                       {esAdminOEntrenador && (
-                        <td>
+                        <td data-label="Cliente">
                           <div className="dd-cliente">
                             <span className="dd-avatar" aria-hidden="true">
                               {iniciales(cliente?.nombre || `Cliente ${dieta.instruidoId}`)}
@@ -287,28 +287,28 @@ export default function DietasPage() {
                           </div>
                         </td>
                       )}
-                      <td>
+                      <td data-label="Calorías">
                         <span className="dd-calorias">
                           {dieta.objetivoCalorico}
                           <span className="dd-unidad-kcal"> kcal</span>
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Macros (P / C / G)">
                         <div className="dd-macros">
                           <ChipMacro macro={MACROS[0]} valor={dieta.proteinas} />
                           <ChipMacro macro={MACROS[1]} valor={dieta.carbohidratos} />
                           <ChipMacro macro={MACROS[2]} valor={dieta.grasas} />
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Estado">
                         <ChipEstado decision={dieta.decision} activo={dieta.activo} />
                       </td>
-                      <td>
+                      <td data-label="Fecha">
                         <span className="dd-fecha">
                           {formatearFecha(dieta.fechaInicio || dieta.created_at)}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Acciones">
                         {esAdminOEntrenador && dieta.decision === 'pendiente' && (
                           <div className="dd-acciones">
                             <button

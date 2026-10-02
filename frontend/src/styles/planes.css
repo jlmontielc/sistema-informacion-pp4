@@ -870,4 +870,15 @@ body:has(.pg-pagina) .btn-danger .spinner {
   .pg-suscripcion-dias {
     align-items: flex-start;
   }
+
+  /* Tabs tipo chip con área táctil cómoda */
+  .pg-tab {
+    min-height: var(--touch-target);
+  }
+
+  /* Acciones de tabla siempre envuelven sin desbordar la tarjeta */
+  .pg-acciones .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
 }

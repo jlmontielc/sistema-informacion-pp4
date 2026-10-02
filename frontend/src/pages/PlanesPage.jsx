@@ -486,7 +486,8 @@ export default function PlanesPage() {
               </p>
             </div>
           ) : (
-            <div className="pg-tabla-scroll">
+            /* Tabla; en ≤640px se apila en tarjetas vía .rw-tabla */
+            <div className="pg-tabla-scroll rw-tabla">
               <table className="pg-tabla">
                 <thead>
                   <tr>
@@ -502,17 +503,17 @@ export default function PlanesPage() {
                 <tbody>
                   {historial.map((pago) => (
                     <tr key={pago.id}>
-                      <td>{formatearFechaISO(pago.fechaPago)}</td>
-                      <td>{pago.Instruido?.nombre || '-'}</td>
-                      <td>{pago.plan?.nombre || '-'}</td>
-                      <td>
+                      <td data-label="Fecha">{formatearFechaISO(pago.fechaPago)}</td>
+                      <td data-label="Cliente">{pago.Instruido?.nombre || '-'}</td>
+                      <td data-label="Plan">{pago.plan?.nombre || '-'}</td>
+                      <td data-label="Monto">
                         {formatUsd(pago.montoUsd)}
                         <span className="tabla-subtexto">
                           {formatBs(pago.montoUsd, pago.tasaAplicada)}
                         </span>
                       </td>
-                      <td>{pago.referencia}</td>
-                      <td>
+                      <td data-label="Referencia">{pago.referencia}</td>
+                      <td data-label="Estado">
                         <EstadoBadge estado={pago.estado} />
                         {pago.estado === 'rechazado' && pago.comentarioRechazo && (
                           <span className="tabla-subtexto tabla-subtexto-estrecha">
@@ -520,7 +521,7 @@ export default function PlanesPage() {
                           </span>
                         )}
                       </td>
-                      <td>
+                      <td data-label="Acciones">
                         <div className="pg-acciones">
                           <Button variant="secondary" size="sm" onClick={() => setVerComprobanteId(pago.id)}>
                             Ver

@@ -1,6 +1,7 @@
 /* ============================================================
    Utilidades responsive del design system (Fase 2)
-   Breakpoints fijados en TODO el CSS nuevo: 640 / 768 / 1024 / 1280 px
+   Breakpoints fijados en TODO el CSS nuevo: 480 / 640 / 768 / 1024 px
+   (ver tokens --rsp-* en variables.css)
    ============================================================ */
 
 /* ===== Contenedor de página ===== */
@@ -76,6 +77,25 @@
 @media (max-width: 640px) {
   .grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
   .grid-cols-4 { grid-template-columns: minmax(0, 1fr); }
+
+  /* Página más compacta: menos aire entre bloques y acciones apiladas */
+  .page {
+    gap: var(--space-4);
+  }
+
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page-actions {
+    width: 100%;
+  }
+
+  .page-actions > .btn {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 /* ===== Stack: apilado vertical con separación ===== */

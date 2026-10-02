@@ -219,7 +219,8 @@ export default function EntrenadorDashboard() {
           </div>
         ) : (
           <>
-            <div className="table-wrapper de-tabla-envoltura">
+            {/* Tabla; en ≤640px se apila en tarjetas vía .rw-tabla */}
+            <div className="table-wrapper rw-tabla de-tabla-envoltura">
               <table className="de-tabla">
                 <thead>
                   <tr>
@@ -234,7 +235,7 @@ export default function EntrenadorDashboard() {
                 <tbody>
                   {filtrados.map((c, indice) => (
                     <tr key={c?.id ?? indice}>
-                      <td>
+                      <td data-label="Nombre">
                         <div className="de-celda-nombre">
                           <span className={`de-avatar ${colorAvatar(indice)}`}>
                             {iniciales(c?.nombre)}
@@ -245,24 +246,24 @@ export default function EntrenadorDashboard() {
                           </div>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Peso">
                         <span className="de-peso">
                           {c?.peso != null ? c.peso : '—'}
                           {c?.peso != null && <span className="de-peso-unidad">kg</span>}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nivel">
                         {c?.nivelActividad
                           ? <span className={`de-chip-nivel ${colorNivel(c.nivelActividad)}`}>{etiquetaNivel(c.nivelActividad)}</span>
                           : <span className="de-sin-valor">—</span>}
                       </td>
-                      <td>
+                      <td data-label="Registro">
                         <span className="de-registro">{formatearFecha(c?.fechaRegistro)}</span>
                       </td>
-                      <td>
+                      <td data-label="Estado">
                         <ChipEstado estado={c?.estado} />
                       </td>
-                      <td className="de-col-derecha">
+                      <td className="de-col-derecha" data-label="Acciones">
                         <Link
                           to={`/clientes/${c?.id}`}
                           className="de-boton-perfil"
