@@ -80,6 +80,11 @@ export function AuthProvider({ children }) {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
+      // Las respuestas cacheadas por el service worker sobreviven al cierre de
+      // sesion: se purgan para que el siguiente usuario del dispositivo no las herede.
+      if ('caches' in window) {
+        caches.delete('api-responses');
+      }
       delete api.defaults.headers.common.Authorization;
       setUser(null);
     }

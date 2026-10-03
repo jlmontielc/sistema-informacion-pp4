@@ -4,7 +4,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from api.auth import registrar_manejador_auth
 from api.hitl_routes import hitl_bp
-from config.settings import CORS_ORIGINS, LOG_LEVEL
+from config.settings import CORS_ORIGINS, LOG_LEVEL, PORT
 
 logging.basicConfig(
     level=getattr(logging, str(LOG_LEVEL).upper(), logging.INFO),
@@ -74,5 +74,5 @@ def health_detailed():
 
 
 if __name__ == '__main__':
-    logger.info("Starting Backend-Flask HITL on port 5000")
-    app.run(port=5000, debug=True)
+    logger.info("Starting Backend-Flask HITL on port %s", PORT)
+    app.run(port=PORT, debug=True)

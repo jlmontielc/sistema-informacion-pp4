@@ -44,8 +44,13 @@ registerRoute(
   })
 );
 
+// Solo se cachean respuestas de la API cuando la API es del mismo origen que la
+// SPA (stack con nginx: http://localhost/api/*). En produccion la API vive en otro
+// dominio (Vercel -> Render), y cachear ahi expondría datos de un usuario a otro
+// en un dispositivo compartido: la clave de cache de Workbox es la URL y el JWT va
+// en la cabecera Authorization, no forma parte de la clave.
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
+  ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/api/'),
   new NetworkFirst({
     cacheName: 'api-responses',
     plugins: [

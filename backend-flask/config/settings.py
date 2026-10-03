@@ -12,3 +12,6 @@ DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
 JWT_SECRET = os.getenv('JWT_SECRET', '')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+# Render y otras plataformas Paas inyectan el puerto asignado en PORT.
+# Sin esa variable se conserva el 5000 de desarrollo local.
+PORT = int(os.getenv('PORT', '5000'))
