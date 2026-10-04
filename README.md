@@ -206,7 +206,7 @@ A partir de la arquitectura de la aplicación, el modelo se divide en las siguie
 
 **Evolución mediante migraciones.** Dado que el modelo ER es escalable, el esquema se actualiza de forma controlada a través de archivos en la carpeta `database/migrations/`. Cada cambio en el modelo ER (como añadir módulos de pago o ajustar los días obligatorios de los instruidos) se refleja en un archivo SQL secuencial (ej. `004_add_modulo_pagos.sql`, `011_instruidos_dias_obligatorios.sql`), y `schema.sql` se mantiene como documento de referencia del diseño.
 
-> **Nota sobre la correspondencia real.** El diagrama ER y `database/schema.sql` no son hoy equivalentes: `certificaciones`, `instruidos.rol` y `pesos_modelo_ia` no están definidos en `schema.sql` — los crea `sequelize.sync()` al arrancar Node, y en el caso de `pesos_modelo_ia` la migration `003` —, y el diagrama todavía incluye `rendimiento`, tabla eliminada de la base por `20260904_eliminar_rendimiento.sql`. Una instalación limpia no se reconstruye únicamente a partir de `schema.sql`.
+> **Nota sobre la correspondencia real. (algunas migraciones se hicieron post-diagrama)** El diagrama ER y `database/schema.sql` no son hoy equivalentes: `certificaciones`, `instruidos.rol` y `pesos_modelo_ia` no están definidos en `schema.sql` — los crea `sequelize.sync()` al arrancar Node, y en el caso de `pesos_modelo_ia` la migration `003` —, y el diagrama todavía incluye `rendimiento`, tabla eliminada de la base por `20260904_eliminar_rendimiento.sql`. Una instalación limpia no se reconstruye únicamente a partir de `schema.sql`.
 
 ## Requisitos previos
 
