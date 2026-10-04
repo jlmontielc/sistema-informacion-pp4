@@ -15,6 +15,7 @@ Proyecto académico desarrollado para la asignatura **961616 PP4: Desarrollo de 
 - [Tecnologías utilizadas](#tecnologías-utilizadas)
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Base de datos](#base-de-datos)
+- [Modelo Entidad-Relación (ER) y Base de datos](#modelo-entidad-relación-er-y-base-de-datos)
 - [Requisitos previos](#requisitos-previos)
 - [Variables de entorno](#variables-de-entorno)
 - [Instalación y ejecución](#instalación-y-ejecución)
@@ -24,7 +25,10 @@ Proyecto académico desarrollado para la asignatura **961616 PP4: Desarrollo de 
 - [Roles del sistema](#roles-del-sistema)
 - [Pruebas](#pruebas)
 - [Estado del proyecto](#estado-del-proyecto)
+- [Dificultades encontradas y soluciones aplicadas](#dificultades-encontradas-y-soluciones-aplicadas)
+- [Mantenimiento realizado](#mantenimiento-realizado)
 - [Notas operativas](#notas-operativas)
+- [Conclusiones finales](#conclusiones-finales)
 - [Equipo](#equipo)
 
 ---
@@ -97,7 +101,7 @@ Usuario -> nginx:80
 
 1. **Predicción:** Node envía el perfil del instruido (con datos médicos descifrados) a Flask mediante un JWT de servicio firmado con una clave compartida.
 2. **Guardián (capa 1):** `GuardianSeguridad` en Flask filtra los ejercicios según lesiones, patologías y cargas de impacto, contra reglas explícitas (`injury_rules`, `condition_rules`, `load_rules`).
-3. **Guardián (capa 2):** `RecommenderEngine` genera la rutina o dieta propuesta y Node la revalida contra el historial médico antes de persistirla.
+3. **Generación (capa 2):** `RecommenderEngine` genera la rutina o dieta propuesta ya filtrada por el guardián, y Node persiste el resultado junto con las advertencias recibidas.
 4. **Decisión humana:** el entrenador revisa la propuesta en el panel de aprobación y la acepta, modifica o rechaza.
 5. **Aprendizaje:** el feedback queda registrado en `feedback_hitl` y recalibra los pesos del modelo (tabla `pesos_modelo_ia`), aplicándose en caliente sin reiniciar el servicio.
 
@@ -170,13 +174,39 @@ Motor **MySQL 8.0**. `database/schema.sql` es el esquema de referencia (incluye 
 | `20260821_crear_calculos_metabolicos.sql` | Tabla de cálculos metabólicos |
 | `20260825_feedback_hitl_tipo.sql` | Tipo de feedback HITL |
 | `20260903_series_ejecutadas.sql` | Control de adherencia: series ejecutadas |
-| `20260904_eliminar_rendimiento.sql` | Depuración de tabla de rendimiento |
+| `20260904_eliminar_rendimiento.sql` | Eliminación de la tabla `rendimiento`, reemplazada por `series_ejecutadas` |
 | `20260927_certificaciones_archivo.sql` | Archivos adjuntos de certificaciones del entrenador |
 
 - Algunos cambios de datos tienen scripts Node en `backend-node/src/scripts/` (por ejemplo `run-migration-010.js`, `migrate-json-camelcase.js`).
 - Sequelize `sync()` crea y actualiza tablas al arrancar Node, pero **no reemplaza** las migraciones manuales en producción.
 - La tabla `pesos_modelo_ia` es creada por Flask si no existe al recalibrar.
 - Las tablas de datos médicos están desacopladas del perfil público en una relación 1:1.
+
+## Modelo Entidad-Relación (ER) y Base de datos
+
+El modelo Entidad-Relación (ER) del sistema rige la lógica de negocio y se encuentra estructurado en torno a múltiples módulos interconectados. La estructura de estas entidades está materializada en la base de datos a través del archivo central `database/schema.sql`.
+
+> Esta sección agrupa las entidades por **área funcional**. El registro cronológico de cómo evolucionó el esquema está en [Base de datos](#base-de-datos).
+
+### Entidades principales del sistema
+
+A partir de la arquitectura de la aplicación, el modelo se divide en las siguientes áreas clave:
+
+- **Gestión de usuarios:** tablas dedicadas a los diferentes roles del sistema, principalmente `entrenadores` e `instruidos`.
+- **Salud y fisiología:** entidades que almacenan datos físicos, como `perfil_medico` y `calculos_metabolicos` (incluyendo el historial de cálculos metabólicos).
+- **Actividad física y rutinas:** módulo extenso que abarca `plantillas_entrenamiento`, `series_ejecutadas`, `rutinas_asignadas` (incluyendo decisiones y estados como eliminados) y `registro_entrenamiento`.
+- **Nutrición:** entidades relacionadas con el control alimenticio, tales como `planes_dieta` y la toma de decisiones en ellas.
+- **Gestión financiera:** entidades encargadas de la facturación, reflejadas en las tablas de `pagos` y `planes_pago` (incluyendo su ofrecimiento).
+- **Inteligencia artificial (HITL):** entidades diseñadas para la retroalimentación y aprendizaje del modelo, tales como `feedback_hitl`, `pesos_modelo_ia` y el seguimiento del `error_prediccion_ia`.
+- **Validaciones y archivos:** entidades para el respaldo de documentos, como la tabla `certificaciones`.
+
+### Correspondencia con `database/schema.sql`
+
+**Esquema base.** El archivo `database/schema.sql` contiene la definición DDL (Data Definition Language) de las tablas mencionadas, estableciendo los tipos de datos, claves primarias (PK) y claves foráneas (FK) que forman las relaciones del modelo ER.
+
+**Evolución mediante migraciones.** Dado que el modelo ER es escalable, el esquema se actualiza de forma controlada a través de archivos en la carpeta `database/migrations/`. Cada cambio en el modelo ER (como añadir módulos de pago o ajustar los días obligatorios de los instruidos) se refleja en un archivo SQL secuencial (ej. `004_add_modulo_pagos.sql`, `011_instruidos_dias_obligatorios.sql`), y `schema.sql` se mantiene como documento de referencia del diseño.
+
+> **Nota sobre la correspondencia real.** El diagrama ER y `database/schema.sql` no son hoy equivalentes: `certificaciones`, `instruidos.rol` y `pesos_modelo_ia` no están definidos en `schema.sql` — los crea `sequelize.sync()` al arrancar Node, y en el caso de `pesos_modelo_ia` la migration `003` —, y el diagrama todavía incluye `rendimiento`, tabla eliminada de la base por `20260904_eliminar_rendimiento.sql`. Una instalación limpia no se reconstruye únicamente a partir de `schema.sql`.
 
 ## Requisitos previos
 
@@ -425,6 +455,11 @@ Los pasos 4 y 5 dependen del anterior porque cada componente apunta a la URL del
 - **Variables de producción validadas al arrancar:** longitud y formato de `ENC_KEY` / `ENC_IV`, y longitud mínima de `ADMIN_PASSWORD`.
 - **Detección de corrupción:** si los datos médicos fueron cifrados con una `ENC_KEY`/`ENC_IV` distinta a la actual, el backend devuelve `datosMedicosCorruptos: true` y el frontend solicita reingresar la información. Los valores originales no son recuperables sin la clave con que se cifraron.
 
+Dos observaciones menores sobre la cobertura del cifrado, que no son fallos de seguridad pero conviene tener presentes:
+
+- **`medicacion_actual` se cifra, pero el esquema no lo declara.** Es la única de las cinco columnas sensibles sin el comentario `'JSON cifrado desde Node.js'` que sí tienen sus cuatro hermanas (`schema.sql:69` frente a `schema.sql:65-68`). El cifrado sí ocurre: `medicacionActual` forma parte de `CAMPOS_SENSIBLES` (`backend-node/src/modules/instruidos/perfil-medico.service.js:5`), que es la lista que recorre `cifrarCampos`. Es el esquema, no el código, el que subdeclara la cobertura.
+- **`observaciones` es el único campo médico que viaja en claro.** No está en `CAMPOS_SENSIBLES`, se devuelve al frontend en `obtenerPerfilSeguroParaFrontend` (`perfil-medico.service.js:106`) y llega a Flask sin cifrar, porque `obtenerPerfilDescifradoParaFlask` (`perfil-medico.service.js:112-115`) solo descifra los cinco campos de esa lista. Es texto libre dentro de un perfil médico, y merece la misma decisión que el resto de datos clínicos.
+
 ## Roles del sistema
 
 | Rol | `tipo` en el JWT | Capacidades |
@@ -440,7 +475,7 @@ Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/
 | Servicio | Comando | Cobertura actual |
 |---|---|---|
 | backend-node | `npm test` (Jest + coverage) | **27 suites**: auth (servicio, validación, invalidación, caché), blacklist, caché Redis y sus TTL, pagos (invalidación, caché), dietas, ejercicios, cliente Flask, validación HITL, instruidos, perfil médico, plantillas, reportes, rutinas asignadas |
-| backend-flask | `python tests/test_guardian.py` | Suite manual (assert) centrada en `GuardianSeguridad`; registrar nuevas funciones `test_*` en el bloque `__main__` o no se ejecutarán |
+| backend-flask | `python tests/test_guardian.py` | Suite manual (assert) de **49 funciones `test_`**, todas ellas registradas en el bloque `__main__`. Cubre `GuardianSeguridad`, el clasificador de plantillas, el motor nutricional, el recommender, la normalización de texto y los health checks. Registrar nuevas funciones `test_*` en `__main__` o no se ejecutarán |
 | frontend | `npm test` | Infraestructura CRA lista, sin pruebas aún |
 
 ## Estado del proyecto
@@ -467,6 +502,55 @@ Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/
 - La verificación de identidad en la conexión MySQL está desactivada (SSL sin validar certificado).
 - Los planes gratuitos de Aiven, Render y Upstash imponen suspensión por inactividad y límites de conexiones.
 
+## Dificultades encontradas y soluciones aplicadas
+
+Lo que más costó no fue escribir el código de cada módulo, sino las fronteras entre ellos y las consecuencias de las decisiones tomadas al principio. Estas fueron las dificultades reales y cómo quedaron resueltas:
+
+| Dificultad | Causa raíz | Solución aplicada | Evidencia |
+|---|---|---|---|
+| Un segundo servicio desplegarse por separado rompe la confianza entre módulos | La lógica de negocio quedó en Node y el motor predictivo en Flask, de modo que la frontera quedó concentrada en los datos que cruzan entre ambos | Se fijó un contrato explícito: Node descifra el perfil médico, lo envía con un JWT de servicio de 5 minutos firmado con `JWT_SECRET`, y Flask devuelve la propuesta junto con sus advertencias. La persistencia y la decisión siguen siendo de Node y del entrenador | `shared/utils/flask-client.js:93`, `backend-flask/api/auth.py` |
+| La IA proponía siempre lo mismo, y a veces nada | El clasificador tendía a repetir la misma plantilla y, cuando el pool de ejercicios seguros se agotaba tras aplicar las exclusiones, podía devolver una rutina vacía sin avisar | Se corrigió el falso positivo de precaución comparando `contraindica_lesiones` del ejercicio contra las lesiones reales del cliente en vez de marcar como precaución todo ejercicio con el campo poblado, y se añadió la validación explícita del pool vacío con respuesta **HTTP 422** y `alertas_seguridad` | Commits `fcf5060` y `8ce0ca6` |
+| Rotar la clave de cifrado dejaba los datos médicos ilegibles para siempre | `ENC_IV` es una constante compartida por toda la instalación, no un vector aleatorio por registro, y cambiar `ENC_KEY` o `ENC_IV` vuelve indecifrables los registros previos | El problema no se arregla, se detecta: se añadió `datosMedicosCorruptos`, que marca el registro cuando un valor parece un hash hexadecimal y no se descifra, y el frontend pide al usuario que reingrese la información | `perfil-medico.service.js:21-52` |
+| La adherencia se medía con una tabla que nadie llenaba con datos reales | `rendimiento` era un registro manual, desconectado de lo que el cliente realmente levantaba | Se normalizó a `series_ejecutadas` (migración `20260903`), que guarda cada serie con repeticiones, carga, descanso y RPE; después se eliminó `rendimiento` (`20260904`) y se recreó la vista de progreso sin ella | `database/migrations/20260903_series_ejecutadas.sql`, `20260904_eliminar_rendimiento.sql` |
+| Node y Flask hablaban idiomas distintos | El contrato de la API se había estandarizado a camelCase, pero los campos JSON de `plantillas_entrenamiento` y `rutinas_asignadas` arrastraban claves antiguas en snake_case | Migración `009` que delega en un script Node (`src/scripts/migrate-json-camelcase.js`), porque renombrar claves anidadas dentro de arrays JSON no es viable en SQL puro | `database/migrations/009_migrate_json_camelcase.sql` |
+| El motor de IA quedaba expuesto si se abría el puerto 5000 | Un microservicio en la red de Docker es alcanzable por cualquier contenedor, no solo por Node | Canal autenticado: Node firma un JWT `{service: 'backend-node'}` de 5 minutos y Flask valida firma, expiración y emisor. `docker-compose.yml` no publica puerto para Flask; en producción ambos pasan por HTTPS | `AGENTS.md`, `docker-compose.yml` |
+| El rate limiting no distinguía a un usuario de otro | Render coloca su proxy inverso delante, así que todas las peticiones llegaban con la misma IP y el límite de 20 logins / 15 min bloqueaba a todo el mundo | `app.set('trust proxy', 1)` para que `express-rate-limit` lea la IP real del cliente | `app.js:24-26` |
+| Fugas de datos médicos y autorización insuficiente | El perfil médico se revelaba en más contextos de los previstos y las rutas de IA no exigían rol al solicitante | Revisión de tres commits: se corrigió el revelado, se exigieron credenciales validadas al crear instruidos, se permitió al administrador en rutinas y sugerencias IA, se sanitizaron los health checks y se ocultó Swagger en producción | Commits `eb17ba8`, `8088890`, `1f2b9d6` |
+| La caché de la API podía devolver datos de otro usuario | La clave de caché de Workbox es la URL y el JWT viaja en cabecera, así que cachear respuestas cross-origin haría que un usuario heredara los datos de otro en un dispositivo compartido | La regla de caché de `/api/` se restringió al mismo origen —de modo que solo opera en el stack con nginx— y la caché se purga en cada cierre de sesión | `frontend/src/service-worker.js` |
+| Secretos y datos reales en el repositorio | Credenciales de administrador en archivos de trabajo y en el seed de `schema.sql` | Redacción de los secretos y del correo del administrador, sin pérdida funcional: los secretos de producción se configuran solo en los paneles de Vercel y Render | Commits `1f2b9d6`, `eb17ba8`, `schema.sql:447` |
+| `REACT_APP_API_URL` sin el sufijo `/api` | Las variables `REACT_APP_*` se incrustan en tiempo de build, así que un valor equivocado no se corrige sin replegar | Se fijó la variable con el sufijo y se replegó el frontend | Commit `638e6b4` |
+| Redis no está garantizado en desarrollo local | El sistema debe operar sin depender de un servicio externo | Degradación explícita: si Redis no responde, las lecturas cuentan como *miss*, las escrituras se descartan y la blacklist de JWT cae a un `Set` en memoria, que se pierde al reiniciar Node | `shared/cache/redis.js` |
+
+## Mantenimiento realizado
+
+El proyecto se mantuvo de forma incremental entre el **9 de junio y el 4 de octubre de 2026**, en **67 commits**.
+
+**Evolución del esquema.** 16 migraciones numeradas más un *rollback* (`011_instruidos_dias_obligatorios_rollback.sql`), que registran la historia real del crecimiento: días de la semana, feedback HITL, pesos del modelo, módulo de pagos, ofrecimiento y decisión en cada capa, borrado lógico de rutinas, normalización de JSON, cálculos metabólicos, series ejecutadas y archivos de certificaciones.
+
+**Cobertura de pruebas.** 27 suites Jest en `backend-node` con mocks de Sequelize y cobertura de caché y TTL, y 49 funciones `test_` manuales en Flask.
+
+**Refactors y correcciones con impacto estructural:**
+
+| Commit | Trabajo |
+|---|---|
+| `8ce0ca6` | Migración del motor de IA a clasificador único y borrado lógico de rutinas |
+| `1e58c7a` | Normalización de la estructura de ejercicios y días en rutinas y plantillas |
+| `627c3d4` | Refactor del motor HITL, Guardian y recommender, con migración de JSON a camelCase |
+| `4bbdcc5` | Módulo de informes con seguimiento exhaustivo del rendimiento |
+| `3bff4a5` | Compresión de respuestas y optimización del pool de conexiones |
+| `44b11b3`, `5fe686a` | Caché con Redis en servicios y controladores, TTL por tipo de dato, invalidación por patrón y precarga de ejercicios al arrancar |
+| `8b51d00` | Configuración de CORS y gestión de tiempos de espera en las solicitudes |
+| `06a52f8` | Sesiones de entrenamiento con seguimiento de series |
+| `f008ca4` | Corrección del flujo pagos → HITL |
+| `58fb4de` | Manejo de asociaciones nulas y valores no numéricos en reportes |
+| `8dcbda3`, `b0690e0` | Diseño responsivo y accesibilidad en tablas y componentes |
+| `f542de7`, `94ecbeb` | Documentación Swagger completa de los 66 endpoints |
+| `969c6ec`, `638e6b4` | Corrección de la reescritura de rutas en Vercel y redeploy con la URL de API correcta |
+
+**Auditoría de seguridad.** Tres commits dedicados a hallazgos de seguridad: corrección de fugas de datos médicos y autorización (`eb17ba8`), resolución de los seis hallazgos de revisión —validación de correo y contraseña al crear instruido, permisos de administrador en rutinas y sugerencias IA, sanitización de los health checks y ocultamiento de Swagger en producción— (`8088890`) y eliminación de credenciales del repositorio (`1f2b9d6`).
+
+**Despliegue.** Se consolidó el MVP sobre cuatro servicios gestionados: frontend en Vercel, ambos backends en Render, MySQL en Aiven y caché en Upstash, con el orden de despliegue y la verificación posterior documentados en [Despliegue en producción](#despliegue-en-producción-mvp).
+
 ## Notas operativas
 
 - `npm run seed:ejercicios` es **destructivo**: borra la tabla `ejercicios` y la vuelve a insertar (~1000 ejercicios descargados desde GitHub).
@@ -474,6 +558,22 @@ Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/
 - Si Redis no está disponible con `REDIS_ENABLED=true`, el sistema usa un fallback en memoria (`Set`) para la blacklist, que se pierde al reiniciar Node.
 - Guardar datos médicos con una `ENC_KEY`/`ENC_IV` distinta a la actual hará que esos registros no puedan descifrarse (sin posibilidad de recuperación).
 - Los secretos de producción (`JWT_SECRET`, `ENC_KEY`, `ENC_IV`, contraseñas de base de datos, tokens de Upstash) se configuran **solo en los paneles de Vercel y Render**, nunca en el repositorio.
+
+---
+
+## Conclusiones finales
+
+- **Lo que más aprendí fue que el riesgo está en la frontera entre los servicios.** Con Node y Flask desplegados por separado, los fallos aparecen en el contrato que los une, no en la lógica de negocio de ninguno de los dos. Y que decidir qué datos son sensibles *antes* de escribir la funcionalidad evitó tener que revertir nada después: el aislamiento del perfil médico y el cifrado en reposo se decidieron al principio y nunca hubo que desmontarlos.
+
+- **Lo más difícil fue el flujo HITL y el guardián de seguridad**, por tres motivos concretos: los falsos positivos de precaución dejaban la rutina vacía, el pool de ejercicios seguros se agotaba sin avisar, y el motor tendía a repetir siempre la misma plantilla. Los tres están resueltos y cubiertos con pruebas, pero fueron los que más iteración costaron.
+
+- **El resultado cumple el objetivo general con limitaciones.** Los once requisitos funcionales funcionan de extremo a extremo, probados y desplegados en producción. Lo que queda pendiente es deuda técnica y de proceso —pruebas en el frontend, migraciones automáticas, verificación del certificado de MySQL—, no funcionalidad ausente.
+
+- **No puedo afirmar todavía que el guardián haya impedido un riesgo real.** Las reglas están demostradas en la suite de pruebas, pero no hay aún volumen de uso que lo evidencie en producción. Prefiero decirlo así antes que presentarlo como un caso de éxito.
+
+- **Si empezara de nuevo**, fijaría el contrato de la API y el esquema de la base de datos antes de escribir la primera línea de código de los dos servicios; pondría las migraciones automáticas desde el día uno en lugar de aplicarlas a mano; modelaría la adherencia normalizada desde el principio, porque `rendimiento` fue un error de diseño que costó una tabla y una migración entera; y reservaría tiempo explícito para seguridad y documentación en lugar de tratarlas como un añadido.
+
+- **El trabajo futuro** apunta a pruebas automatizadas en el frontend, CI/CD con un runner de migraciones, cifrado por registro con rotación de claves en lugar de un IV compartido, endurecer las conexiones a MySQL y Redis, notificaciones y reportes en PDF, y llevar el motor predictivo hacia un modelo de machine learning más real en lugar de un clasificador con pesos recalibrados.
 
 ---
 
