@@ -504,7 +504,7 @@ Redirección post-login: un instruido sin `perfilMedicoCompleto` es enviado a `/
 
 ## Dificultades encontradas y soluciones aplicadas
 
-Lo que más costó no fue escribir el código de cada módulo, sino las fronteras entre ellos y las consecuencias de las decisiones tomadas al principio. Estas fueron las dificultades reales y cómo quedaron resueltas:
+Lo que más costó fueron las consecuencias de las decisiones tomadas al principio y la falta de conocimiento del tema, mientras mas iba avanzando con el sistema mas me iba nutriendo de conocimientos. Estas fueron las dificultades reales y cómo quedaron resueltas:
 
 | Dificultad | Causa raíz | Solución aplicada | Evidencia |
 |---|---|---|---|
@@ -523,7 +523,7 @@ Lo que más costó no fue escribir el código de cada módulo, sino las frontera
 
 ## Mantenimiento realizado
 
-El proyecto se mantuvo de forma incremental entre el **9 de junio y el 4 de octubre de 2026**, en **67 commits**.
+El proyecto se mantuvo de forma incremental entre el **9 de junio y el 4 de octubre de 2026** (aun se mantiene en constante desarrollo), en **67 commits**.
 
 **Evolución del esquema.** 16 migraciones numeradas más un *rollback* (`011_instruidos_dias_obligatorios_rollback.sql`), que registran la historia real del crecimiento: días de la semana, feedback HITL, pesos del modelo, módulo de pagos, ofrecimiento y decisión en cada capa, borrado lógico de rutinas, normalización de JSON, cálculos metabólicos, series ejecutadas y archivos de certificaciones.
 
